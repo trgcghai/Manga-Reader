@@ -38,6 +38,9 @@ No cloud services, no external APIs.
 ### 3.2 Chapter Management
 - Each manga contains multiple chapters
 - Create, update, delete chapters
+- Chapter creation uses a required local folder path to the image directory for that chapter
+- The user selects the chapter's language and translator from the manga's configured options
+- On submit, the app scans the folder and displays the images directly
 
 **Chapter metadata**
 - Chapter number
@@ -50,6 +53,7 @@ No cloud services, no external APIs.
 ### 3.3 Translator Grouping
 - A single chapter can have multiple translations
 - Each translation belongs to one translator group
+- Translator options are managed per manga and reused when adding chapters
 
 **Translator**
 - Name
@@ -71,6 +75,7 @@ Chapter 10
 - Each translation has an associated language
 - Languages are configurable
 - A chapter may exist in multiple languages
+- Language options are managed per manga and reused when adding chapters
 
 **Example**
 
@@ -164,6 +169,7 @@ note
 ## 7. Technical Constraints
 - Runs locally only
 - Reads directly from the file system
+- No image upload is required; chapter content comes from local folders
 - No authentication
 - No internet dependency
 

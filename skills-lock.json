@@ -43,6 +43,18 @@
       "skillPath": "skills/shadcn/SKILL.md",
       "computedHash": "eee4f8123d0ce59aa1b2dbf7ea302e6ae1177ff9eb9ec7cb846ccac087e0025e"
     },
+    "sprint-planner": {
+      "source": "shubhamsaboo/awesome-llm-apps",
+      "sourceType": "github",
+      "skillPath": "awesome_agent_skills/sprint-planner/SKILL.md",
+      "computedHash": "2878e83b6f3e0e5f686c38a53bfa5abfe022c4b61976fb10c2aedc789e74f5b7"
+    },
+    "sprint-planning": {
+      "source": "anthropics/knowledge-work-plugins",
+      "sourceType": "github",
+      "skillPath": "product-management/skills/sprint-planning/SKILL.md",
+      "computedHash": "a2efa08a1ad6bb3e17a86f723da750504cb8e560206a2f653b0bd45bcbd06e1b"
+    },
     "vercel-react-best-practices": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
