@@ -13,6 +13,19 @@ The backend already has a NestJS app shell and a simple health endpoint. MR03 ad
 - Set up migrations so `npm run typeorm migration:run` works.
 - Make the backend work with the `postgres` service from `docker compose up postgres`.
 
+## File structure
+
+- `backend/src/app.module.ts` — composition root only; imports feature modules.
+- `backend/src/database/database.module.ts` — owns TypeORM registration and exports shared DB wiring.
+- `backend/src/database/typeorm-options.ts` — pure helper that maps env vars to TypeORM options.
+- `backend/src/database/data-source.ts` — shared CLI data source for migrations.
+- `backend/src/database/migrations/` — checked-in TypeORM migrations.
+- `backend/src/health/health.module.ts` — groups the DB-aware health controller and service.
+- `backend/src/health/health.controller.ts` — HTTP health endpoint.
+- `backend/src/health/health.service.ts` — runs the database ping and builds the health payload.
+- `backend/src/**/*.entity.ts` — feature-owned entities discovered by TypeORM.
+- `backend/src/**/*.spec.ts` — colocated tests for the database helper and health layer.
+
 ## Non-goals
 
 - No new business entities yet.
@@ -24,7 +37,7 @@ The backend already has a NestJS app shell and a simple health endpoint. MR03 ad
 
 ### Database configuration
 
-Create a small database module that owns all TypeORM wiring instead of inlining the connection in `AppModule`. The module will expose a shared helper that turns environment variables into TypeORM options and keep the runtime app and the TypeORM CLI aligned.
+Create a small `database/` feature module that owns all TypeORM wiring instead of inlining the connection in `AppModule`. The module will expose a shared helper that turns environment variables into TypeORM options and keep the runtime app and the TypeORM CLI aligned.
 
 The configuration helper will support two modes:
 
@@ -41,7 +54,7 @@ Entity discovery should target `src/**/*.entity.ts` in development and the compi
 
 ### Health check
 
-Keep the existing `/health` route but make it database-aware. The endpoint should ask the database for a trivial `SELECT 1`-style check and return a richer payload:
+Keep the existing `/health` route but move it into a small `health/` feature module and make it database-aware. The endpoint should ask the database for a trivial `SELECT 1`-style check and return a richer payload:
 
 - `200` with `{ status: 'ok', database: { status: 'up' } }` when the query succeeds.
 - `503` with `{ status: 'degraded', database: { status: 'down', error: '...' } }` when the database check fails.
@@ -50,7 +63,7 @@ This keeps the endpoint useful without pretending the app is healthy when Postgr
 
 ### App wiring
 
-`AppModule` should import the new `DatabaseModule` so the backend connects during bootstrap. The health controller can stay in the root module, backed by a small health service that depends on the shared database connection.
+`AppModule` should import `DatabaseModule` and `HealthModule` only. No database or health providers should live directly in `AppModule`; it should remain the composition root.
 
 ### Migrations and scripts
 
