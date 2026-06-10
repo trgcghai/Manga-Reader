@@ -8,6 +8,8 @@ import KeyvRedis from '@keyv/redis';
 import { MangaModule } from 'src/modules/manga/manga.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { ChapterModule } from './modules/chapter/chapter.module';
+import { TranslatorModule } from './modules/translator/translator.module';
 
 @Module({
   imports: [
@@ -51,6 +53,8 @@ import { APP_GUARD } from '@nestjs/core';
       inject: [ConfigService],
     }),
     MangaModule,
+    ChapterModule,
+    TranslatorModule,
   ],
   controllers: [HealthController],
   providers: [
