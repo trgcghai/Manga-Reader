@@ -1,10 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { getRequiredPort } from './bootstrap';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
-  const port = getRequiredPort(process.env);
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
+
+  const port = configService.get<number>('PORT');
+
+  if (!port) {
+    throw new Error('PORT environment variable is not defined');
+  }
+
   await app.listen(port);
 }
 
