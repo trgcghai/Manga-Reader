@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { getConnectionToken } from '@nestjs/mongoose';
 import request from 'supertest';
 import type { App } from 'supertest/types';
 import { DataSource } from 'typeorm';
@@ -18,6 +19,12 @@ describe('Health endpoint (e2e)', () => {
             isInitialized: true,
           },
         },
+        {
+          provide: getConnectionToken(),
+          useValue: {
+            readyState: 1,
+          },
+        },
       ],
     }).compile();
 
@@ -33,6 +40,6 @@ describe('Health endpoint (e2e)', () => {
     return request(app.getHttpServer())
       .get('/health')
       .expect(200)
-      .expect({ status: 'ok', database: 'connected' });
+      .expect({ status: 'ok', postgres: 'connected', mongodb: 'connected' });
   });
 });
