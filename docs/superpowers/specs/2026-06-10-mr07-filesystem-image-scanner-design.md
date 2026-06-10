@@ -47,16 +47,16 @@ The returned `path` is the scanned path after backend normalization. Each image 
 
 ## Architecture
 
-Add a `ChapterScannerService` inside `backend/src/modules/chapter/`. The service owns filesystem behavior and exposes a method like `scanImages(path: string)`.
+Add the scanner behavior directly to the existing `ChapterService` inside `backend/src/modules/chapter/`. The service owns filesystem behavior and exposes a method like `scanImages(path: string)`.
 
-The existing `ChapterController` gets a new `GET /chapter/scan` handler. The controller reads the `path` query parameter, calls `ChapterScannerService`, and returns the DTO. The controller should stay thin so the scanner can be tested directly without HTTP.
+The existing `ChapterController` gets a new `GET /chapter/scan` handler. The controller reads the `path` query parameter, calls `ChapterService.scanImages`, and returns the DTO. The controller should stay thin so the scanner can be tested directly through the existing chapter service without HTTP.
 
 ## Data Flow
 
 ```text
 GET /chapter/scan?path=...
   -> ChapterController.scan()
-  -> ChapterScannerService.scanImages(path)
+  -> ChapterService.scanImages(path)
   -> fs.readdir(path, { withFileTypes: true })
   -> keep direct child files only
   -> keep supported image extensions only
@@ -93,7 +93,7 @@ Error responses should use clear messages and should not expose stack traces or 
 
 ## Testing
 
-Add fixture-based tests for the scanner service. A suitable fixture layout is:
+Add fixture-based tests for `ChapterService.scanImages`. A suitable fixture layout is:
 
 ```text
 backend/src/modules/chapter/__fixtures__/scan-images/
@@ -121,7 +121,7 @@ Service tests should cover:
 
 Controller tests should cover:
 
-- `GET /chapter/scan?path=...` passes the query path to the scanner service
+- `GET /chapter/scan?path=...` passes the query path to `ChapterService.scanImages`
 - successful scanner responses are returned unchanged
 - missing query path returns a `400 Bad Request`
 

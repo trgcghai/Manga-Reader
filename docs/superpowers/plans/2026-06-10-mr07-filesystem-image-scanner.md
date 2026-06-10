@@ -4,7 +4,7 @@
 
 **Goal:** Build `GET /chapter/scan?path=...` so the backend returns direct child image files from a client-supplied local folder path.
 
-**Architecture:** Add a focused `ChapterScannerService` inside `backend/src/modules/chapter/` for filesystem scanning. Keep `ChapterController` thin by reading the `path` query parameter and delegating to the scanner service. Use Jest fixture folders to drive the implementation before writing production code.
+**Architecture:** Add scanner behavior directly to the existing `ChapterService` as `scanImages(path: string)`. Keep `ChapterController` thin by reading the `path` query parameter and delegating to `ChapterService.scanImages`. Use Jest fixture folders to drive implementation before production code.
 
 **Tech Stack:** NestJS 11, TypeScript, Jest, Node `fs/promises`, Node `path`.
 
@@ -12,24 +12,24 @@
 
 ## File Structure
 
-- Create: `backend/src/modules/chapter/chapter-scanner.service.ts`
-  - Owns all filesystem behavior for MR07.
-  - Exports `ImageExtension`, `ScannedImage`, `ScanImagesResult`, and `ChapterScannerService`.
-- Create: `backend/src/modules/chapter/chapter-scanner.service.spec.ts`
-  - Fixture-based service tests written before implementation.
+- Modify: `backend/src/modules/chapter/chapter.service.ts`
+  - Adds exported scanner DTO types.
+  - Adds `scanImages(path: string)` and private filesystem helpers.
+- Modify: `backend/src/modules/chapter/chapter.service.spec.ts`
+  - Adds fixture-based service tests before implementation.
 - Create fixture files under `backend/src/modules/chapter/__fixtures__/scan-images/`
   - Provides stable local files and folders for Jest tests.
 - Modify: `backend/src/modules/chapter/chapter.controller.ts`
   - Adds `GET /chapter/scan?path=...`.
-  - Injects `ChapterScannerService`.
+  - Delegates to the existing `ChapterService`.
 - Modify: `backend/src/modules/chapter/chapter.controller.spec.ts`
-  - Updates controller tests for the new dependency and scan endpoint.
-- Modify: `backend/src/modules/chapter/chapter.module.ts`
-  - Registers `ChapterScannerService`.
+  - Adds controller tests for the scan endpoint.
+- Leave unchanged: `backend/src/modules/chapter/chapter.module.ts`
+  - `ChapterService` is already registered.
 
 ---
 
-### Task 1: Add Scanner Fixture And Failing Service Tests
+### Task 1: Add Scanner Fixtures And Failing ChapterService Tests
 
 **Files:**
 - Create: `backend/src/modules/chapter/__fixtures__/scan-images/mixed/001.jpg`
@@ -41,8 +41,7 @@
 - Create: `backend/src/modules/chapter/__fixtures__/scan-images/mixed/archive.cbz`
 - Create: `backend/src/modules/chapter/__fixtures__/scan-images/mixed/nested-folder/ignored.jpg`
 - Create: `backend/src/modules/chapter/__fixtures__/scan-images/empty/.gitkeep`
-- Create: `backend/src/modules/chapter/chapter-scanner.service.spec.ts`
-- Create: `backend/src/modules/chapter/chapter-scanner.service.ts`
+- Modify: `backend/src/modules/chapter/chapter.service.spec.ts`
 
 - [ ] **Step 1: Create fixture directories and files**
 
@@ -62,22 +61,31 @@ Set-Content -NoNewline 'backend/src/modules/chapter/__fixtures__/scan-images/mix
 Set-Content -NoNewline 'backend/src/modules/chapter/__fixtures__/scan-images/empty/.gitkeep' ''
 ```
 
-- [ ] **Step 2: Add the failing service test**
+- [ ] **Step 2: Replace the service spec with failing scanner expectations**
 
-Create `backend/src/modules/chapter/chapter-scanner.service.spec.ts`:
+Replace `backend/src/modules/chapter/chapter.service.spec.ts` with:
 
 ```ts
 import { BadRequestException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import { join, resolve } from 'path';
-import { ChapterScannerService } from './chapter-scanner.service';
+import { ChapterService } from './chapter.service';
 
-describe('ChapterScannerService', () => {
-  let service: ChapterScannerService;
+describe('ChapterService', () => {
+  let service: ChapterService;
 
   const fixturesRoot = join(__dirname, '__fixtures__', 'scan-images');
 
-  beforeEach(() => {
-    service = new ChapterScannerService();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [ChapterService],
+    }).compile();
+
+    service = module.get<ChapterService>(ChapterService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
   });
 
   it('returns direct child image files in natural filename order', async () => {
@@ -121,11 +129,12 @@ describe('ChapterScannerService', () => {
     const targetPath = join(fixturesRoot, 'mixed');
 
     const result = await service.scanImages(targetPath);
+    const imageNames = result.images.map((image) => image.name);
 
-    expect(result.images.map((image) => image.name)).not.toContain('notes.txt');
-    expect(result.images.map((image) => image.name)).not.toContain('archive.cbz');
-    expect(result.images.map((image) => image.name)).not.toContain('nested-folder');
-    expect(result.images.map((image) => image.name)).not.toContain('ignored.jpg');
+    expect(imageNames).not.toContain('notes.txt');
+    expect(imageNames).not.toContain('archive.cbz');
+    expect(imageNames).not.toContain('nested-folder');
+    expect(imageNames).not.toContain('ignored.jpg');
   });
 
   it('returns an empty list for a readable folder with no images', async () => {
@@ -158,43 +167,35 @@ describe('ChapterScannerService', () => {
 });
 ```
 
-- [ ] **Step 3: Add a temporary empty service file so TypeScript can resolve the import**
-
-Create `backend/src/modules/chapter/chapter-scanner.service.ts`:
-
-```ts
-export class ChapterScannerService {}
-```
-
-- [ ] **Step 4: Run service test and verify it fails**
+- [ ] **Step 3: Run service tests and verify they fail before implementation**
 
 Run:
 
 ```powershell
 cd backend
-npm run test -- chapter-scanner.service.spec.ts
+npm run test -- chapter.service.spec.ts
 ```
 
-Expected: FAIL because `scanImages` does not exist on `ChapterScannerService`.
+Expected: FAIL because `scanImages` does not exist on `ChapterService`.
 
-- [ ] **Step 5: Commit the failing test**
+- [ ] **Step 4: Commit the failing service tests**
 
 ```powershell
-git add backend/src/modules/chapter/__fixtures__/scan-images backend/src/modules/chapter/chapter-scanner.service.spec.ts backend/src/modules/chapter/chapter-scanner.service.ts
-git commit -m "test: add MR07 scanner service expectations"
+git add backend/src/modules/chapter/__fixtures__/scan-images backend/src/modules/chapter/chapter.service.spec.ts
+git commit -m "test: add MR07 chapter image scan service expectations"
 ```
 
 ---
 
-### Task 2: Implement Scanner Service To Pass Service Tests
+### Task 2: Implement ChapterService Image Scanning
 
 **Files:**
-- Modify: `backend/src/modules/chapter/chapter-scanner.service.ts`
-- Test: `backend/src/modules/chapter/chapter-scanner.service.spec.ts`
+- Modify: `backend/src/modules/chapter/chapter.service.ts`
+- Test: `backend/src/modules/chapter/chapter.service.spec.ts`
 
-- [ ] **Step 1: Replace the temporary service with the implementation**
+- [ ] **Step 1: Replace the service implementation with scanner-capable code**
 
-Replace `backend/src/modules/chapter/chapter-scanner.service.ts` with:
+Replace `backend/src/modules/chapter/chapter.service.ts` with:
 
 ```ts
 import { BadRequestException, Injectable } from '@nestjs/common';
@@ -229,7 +230,27 @@ const naturalFilenameCollator = new Intl.Collator(undefined, {
 });
 
 @Injectable()
-export class ChapterScannerService {
+export class ChapterService {
+  create() {
+    return 'This action adds a new chapter';
+  }
+
+  findAll() {
+    return `This action returns all chapter`;
+  }
+
+  findOne(id: number) {
+    return `This action returns a #${id} chapter`;
+  }
+
+  update(id: number) {
+    return `This action updates a #${id} chapter`;
+  }
+
+  remove(id: number) {
+    return `This action removes a #${id} chapter`;
+  }
+
   async scanImages(inputPath: string): Promise<ScanImagesResult> {
     if (!inputPath?.trim()) {
       throw new BadRequestException('Path query parameter is required');
@@ -308,21 +329,21 @@ Run:
 
 ```powershell
 cd backend
-npm run test -- chapter-scanner.service.spec.ts
+npm run test -- chapter.service.spec.ts
 ```
 
-Expected: PASS for all tests in `chapter-scanner.service.spec.ts`.
+Expected: PASS for all tests in `chapter.service.spec.ts`.
 
-- [ ] **Step 3: Commit scanner implementation**
+- [ ] **Step 3: Commit the service implementation**
 
 ```powershell
-git add backend/src/modules/chapter/chapter-scanner.service.ts
-git commit -m "feat: implement chapter image scanner service"
+git add backend/src/modules/chapter/chapter.service.ts
+git commit -m "feat: add chapter image scan service method"
 ```
 
 ---
 
-### Task 3: Add Controller Tests For GET /chapter/scan
+### Task 3: Add Failing Controller Tests For GET /chapter/scan
 
 **Files:**
 - Modify: `backend/src/modules/chapter/chapter.controller.spec.ts`
@@ -335,25 +356,30 @@ Replace `backend/src/modules/chapter/chapter.controller.spec.ts` with:
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChapterController } from './chapter.controller';
-import { ChapterScannerService } from './chapter-scanner.service';
-import { ChapterService } from './chapter.service';
+import { ChapterService, ScanImagesResult } from './chapter.service';
 
 describe('ChapterController', () => {
   let controller: ChapterController;
-  let scannerService: jest.Mocked<Pick<ChapterScannerService, 'scanImages'>>;
+  let chapterService: jest.Mocked<
+    Pick<ChapterService, 'create' | 'findAll' | 'findOne' | 'update' | 'remove' | 'scanImages'>
+  >;
 
   beforeEach(async () => {
-    scannerService = {
+    chapterService = {
+      create: jest.fn(),
+      findAll: jest.fn(),
+      findOne: jest.fn(),
+      update: jest.fn(),
+      remove: jest.fn(),
       scanImages: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ChapterController],
       providers: [
-        ChapterService,
         {
-          provide: ChapterScannerService,
-          useValue: scannerService,
+          provide: ChapterService,
+          useValue: chapterService,
         },
       ],
     }).compile();
@@ -366,28 +392,28 @@ describe('ChapterController', () => {
   });
 
   it('scans images for the query path', async () => {
-    const scanResult = {
+    const scanResult: ScanImagesResult = {
       path: 'D:/Manga/Chapter 001',
       images: [
         {
           name: '001.jpg',
           path: 'D:/Manga/Chapter 001/001.jpg',
-          extension: 'jpg' as const,
+          extension: 'jpg',
         },
       ],
     };
-    scannerService.scanImages.mockResolvedValue(scanResult);
+    chapterService.scanImages.mockResolvedValue(scanResult);
 
     await expect(controller.scan('D:/Manga/Chapter 001')).resolves.toBe(
       scanResult,
     );
-    expect(scannerService.scanImages).toHaveBeenCalledWith(
+    expect(chapterService.scanImages).toHaveBeenCalledWith(
       'D:/Manga/Chapter 001',
     );
   });
 
   it('throws BadRequestException when query path is missing', async () => {
-    scannerService.scanImages.mockRejectedValue(
+    chapterService.scanImages.mockRejectedValue(
       new BadRequestException('Path query parameter is required'),
     );
 
@@ -396,7 +422,7 @@ describe('ChapterController', () => {
 });
 ```
 
-- [ ] **Step 2: Run controller test and verify it fails**
+- [ ] **Step 2: Run controller test and verify it fails before implementation**
 
 Run:
 
@@ -405,9 +431,9 @@ cd backend
 npm run test -- chapter.controller.spec.ts
 ```
 
-Expected: FAIL because `ChapterController` does not inject `ChapterScannerService` and does not have `scan()`.
+Expected: FAIL because `ChapterController` does not have `scan()`.
 
-- [ ] **Step 3: Commit failing controller tests**
+- [ ] **Step 3: Commit the failing controller tests**
 
 ```powershell
 git add backend/src/modules/chapter/chapter.controller.spec.ts
@@ -416,31 +442,20 @@ git commit -m "test: add MR07 chapter scan controller expectations"
 
 ---
 
-### Task 4: Implement Controller Endpoint And Module Provider
+### Task 4: Implement GET /chapter/scan In ChapterController
 
 **Files:**
 - Modify: `backend/src/modules/chapter/chapter.controller.ts`
-- Modify: `backend/src/modules/chapter/chapter.module.ts`
 - Test: `backend/src/modules/chapter/chapter.controller.spec.ts`
-- Test: `backend/src/modules/chapter/chapter-scanner.service.spec.ts`
+- Test: `backend/src/modules/chapter/chapter.service.spec.ts`
 
-- [ ] **Step 1: Update the controller constructor and imports**
+- [ ] **Step 1: Update the controller imports**
 
 In `backend/src/modules/chapter/chapter.controller.ts`, replace the imports with:
 
 ```ts
-import { Controller, Get, Post, Patch, Param, Delete, Query } from '@nestjs/common';
-import { ChapterScannerService } from './chapter-scanner.service';
+import { Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ChapterService } from './chapter.service';
-```
-
-Replace the constructor with:
-
-```ts
-  constructor(
-    private readonly chapterService: ChapterService,
-    private readonly chapterScannerService: ChapterScannerService,
-  ) {}
 ```
 
 - [ ] **Step 2: Add the scan endpoint before `@Get(':id')`**
@@ -450,42 +465,25 @@ Add this method in `ChapterController` after `findAll()` and before `findOne()`:
 ```ts
   @Get('scan')
   scan(@Query('path') path: string) {
-    return this.chapterScannerService.scanImages(path);
+    return this.chapterService.scanImages(path);
   }
 ```
 
-- [ ] **Step 3: Register the scanner provider in the module**
-
-Replace `backend/src/modules/chapter/chapter.module.ts` with:
-
-```ts
-import { Module } from '@nestjs/common';
-import { ChapterController } from './chapter.controller';
-import { ChapterScannerService } from './chapter-scanner.service';
-import { ChapterService } from './chapter.service';
-
-@Module({
-  controllers: [ChapterController],
-  providers: [ChapterService, ChapterScannerService],
-})
-export class ChapterModule {}
-```
-
-- [ ] **Step 4: Run controller and scanner tests**
+- [ ] **Step 3: Run controller and service tests**
 
 Run:
 
 ```powershell
 cd backend
-npm run test -- chapter.controller.spec.ts chapter-scanner.service.spec.ts
+npm run test -- chapter.controller.spec.ts chapter.service.spec.ts
 ```
 
 Expected: PASS for both test files.
 
-- [ ] **Step 5: Commit endpoint implementation**
+- [ ] **Step 4: Commit endpoint implementation**
 
 ```powershell
-git add backend/src/modules/chapter/chapter.controller.ts backend/src/modules/chapter/chapter.module.ts backend/src/modules/chapter/chapter.controller.spec.ts
+git add backend/src/modules/chapter/chapter.controller.ts backend/src/modules/chapter/chapter.controller.spec.ts
 git commit -m "feat: expose chapter image scan endpoint"
 ```
 
@@ -502,7 +500,7 @@ Run:
 
 ```powershell
 cd backend
-npm run test -- chapter.controller.spec.ts chapter-scanner.service.spec.ts
+npm run test -- chapter.controller.spec.ts chapter.service.spec.ts
 ```
 
 Expected: PASS.
