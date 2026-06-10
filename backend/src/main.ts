@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,6 +12,10 @@ async function bootstrap() {
   if (!port) {
     throw new Error('PORT environment variable is not defined');
   }
+
+  app.use(helmet());
+
+  app.enableCors();
 
   await app.listen(port);
 }

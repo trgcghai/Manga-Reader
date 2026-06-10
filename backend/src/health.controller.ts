@@ -6,6 +6,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
+import { SkipThrottle } from '@nestjs/throttler';
 import { type Cache } from 'cache-manager';
 import { Connection, ConnectionStates } from 'mongoose';
 import { DataSource } from 'typeorm';
@@ -18,6 +19,7 @@ export class HealthController {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
+  @SkipThrottle()
   @Get()
   async getHealth() {
     if (!this.dataSource.isInitialized) {
