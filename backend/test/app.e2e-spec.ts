@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getConnectionToken } from '@nestjs/mongoose';
 import request from 'supertest';
@@ -25,6 +26,13 @@ describe('Health endpoint (e2e)', () => {
             readyState: 1,
           },
         },
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            set: jest.fn().mockResolvedValue(undefined),
+            get: jest.fn().mockResolvedValue('ok'),
+          },
+        },
       ],
     }).compile();
 
@@ -37,9 +45,11 @@ describe('Health endpoint (e2e)', () => {
   });
 
   it('GET /health returns ok', () => {
-    return request(app.getHttpServer())
-      .get('/health')
-      .expect(200)
-      .expect({ status: 'ok', postgres: 'connected', mongodb: 'connected' });
+    return request(app.getHttpServer()).get('/health').expect(200).expect({
+      status: 'ok',
+      postgres: 'connected',
+      mongodb: 'connected',
+      redis: 'connected',
+    });
   });
 });

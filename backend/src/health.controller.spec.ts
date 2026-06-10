@@ -2,60 +2,84 @@ import { DataSource } from 'typeorm';
 import { HealthController } from './health.controller';
 import { ServiceUnavailableException } from '@nestjs/common';
 import { Connection } from 'mongoose';
+import { Cache } from 'cache-manager';
 
 describe('HealthController', () => {
-  it('returns ok when DB is initialized', () => {
+  it('returns ok when DB is initialized', async () => {
     const dataSourceMock = {
       isInitialized: true,
-    } as DataSource;
+    } as unknown as DataSource;
 
     const mongoConnectionMock = {
       readyState: 1,
-    } as Connection;
+    } as unknown as Connection;
+
+    const cacheManagerMock = {
+      set: jest.fn().mockResolvedValue(undefined),
+      get: jest.fn().mockResolvedValue('ok'),
+    } as unknown as Cache;
 
     const controller = new HealthController(
       dataSourceMock,
       mongoConnectionMock,
+      cacheManagerMock,
     );
 
-    expect(controller.getHealth()).toEqual({
+    await expect(controller.getHealth()).resolves.toEqual({
       status: 'ok',
       postgres: 'connected',
       mongodb: 'connected',
+      redis: 'connected',
     });
   });
 
-  it('throws ServiceUnavailableException when PostgreSQL is NOT initialized', () => {
+  it('throws ServiceUnavailableException when PostgreSQL is NOT initialized', async () => {
     const dataSourceMock = {
       isInitialized: false,
-    } as DataSource;
+    } as unknown as DataSource;
 
     const mongoConnectionMock = {
       readyState: 1,
-    } as Connection;
+    } as unknown as Connection;
+
+    const cacheManagerMock = {
+      set: jest.fn().mockResolvedValue(undefined),
+      get: jest.fn().mockResolvedValue('ok'),
+    } as unknown as Cache;
 
     const controller = new HealthController(
       dataSourceMock,
       mongoConnectionMock,
+      cacheManagerMock,
     );
 
-    expect(() => controller.getHealth()).toThrow(ServiceUnavailableException);
+    await expect(controller.getHealth()).rejects.toBeInstanceOf(
+      ServiceUnavailableException,
+    );
   });
 
-  it('throws ServiceUnavailableException when MongoDB is NOT connected', () => {
+  it('throws ServiceUnavailableException when MongoDB is NOT connected', async () => {
     const dataSourceMock = {
       isInitialized: true,
-    } as DataSource;
+    } as unknown as DataSource;
 
     const mongoConnectionMock = {
       readyState: 0,
-    } as Connection;
+    } as unknown as Connection;
+
+    const cacheManagerMock = {
+      set: jest.fn().mockResolvedValue(undefined),
+      get: jest.fn().mockResolvedValue('ok'),
+    } as unknown as Cache;
 
     const controller = new HealthController(
       dataSourceMock,
       mongoConnectionMock,
+      cacheManagerMock,
     );
 
-    expect(() => controller.getHealth()).toThrow(ServiceUnavailableException);
+    await expect(controller.getHealth()).rejects.toBeInstanceOf(
+      ServiceUnavailableException,
+    );
   });
 });

@@ -3,6 +3,8 @@ import { HealthController } from './health.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CacheModule } from '@nestjs/cache-manager';
+import KeyvRedis from '@keyv/redis';
 
 @Module({
   imports: [
@@ -26,6 +28,15 @@ import { MongooseModule } from '@nestjs/mongoose';
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI')!,
       }),
+      inject: [ConfigService],
+    }),
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        return {
+          stores: [new KeyvRedis(configService.get<string>('REDIS_URL'))],
+        };
+      },
       inject: [ConfigService],
     }),
   ],
