@@ -18,16 +18,16 @@ Directories, nested images, and non-image files are ignored. Empty readable dire
 
 ## API
 
-Expose the scanner through the existing manga API:
+Expose the scanner through the existing chapter API:
 
 ```http
-GET /mangas/scan?path=<url-encoded-local-path>
+GET /chapter/scan?path=<url-encoded-local-path>
 ```
 
 Example:
 
 ```http
-GET /mangas/scan?path=D%3A%2FManga%2FChapter%20001
+GET /chapter/scan?path=D%3A%2FManga%2FChapter%20001
 ```
 
 Response:
@@ -47,16 +47,16 @@ The returned `path` is the scanned path after backend normalization. Each image 
 
 ## Architecture
 
-Add a `MangaScannerService` inside `backend/src/modules/manga/`. The service owns filesystem behavior and exposes a method like `scanImages(path: string)`.
+Add a `ChapterScannerService` inside `backend/src/modules/chapter/`. The service owns filesystem behavior and exposes a method like `scanImages(path: string)`.
 
-The existing `MangaController` gets a new `GET /mangas/scan` handler. The controller reads the `path` query parameter, calls `MangaScannerService`, and returns the DTO. The controller should stay thin so the scanner can be tested directly without HTTP.
+The existing `ChapterController` gets a new `GET /chapter/scan` handler. The controller reads the `path` query parameter, calls `ChapterScannerService`, and returns the DTO. The controller should stay thin so the scanner can be tested directly without HTTP.
 
 ## Data Flow
 
 ```text
-GET /mangas/scan?path=...
-  -> MangaController.scan()
-  -> MangaScannerService.scanImages(path)
+GET /chapter/scan?path=...
+  -> ChapterController.scan()
+  -> ChapterScannerService.scanImages(path)
   -> fs.readdir(path, { withFileTypes: true })
   -> keep direct child files only
   -> keep supported image extensions only
@@ -96,7 +96,7 @@ Error responses should use clear messages and should not expose stack traces or 
 Add fixture-based tests for the scanner service. A suitable fixture layout is:
 
 ```text
-backend/src/modules/manga/__fixtures__/scan-images/
+backend/src/modules/chapter/__fixtures__/scan-images/
   mixed/
     001.jpg
     010.png
@@ -121,7 +121,7 @@ Service tests should cover:
 
 Controller tests should cover:
 
-- `GET /mangas/scan?path=...` passes the query path to the scanner service
+- `GET /chapter/scan?path=...` passes the query path to the scanner service
 - successful scanner responses are returned unchanged
 - missing query path returns a `400 Bad Request`
 
@@ -136,4 +136,3 @@ MR07 does not:
 - create database records
 - serve image bytes
 - upload or copy user files
-
