@@ -70,9 +70,8 @@ export class ChapterService {
           extension,
         };
       })
-      .filter(
-        (image): image is { entry: Dirent; extension: ImageExtension } =>
-          SUPPORTED_IMAGE_EXTENSIONS.has(image.extension as ImageExtension),
+      .filter((image): image is { entry: Dirent; extension: ImageExtension } =>
+        SUPPORTED_IMAGE_EXTENSIONS.has(image.extension as ImageExtension),
       )
       .sort((left, right) =>
         filenameCollator.compare(left.entry.name, right.entry.name),
