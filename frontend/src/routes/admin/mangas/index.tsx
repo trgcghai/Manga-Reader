@@ -1,5 +1,12 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useMangaList } from '#/hooks/useManga'
+import type { MangaResponse } from '#/services/api/mangaApi'
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  createColumnHelper,
+} from '@tanstack/react-table'
 import {
   Table,
   TableBody,
@@ -20,8 +27,65 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from '@/components/ui/empty'
-import { formatDate } from '#/lib/dateTimeFormatter'
+} from '#/components/ui/empty'
+import { formatDate, formatDateTime } from '#/lib/dateTimeFormatter'
+
+const columnHelper = createColumnHelper<MangaResponse>()
+
+const columns = [
+  columnHelper.accessor('title', {
+    header: 'Title',
+    cell: (info) => <span className="font-medium">{info.getValue()}</span>,
+  }),
+  columnHelper.accessor('status', {
+    header: 'Status',
+    cell: (info) => (
+      <Badge variant="secondary" className="capitalize">
+        {info.getValue()}
+      </Badge>
+    ),
+  }),
+  columnHelper.accessor('authors', {
+    header: 'Authors',
+    cell: (info) => (
+      <div className="flex flex-wrap gap-1">
+        {info.getValue()?.map((a) => (
+          <Badge key={a.id} variant="outline" className="capitalize">
+            {a.name}
+          </Badge>
+        ))}
+      </div>
+    ),
+  }),
+  columnHelper.accessor('genres', {
+    header: 'Genres',
+    cell: (info) => (
+      <div className="flex flex-wrap gap-1">
+        {info.getValue()?.map((g) => (
+          <Badge key={g.id} variant="outline" className="capitalize">
+            {g.name}
+          </Badge>
+        ))}
+      </div>
+    ),
+  }),
+  columnHelper.accessor('createdAt', {
+    header: 'Created',
+    cell: (info) => (
+      <span className="text-muted-foreground">
+        {formatDateTime(info.getValue())}
+      </span>
+    ),
+  }),
+  columnHelper.accessor('updatedAt', {
+    header: 'Updated',
+    cell: (info) => (
+      <span className="text-muted-foreground">
+        {formatDateTime(info.getValue())}
+      </span>
+    ),
+  }),
+]
 
 export const Route = createFileRoute('/admin/mangas/')({
   component: MangaListPage,
@@ -30,12 +94,16 @@ export const Route = createFileRoute('/admin/mangas/')({
 function MangaListPage() {
   const { data, isLoading, isError } = useMangaList(1, 20)
 
+  const table = useReactTable({
+    data: data?.data ?? [],
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  })
+
   if (isLoading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold">
-          Mangas
-        </h1>
+        <h1 className="text-2xl font-bold">Mangas</h1>
         <div className="mt-6 flex flex-col gap-3">
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-14 w-full" />
@@ -58,9 +126,7 @@ function MangaListPage() {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
-          Mangas
-        </h1>
+        <h1 className="text-2xl font-bold">Mangas</h1>
         <Button asChild>
           <Link to="/admin/mangas/new" className="no-underline">
             <Plus className="h-4 w-4" />
@@ -92,42 +158,41 @@ function MangaListPage() {
       )}
 
       {data && data.data.length > 0 && (
-        <>
-          <div className="mt-6">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Authors</TableHead>
-                  <TableHead>Genres</TableHead>
-                  <TableHead>Created</TableHead>
+        <div className="mt-6">
+          <Table className="border">
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className="text-base font-semibold text-muted-foreground"
+                    >
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                    </TableHead>
+                  ))}
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.data.map((manga) => (
-                  <TableRow key={manga.id}>
-                    <TableCell className="font-medium">{manga.title}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="capitalize">
-                        {manga.status}
-                      </Badge>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {manga.authors?.map((a) => a.name).join(', ')}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {manga.genres?.map((g) => g.name).join(', ')}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {formatDate(manga.createdAt)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       )}
     </div>
   )

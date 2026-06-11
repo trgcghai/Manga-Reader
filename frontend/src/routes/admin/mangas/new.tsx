@@ -95,7 +95,7 @@ function CreateMangaPage() {
   }
 
   return (
-    <div>
+    <div className="max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold">Add Manga</h1>
 
       <form
@@ -349,7 +349,15 @@ function CreateMangaPage() {
             </UiField>
           )}
 
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => form.reset()}
+            >
+              <X className="size-4" />
+              Reset
+            </Button>
             <form.Subscribe
               selector={(state) => state.isSubmitting}
               children={(isSubmitting) => (
@@ -368,14 +376,6 @@ function CreateMangaPage() {
                 </Button>
               )}
             />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => form.reset()}
-            >
-              <X className="size-4" />
-              Reset
-            </Button>
           </div>
         </FieldGroup>
       </form>
