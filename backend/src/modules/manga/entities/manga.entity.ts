@@ -1,4 +1,4 @@
-import { MangaStatus } from 'src/common/enum';
+import { MangaStatus } from 'src/common/constants/manga.constant';
 import { Chapter } from 'src/modules/chapter/entities/chapter.entity';
 import { Author } from 'src/modules/manga/entities/author.entity';
 import { Genre } from 'src/modules/manga/entities/genre.entity';

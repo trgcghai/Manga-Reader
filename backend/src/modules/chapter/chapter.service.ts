@@ -2,32 +2,12 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Dirent } from 'fs';
 import { readdir, stat } from 'fs/promises';
 import { extname, resolve } from 'path';
-
-export type ImageExtension = 'jpg' | 'jpeg' | 'png' | 'webp' | 'gif';
-
-export interface ScannedImage {
-  name: string;
-  path: string;
-  extension: ImageExtension;
-}
-
-export interface ScanImagesResult {
-  path: string;
-  images: ScannedImage[];
-}
-
-const SUPPORTED_IMAGE_EXTENSIONS = new Set<ImageExtension>([
-  'jpg',
-  'jpeg',
-  'png',
-  'webp',
-  'gif',
-]);
-
-const filenameCollator = new Intl.Collator(undefined, {
-  numeric: true,
-  sensitivity: 'base',
-});
+import {
+  filenameCollator,
+  ImageExtension,
+  ScanImagesResult,
+  SUPPORTED_IMAGE_EXTENSIONS,
+} from 'src/common/constants/chapter.constant';
 
 @Injectable()
 export class ChapterService {
