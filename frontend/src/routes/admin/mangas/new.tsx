@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createManga  } from '#/lib/api/mangas'
-import type {CreateMangaPayload} from '#/lib/api/mangas';
+import { createManga } from '#/lib/api/mangas'
+import type { CreateMangaPayload } from '#/lib/api/mangas'
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import { Button } from '#/components/ui/button'
@@ -68,7 +68,8 @@ function CreateMangaPage() {
       title: title.trim(),
       status,
       description: description.trim() || undefined,
-      alternativeTitles: alternativeTitles.length > 0 ? alternativeTitles : undefined,
+      alternativeTitles:
+        alternativeTitles.length > 0 ? alternativeTitles : undefined,
       coverPath: coverPath.trim() || undefined,
       authors,
       genres,
@@ -105,7 +106,9 @@ function CreateMangaPage() {
               placeholder="One Piece"
               aria-invalid={!!errors.title || undefined}
             />
-            {errors.title && <FieldError errors={[{ message: errors.title }]} />}
+            {errors.title && (
+              <FieldError errors={[{ message: errors.title }]} />
+            )}
           </Field>
 
           <Field>
@@ -144,7 +147,12 @@ function CreateMangaPage() {
                 onKeyDown={(e) =>
                   e.key === 'Enter' &&
                   (e.preventDefault(),
-                  addItem(alternativeTitles, setAlternativeTitles, altInput, setAltInput))
+                  addItem(
+                    alternativeTitles,
+                    setAlternativeTitles,
+                    altInput,
+                    setAltInput,
+                  ))
                 }
                 placeholder="Type and press Enter"
               />
@@ -152,7 +160,12 @@ function CreateMangaPage() {
                 type="button"
                 variant="secondary"
                 onClick={() =>
-                  addItem(alternativeTitles, setAlternativeTitles, altInput, setAltInput)
+                  addItem(
+                    alternativeTitles,
+                    setAlternativeTitles,
+                    altInput,
+                    setAltInput,
+                  )
                 }
               >
                 Add
@@ -166,7 +179,9 @@ function CreateMangaPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        setAlternativeTitles(alternativeTitles.filter((_, j) => j !== i))
+                        setAlternativeTitles(
+                          alternativeTitles.filter((_, j) => j !== i),
+                        )
                       }
                     >
                       <X className="size-3" />
@@ -211,7 +226,9 @@ function CreateMangaPage() {
                 Add
               </Button>
             </div>
-            {errors.authors && <FieldError errors={[{ message: errors.authors }]} />}
+            {errors.authors && (
+              <FieldError errors={[{ message: errors.authors }]} />
+            )}
             {authors.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {authors.map((a, i) => (
@@ -219,7 +236,9 @@ function CreateMangaPage() {
                     {a}
                     <button
                       type="button"
-                      onClick={() => setAuthors(authors.filter((_, j) => j !== i))}
+                      onClick={() =>
+                        setAuthors(authors.filter((_, j) => j !== i))
+                      }
                     >
                       <X className="size-3" />
                     </button>
@@ -253,7 +272,9 @@ function CreateMangaPage() {
                 Add
               </Button>
             </div>
-            {errors.genres && <FieldError errors={[{ message: errors.genres }]} />}
+            {errors.genres && (
+              <FieldError errors={[{ message: errors.genres }]} />
+            )}
             {genres.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {genres.map((g, i) => (
@@ -261,7 +282,9 @@ function CreateMangaPage() {
                     {g}
                     <button
                       type="button"
-                      onClick={() => setGenres(genres.filter((_, j) => j !== i))}
+                      onClick={() =>
+                        setGenres(genres.filter((_, j) => j !== i))
+                      }
                     >
                       <X className="size-3" />
                     </button>

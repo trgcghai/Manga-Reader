@@ -13,10 +13,7 @@ import {
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Skeleton } from '#/components/ui/skeleton'
-import {
-  Card,
-  CardContent,
-} from '#/components/ui/card'
+import { Card, CardContent } from '#/components/ui/card'
 
 export const Route = createFileRoute('/admin/mangas/')({
   component: MangaListPage,
@@ -34,7 +31,9 @@ function MangaListPage() {
   if (isLoading) {
     return (
       <div>
-        <h1 className="display-title text-2xl font-bold text-(--sea-ink)">Mangas</h1>
+        <h1 className="display-title text-2xl font-bold text-(--sea-ink)">
+          Mangas
+        </h1>
         <div className="mt-6 flex flex-col gap-3">
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-14 w-full" />
