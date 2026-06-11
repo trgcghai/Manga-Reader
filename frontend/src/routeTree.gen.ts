@@ -9,14 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as Admin_rootRouteImport } from './routes/admin/__root'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminMangasIndexRouteImport } from './routes/admin/mangas/index'
 import { Route as AdminMangasNewRouteImport } from './routes/admin/mangas/new'
 
-const Admin_rootRoute = Admin_rootRouteImport.update({
-  id: '/admin/__root',
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,24 +26,24 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/admin/',
-  path: '/admin/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminMangasIndexRoute = AdminMangasIndexRouteImport.update({
-  id: '/admin/mangas/',
-  path: '/admin/mangas/',
-  getParentRoute: () => rootRouteImport,
+  id: '/mangas/',
+  path: '/mangas/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminMangasNewRoute = AdminMangasNewRouteImport.update({
-  id: '/admin/mangas/new',
-  path: '/admin/mangas/new',
-  getParentRoute: () => rootRouteImport,
+  id: '/mangas/new',
+  path: '/mangas/new',
+  getParentRoute: () => AdminRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof Admin_rootRoute
+  '/admin': typeof AdminRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/admin/mangas/new': typeof AdminMangasNewRoute
   '/admin/mangas/': typeof AdminMangasIndexRoute
@@ -56,7 +57,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin/__root': typeof Admin_rootRoute
+  '/admin': typeof AdminRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/admin/mangas/new': typeof AdminMangasNewRoute
   '/admin/mangas/': typeof AdminMangasIndexRoute
@@ -69,7 +70,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/admin/__root'
+    | '/admin'
     | '/admin/'
     | '/admin/mangas/new'
     | '/admin/mangas/'
@@ -77,19 +78,16 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  Admin_rootRoute: typeof Admin_rootRoute
-  AdminIndexRoute: typeof AdminIndexRoute
-  AdminMangasNewRoute: typeof AdminMangasNewRoute
-  AdminMangasIndexRoute: typeof AdminMangasIndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/admin/__root': {
-      id: '/admin/__root'
+    '/admin': {
+      id: '/admin'
       path: '/admin'
       fullPath: '/admin'
-      preLoaderRoute: typeof Admin_rootRouteImport
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -101,34 +99,45 @@ declare module '@tanstack/react-router' {
     }
     '/admin/': {
       id: '/admin/'
-      path: '/admin'
+      path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/mangas/': {
       id: '/admin/mangas/'
-      path: '/admin/mangas'
+      path: '/mangas'
       fullPath: '/admin/mangas/'
       preLoaderRoute: typeof AdminMangasIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/mangas/new': {
       id: '/admin/mangas/new'
-      path: '/admin/mangas/new'
+      path: '/mangas/new'
       fullPath: '/admin/mangas/new'
       preLoaderRoute: typeof AdminMangasNewRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
   }
 }
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  Admin_rootRoute: Admin_rootRoute,
+interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminMangasNewRoute: typeof AdminMangasNewRoute
+  AdminMangasIndexRoute: typeof AdminMangasIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminMangasNewRoute: AdminMangasNewRoute,
   AdminMangasIndexRoute: AdminMangasIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

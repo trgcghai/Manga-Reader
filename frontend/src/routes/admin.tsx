@@ -1,5 +1,5 @@
 import {
-  createRootRoute,
+  createFileRoute,
   Link,
   Outlet,
   useLocation,
@@ -7,7 +7,7 @@ import {
 
 const navItems = [{ to: '/admin/mangas', label: 'Mangas' }]
 
-export const Route = createRootRoute({
+export const Route = createFileRoute('/admin')({
   component: AdminLayout,
 })
 
