@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useCreateManga } from '#/hooks/useManga'
+import type { CreateMangaPayload } from '#/services/api/mangaApi'
 import { useState } from 'react'
-import { X } from 'lucide-react'
+import { Loader2, Plus, X } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Textarea } from '#/components/ui/textarea'
@@ -14,13 +15,25 @@ import {
   SelectValue,
 } from '#/components/ui/select'
 import {
-  Field,
+  Field as UiField,
   FieldGroup,
   FieldLabel,
   FieldDescription,
-  FieldError,
+  FieldError as UiFieldError,
 } from '#/components/ui/field'
 import { Badge } from '#/components/ui/badge'
+import { useForm } from '@tanstack/react-form'
+import { z } from 'zod'
+
+const mangaSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  status: z.string(),
+  description: z.string(),
+  alternativeTitles: z.array(z.string()),
+  coverPath: z.string(),
+  authors: z.array(z.string()).min(1, 'At least one author required'),
+  genres: z.array(z.string()).min(1, 'At least one genre required'),
+})
 
 export const Route = createFileRoute('/admin/mangas/new')({
   component: CreateMangaPage,
@@ -28,286 +41,340 @@ export const Route = createFileRoute('/admin/mangas/new')({
 
 function CreateMangaPage() {
   const navigate = useNavigate()
-
-  const [title, setTitle] = useState('')
-  const [status, setStatus] = useState('ongoing')
-  const [description, setDescription] = useState('')
-  const [alternativeTitles, setAlternativeTitles] = useState<string[]>([])
-  const [altInput, setAltInput] = useState('')
-  const [coverPath, setCoverPath] = useState('')
-  const [authors, setAuthors] = useState<string[]>([])
-  const [authorInput, setAuthorInput] = useState('')
-  const [genres, setGenres] = useState<string[]>([])
-  const [genreInput, setGenreInput] = useState('')
-  const [errors, setErrors] = useState<Record<string, string>>({})
-
   const mutation = useCreateManga()
 
-  function validate(): boolean {
-    const errs: Record<string, string> = {}
-    if (!title.trim()) errs.title = 'Title is required'
-    if (authors.length === 0) errs.authors = 'At least one author required'
-    if (genres.length === 0) errs.genres = 'At least one genre required'
-    setErrors(errs)
-    return Object.keys(errs).length === 0
-  }
+  const [altInput, setAltInput] = useState('')
+  const [authorInput, setAuthorInput] = useState('')
+  const [genreInput, setGenreInput] = useState('')
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!validate()) return
-    mutation.mutate(
-      {
-        title: title.trim(),
-        status,
-        description: description.trim() || undefined,
+  const form = useForm({
+    validators: {
+      onSubmit: mangaSchema,
+    },
+    defaultValues: {
+      title: '',
+      status: 'ongoing',
+      description: '',
+      alternativeTitles: [] as string[],
+      coverPath: '',
+      authors: [] as string[],
+      genres: [] as string[],
+    },
+    onSubmit: async ({ value }) => {
+      const payload: CreateMangaPayload = {
+        title: value.title,
+        status: value.status,
+        description: value.description || undefined,
         alternativeTitles:
-          alternativeTitles.length > 0 ? alternativeTitles : undefined,
-        coverPath: coverPath.trim() || undefined,
-        authors,
-        genres,
-      },
-      {
+          value.alternativeTitles.length > 0
+            ? value.alternativeTitles
+            : undefined,
+        coverPath: value.coverPath || undefined,
+        authors: value.authors,
+        genres: value.genres,
+      }
+      mutation.mutate(payload, {
         onSuccess: () => navigate({ to: '/admin/mangas' }),
-      },
-    )
-  }
+      })
+    },
+  })
 
-  function addItem(
-    list: string[],
-    setter: (v: string[]) => void,
+  function addTag(
+    field: {
+      state: { value: string[] }
+      handleChange: (v: string[]) => void
+    },
     input: string,
     setInput: (v: string) => void,
   ) {
     const trimmed = input.trim()
-    if (trimmed && !list.includes(trimmed)) {
-      setter([...list, trimmed])
+    if (trimmed && !field.state.value.includes(trimmed)) {
+      field.handleChange([...field.state.value, trimmed])
     }
     setInput('')
   }
 
   return (
-    <div className="">
-      <h1 className="text-2xl font-bold">
-        Add Manga
-      </h1>
+    <div>
+      <h1 className="text-2xl font-bold">Add Manga</h1>
 
-      <form onSubmit={handleSubmit} className="mt-6">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          form.handleSubmit()
+        }}
+        className="mt-6"
+      >
         <FieldGroup>
-          <Field data-invalid={errors.title ? true : undefined}>
-            <FieldLabel htmlFor="title">Title *</FieldLabel>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="One Piece"
-              aria-invalid={!!errors.title || undefined}
-            />
-            {errors.title && (
-              <FieldError errors={[{ message: errors.title }]} />
+          <form.Field name="title">
+            {(field) => (
+              <UiField data-invalid={field.state.meta.errors.length > 0}>
+                <FieldLabel htmlFor="title" required>
+                  Title
+                </FieldLabel>
+                <Input
+                  id="title"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="One Piece"
+                  aria-invalid={field.state.meta.errors.length > 0 || undefined}
+                />
+                {field.state.meta.errors.length > 0 && (
+                  <UiFieldError errors={field.state.meta.errors} />
+                )}
+              </UiField>
             )}
-          </Field>
+          </form.Field>
 
-          <Field>
-            <FieldLabel htmlFor="status">Status</FieldLabel>
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger id="status">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="ongoing">Ongoing</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="paused">Paused</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </Field>
+          <form.Field name="status">
+            {(field) => (
+              <UiField>
+                <FieldLabel htmlFor="status">Status</FieldLabel>
+                <Select
+                  value={field.state.value}
+                  onValueChange={(v) => field.handleChange(v)}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="ongoing">Ongoing</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="paused">Paused</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </UiField>
+            )}
+          </form.Field>
 
-          <Field>
-            <FieldLabel htmlFor="description">Description</FieldLabel>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="A story about..."
-              rows={3}
-            />
-          </Field>
+          <form.Field name="description">
+            {(field) => (
+              <UiField>
+                <FieldLabel htmlFor="description">Description</FieldLabel>
+                <Textarea
+                  id="description"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="A story about..."
+                  rows={3}
+                />
+              </UiField>
+            )}
+          </form.Field>
 
-          <Field>
-            <FieldLabel>Alternative Titles</FieldLabel>
-            <div className="flex gap-2">
-              <Input
-                value={altInput}
-                onChange={(e) => setAltInput(e.target.value)}
-                onKeyDown={(e) =>
-                  e.key === 'Enter' &&
-                  (e.preventDefault(),
-                  addItem(
-                    alternativeTitles,
-                    setAlternativeTitles,
-                    altInput,
-                    setAltInput,
-                  ))
-                }
-                placeholder="Type and press Enter"
-              />
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() =>
-                  addItem(
-                    alternativeTitles,
-                    setAlternativeTitles,
-                    altInput,
-                    setAltInput,
-                  )
-                }
-              >
-                Add
-              </Button>
-            </div>
-            {alternativeTitles.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {alternativeTitles.map((t, i) => (
-                  <Badge key={i} variant="secondary" className="gap-1">
-                    {t}
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setAlternativeTitles(
-                          alternativeTitles.filter((_, j) => j !== i),
-                        )
+          <form.Field name="alternativeTitles">
+            {(field) => {
+              const titles = field.state.value
+              return (
+                <UiField>
+                  <FieldLabel>Alternative Titles</FieldLabel>
+                  <div className="flex gap-2">
+                    <Input
+                      value={altInput}
+                      onChange={(e) => setAltInput(e.target.value)}
+                      onKeyDown={(e) =>
+                        e.key === 'Enter' &&
+                        (e.preventDefault(),
+                        addTag(field, altInput, setAltInput))
                       }
-                    >
-                      <X className="size-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </Field>
-
-          <Field>
-            <FieldLabel htmlFor="coverPath">Cover Path</FieldLabel>
-            <Input
-              id="coverPath"
-              value={coverPath}
-              onChange={(e) => setCoverPath(e.target.value)}
-              placeholder="/covers/one_piece.jpg"
-            />
-          </Field>
-
-          <Field data-invalid={errors.authors ? true : undefined}>
-            <FieldLabel>Authors *</FieldLabel>
-            <div className="flex gap-2">
-              <Input
-                value={authorInput}
-                onChange={(e) => setAuthorInput(e.target.value)}
-                onKeyDown={(e) =>
-                  e.key === 'Enter' &&
-                  (e.preventDefault(),
-                  addItem(authors, setAuthors, authorInput, setAuthorInput))
-                }
-                placeholder="Eiichiro Oda"
-                aria-invalid={!!errors.authors || undefined}
-              />
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() =>
-                  addItem(authors, setAuthors, authorInput, setAuthorInput)
-                }
-              >
-                Add
-              </Button>
-            </div>
-            {errors.authors && (
-              <FieldError errors={[{ message: errors.authors }]} />
-            )}
-            {authors.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {authors.map((a, i) => (
-                  <Badge key={i} variant="secondary" className="gap-1">
-                    {a}
-                    <button
+                      placeholder="Type and press Enter"
+                    />
+                    <Button
                       type="button"
-                      onClick={() =>
-                        setAuthors(authors.filter((_, j) => j !== i))
-                      }
+                      variant="secondary"
+                      onClick={() => addTag(field, altInput, setAltInput)}
                     >
-                      <X className="size-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </Field>
+                      <Plus className="size-3" />
+                      Add
+                    </Button>
+                  </div>
+                  {titles.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {titles.map((t, i) => (
+                        <Badge key={i} variant="secondary" className="gap-1">
+                          {t}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              field.handleChange(
+                                titles.filter((_, j) => j !== i),
+                              )
+                            }
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </UiField>
+              )
+            }}
+          </form.Field>
 
-          <Field data-invalid={errors.genres ? true : undefined}>
-            <FieldLabel>Genres *</FieldLabel>
-            <div className="flex gap-2">
-              <Input
-                value={genreInput}
-                onChange={(e) => setGenreInput(e.target.value)}
-                onKeyDown={(e) =>
-                  e.key === 'Enter' &&
-                  (e.preventDefault(),
-                  addItem(genres, setGenres, genreInput, setGenreInput))
-                }
-                placeholder="Action"
-                aria-invalid={!!errors.genres || undefined}
-              />
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() =>
-                  addItem(genres, setGenres, genreInput, setGenreInput)
-                }
-              >
-                Add
-              </Button>
-            </div>
-            {errors.genres && (
-              <FieldError errors={[{ message: errors.genres }]} />
+          <form.Field name="coverPath">
+            {(field) => (
+              <UiField>
+                <FieldLabel htmlFor="coverPath">Cover Path</FieldLabel>
+                <Input
+                  id="coverPath"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="/covers/one_piece.jpg"
+                />
+              </UiField>
             )}
-            {genres.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {genres.map((g, i) => (
-                  <Badge key={i} variant="secondary" className="gap-1">
-                    {g}
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setGenres(genres.filter((_, j) => j !== i))
+          </form.Field>
+
+          <form.Field name="authors">
+            {(field) => {
+              const authors = field.state.value
+              return (
+                <UiField data-invalid={field.state.meta.errors.length > 0}>
+                  <FieldLabel required>Authors</FieldLabel>
+                  <div className="flex gap-2">
+                    <Input
+                      value={authorInput}
+                      onChange={(e) => setAuthorInput(e.target.value)}
+                      onKeyDown={(e) =>
+                        e.key === 'Enter' &&
+                        (e.preventDefault(),
+                        addTag(field, authorInput, setAuthorInput))
                       }
+                      placeholder="Eiichiro Oda"
+                      aria-invalid={
+                        field.state.meta.errors.length > 0 || undefined
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => addTag(field, authorInput, setAuthorInput)}
                     >
-                      <X className="size-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </Field>
+                      <Plus className="size-3" />
+                      Add
+                    </Button>
+                  </div>
+                  {field.state.meta.errors.length > 0 && (
+                    <UiFieldError errors={field.state.meta.errors} />
+                  )}
+                  {authors.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {authors.map((a, i) => (
+                        <Badge key={i} variant="secondary" className="gap-1">
+                          {a}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              field.handleChange(
+                                authors.filter((_, j) => j !== i),
+                              )
+                            }
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </UiField>
+              )
+            }}
+          </form.Field>
+
+          <form.Field name="genres">
+            {(field) => {
+              const genres = field.state.value
+              return (
+                <UiField data-invalid={field.state.meta.errors.length > 0}>
+                  <FieldLabel required>Genres</FieldLabel>
+                  <div className="flex gap-2">
+                    <Input
+                      value={genreInput}
+                      onChange={(e) => setGenreInput(e.target.value)}
+                      onKeyDown={(e) =>
+                        e.key === 'Enter' &&
+                        (e.preventDefault(),
+                        addTag(field, genreInput, setGenreInput))
+                      }
+                      placeholder="Action"
+                      aria-invalid={
+                        field.state.meta.errors.length > 0 || undefined
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => addTag(field, genreInput, setGenreInput)}
+                    >
+                      <Plus className="size-3" />
+                      Add
+                    </Button>
+                  </div>
+                  {field.state.meta.errors.length > 0 && (
+                    <UiFieldError errors={field.state.meta.errors} />
+                  )}
+                  {genres.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {genres.map((g, i) => (
+                        <Badge key={i} variant="secondary" className="gap-1">
+                          {g}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              field.handleChange(
+                                genres.filter((_, j) => j !== i),
+                              )
+                            }
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </UiField>
+              )
+            }}
+          </form.Field>
 
           {mutation.isError && (
-            <Field data-invalid>
+            <UiField data-invalid>
               <FieldDescription className="text-destructive">
                 {mutation.error.message || 'Failed to create manga'}
               </FieldDescription>
-            </Field>
+            </UiField>
           )}
 
           <div className="flex items-center gap-3 pt-2">
-            <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending ? 'Saving...' : 'Create Manga'}
-            </Button>
+            <form.Subscribe
+              selector={(state) => state.isSubmitting}
+              children={(isSubmitting) => (
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="size-4" />
+                      Create Manga
+                    </>
+                  )}
+                </Button>
+              )}
+            />
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate({ to: '/admin/mangas' })}
+              onClick={() => form.reset()}
             >
-              Cancel
+              <X className="size-4" />
+              Reset
             </Button>
           </div>
         </FieldGroup>
