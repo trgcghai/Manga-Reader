@@ -1,7 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createManga } from '#/lib/api/mangas'
-import type { CreateMangaPayload } from '#/lib/api/mangas'
+import { useCreateManga } from '#/hooks/useManga'
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import { Button } from '#/components/ui/button'
@@ -30,7 +28,6 @@ export const Route = createFileRoute('/admin/mangas/new')({
 
 function CreateMangaPage() {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
 
   const [title, setTitle] = useState('')
   const [status, setStatus] = useState('ongoing')
@@ -44,13 +41,7 @@ function CreateMangaPage() {
   const [genreInput, setGenreInput] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const mutation = useMutation({
-    mutationFn: (data: CreateMangaPayload) => createManga(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['mangas'] })
-      navigate({ to: '/admin/mangas' })
-    },
-  })
+  const mutation = useCreateManga()
 
   function validate(): boolean {
     const errs: Record<string, string> = {}
@@ -64,16 +55,21 @@ function CreateMangaPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!validate()) return
-    mutation.mutate({
-      title: title.trim(),
-      status,
-      description: description.trim() || undefined,
-      alternativeTitles:
-        alternativeTitles.length > 0 ? alternativeTitles : undefined,
-      coverPath: coverPath.trim() || undefined,
-      authors,
-      genres,
-    })
+    mutation.mutate(
+      {
+        title: title.trim(),
+        status,
+        description: description.trim() || undefined,
+        alternativeTitles:
+          alternativeTitles.length > 0 ? alternativeTitles : undefined,
+        coverPath: coverPath.trim() || undefined,
+        authors,
+        genres,
+      },
+      {
+        onSuccess: () => navigate({ to: '/admin/mangas' }),
+      },
+    )
   }
 
   function addItem(

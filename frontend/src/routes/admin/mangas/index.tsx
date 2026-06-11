@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { fetchMangas } from '#/lib/api/mangas'
+import { useMangaList } from '#/hooks/useManga'
 import { useState } from 'react'
 import {
   Table,
@@ -23,10 +22,7 @@ function MangaListPage() {
   const [page, setPage] = useState(1)
   const limit = 20
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['mangas', page],
-    queryFn: () => fetchMangas(page, limit),
-  })
+  const { data, isLoading, isError } = useMangaList(page, limit)
 
   if (isLoading) {
     return (

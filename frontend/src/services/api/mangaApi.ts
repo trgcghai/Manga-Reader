@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+import axiosInstance from '#/services/api/api'
 
 export interface MangaResponse {
   id: number
@@ -28,26 +28,24 @@ export interface CreateMangaPayload {
   genres?: string[]
 }
 
-export async function fetchMangas(
+export async function getAllMangas(
   page: number,
   limit: number,
 ): Promise<PaginatedResponse<MangaResponse>> {
-  const res = await fetch(`${BASE_URL}/mangas?page=${page}&limit=${limit}`)
-  if (!res.ok) throw new Error('Failed to fetch mangas')
-  return res.json()
+  const res = await axiosInstance.get<PaginatedResponse<MangaResponse>>(
+    '/mangas',
+    {
+      params: { page, limit },
+    },
+  )
+
+  return res.data
 }
 
 export async function createManga(
   data: CreateMangaPayload,
 ): Promise<MangaResponse> {
-  const res = await fetch(`${BASE_URL}/mangas`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.message || 'Failed to create manga')
-  }
-  return res.json()
+  const res = await axiosInstance.post<MangaResponse>(`/mangas`, data)
+
+  return res.data
 }
