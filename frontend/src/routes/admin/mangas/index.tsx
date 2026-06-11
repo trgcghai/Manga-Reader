@@ -33,7 +33,7 @@ function MangaListPage() {
   if (isLoading) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-(--sea-ink)">
+        <h1 className="text-2xl font-bold">
           Mangas
         </h1>
         <div className="mt-6 flex flex-col gap-3">
@@ -58,7 +58,7 @@ function MangaListPage() {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-(--sea-ink)">
+        <h1 className="text-2xl font-bold">
           Mangas
         </h1>
         <Button asChild>
