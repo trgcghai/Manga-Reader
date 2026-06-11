@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { MangaService } from './manga.service';
-import { CreateMangaDto } from 'src/modules/manga/dto/create-manga.dto';
+import { CreateMangaDto } from 'src/modules/manga/dto/manga.dto';
 
 @Controller('mangas')
 export class MangaController {
@@ -13,12 +13,10 @@ export class MangaController {
 
   @Get()
   findAll(
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20',
   ) {
-    const pageNum = page ? parseInt(page, 10) : undefined;
-    const limitNum = limit ? parseInt(limit, 10) : undefined;
-    return this.mangaService.findAll(pageNum, limitNum);
+    return this.mangaService.findAll(parseInt(page), parseInt(limit));
   }
 
   @Get(':id')

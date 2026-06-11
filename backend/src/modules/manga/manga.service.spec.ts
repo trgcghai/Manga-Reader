@@ -3,18 +3,15 @@ import { MangaService } from './manga.service';
 import { NotFoundException } from '@nestjs/common';
 import { MangaRepository } from 'src/modules/manga/manga.repository';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { Author } from 'src/modules/manga/entities/author.entity';
 import { Genre } from 'src/modules/manga/entities/genre.entity';
-import { CreateMangaDto } from 'src/modules/manga/dto/create-manga.dto';
+import { CreateMangaDto } from 'src/modules/manga/dto/manga.dto';
 import { MangaStatus } from 'src/common/constants/manga.constant';
-import { Repository } from 'typeorm';
+import { GenreRepository } from 'src/modules/manga/genre.repository';
+import { AuthorRepository } from 'src/modules/manga/author.repository';
 
 describe('MangaService', () => {
   let service: MangaService;
-  let repo: jest.Mocked<MangaRepository>;
-  let authorRepo: jest.Mocked<Repository<Author>>;
-  let genreRepo: jest.Mocked<Repository<Genre>>;
 
   const mockMangaRepository = {
     findAll: jest.fn(),
@@ -24,15 +21,13 @@ describe('MangaService', () => {
   };
 
   const mockAuthorRepo = {
-    findOne: jest.fn(),
+    findOneByName: jest.fn(),
     create: jest.fn(),
-    save: jest.fn(),
   };
 
   const mockGenreRepo = {
-    findOne: jest.fn(),
+    findOneByName: jest.fn(),
     create: jest.fn(),
-    save: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -40,15 +35,12 @@ describe('MangaService', () => {
       providers: [
         MangaService,
         { provide: MangaRepository, useValue: mockMangaRepository },
-        { provide: getRepositoryToken(Author), useValue: mockAuthorRepo },
-        { provide: getRepositoryToken(Genre), useValue: mockGenreRepo },
+        { provide: AuthorRepository, useValue: mockAuthorRepo },
+        { provide: GenreRepository, useValue: mockGenreRepo },
       ],
     }).compile();
 
     service = module.get(MangaService);
-    repo = module.get(MangaRepository);
-    authorRepo = module.get(getRepositoryToken(Author));
-    genreRepo = module.get(getRepositoryToken(Genre));
   });
 
   afterEach(() => {
@@ -60,29 +52,26 @@ describe('MangaService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all mangas without pagination', async () => {
-      repo.findAll.mockResolvedValue([{ id: 1, title: 'Naruto' }] as Manga[]);
-
-      const result = await service.findAll();
-
-      expect(result).toHaveLength(1);
-      expect(repo.findAll).toHaveBeenCalled();
-    });
-
     it('should return paginated mangas when page and limit provided', async () => {
-      const paginatedResult = { data: [{ id: 1, title: 'Naruto' } as Manga], total: 1 };
-      repo.findAllPaginated.mockResolvedValue(paginatedResult);
+      const paginatedResult = {
+        data: [{ id: 1, title: 'Naruto' } as Manga],
+        total: 1,
+      };
+      mockMangaRepository.findAll.mockResolvedValue(paginatedResult);
 
       const result = await service.findAll(1, 20);
 
       expect(result).toEqual(paginatedResult);
-      expect(repo.findAllPaginated).toHaveBeenCalledWith(1, 20);
+      expect(mockMangaRepository.findAll).toHaveBeenCalledWith(1, 20);
     });
   });
 
   describe('findOne', () => {
     it('should return manga when found', async () => {
-      repo.findOneById.mockResolvedValue({ id: 1, title: 'Naruto' } as Manga);
+      mockMangaRepository.findOneById.mockResolvedValue({
+        id: 1,
+        title: 'Naruto',
+      });
 
       const result = await service.findOne(1);
 
@@ -90,7 +79,7 @@ describe('MangaService', () => {
     });
 
     it('should throw NotFoundException when manga not found', async () => {
-      repo.findOneById.mockResolvedValue(null);
+      mockMangaRepository.findOneById.mockResolvedValue(null);
 
       await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
     });
@@ -107,16 +96,18 @@ describe('MangaService', () => {
 
       const author = { id: 1, name: 'Kentaro Miura' } as Author;
       const genre = { id: 1, name: 'Fantasy' } as Genre;
-      const savedManga = { id: 1, title: 'Berserk', authors: [author], genres: [genre] } as Manga;
+      const savedManga = {
+        id: 1,
+        title: 'Berserk',
+        authors: [author],
+        genres: [genre],
+      } as Manga;
 
-      mockAuthorRepo.findOne.mockResolvedValue(null);
-      mockAuthorRepo.create.mockReturnValue(author);
-      mockAuthorRepo.save.mockResolvedValue(author);
-      mockGenreRepo.findOne.mockResolvedValue(null);
-      mockGenreRepo.create.mockReturnValue(genre);
-      mockGenreRepo.save.mockResolvedValue(genre);
+      mockAuthorRepo.findOneByName.mockResolvedValue(null);
+      mockAuthorRepo.create.mockResolvedValue(author);
+      mockGenreRepo.findOneByName.mockResolvedValue(null);
+      mockGenreRepo.create.mockResolvedValue(genre);
       mockMangaRepository.create.mockResolvedValue(savedManga);
-      mockMangaRepository.findOneById.mockResolvedValue(savedManga);
 
       const result = await service.create(dto);
 
@@ -142,12 +133,16 @@ describe('MangaService', () => {
 
       const existingAuthor = { id: 5, name: 'Existing Author' } as Author;
       const existingGenre = { id: 3, name: 'Existing Genre' } as Genre;
-      const savedManga = { id: 2, title: 'Test', authors: [existingAuthor], genres: [existingGenre] } as Manga;
+      const savedManga = {
+        id: 2,
+        title: 'Test',
+        authors: [existingAuthor],
+        genres: [existingGenre],
+      } as Manga;
 
-      mockAuthorRepo.findOne.mockResolvedValue(existingAuthor);
-      mockGenreRepo.findOne.mockResolvedValue(existingGenre);
+      mockAuthorRepo.findOneByName.mockResolvedValue(existingAuthor);
+      mockGenreRepo.findOneByName.mockResolvedValue(existingGenre);
       mockMangaRepository.create.mockResolvedValue(savedManga);
-      mockMangaRepository.findOneById.mockResolvedValue(savedManga);
 
       const result = await service.create(dto);
 

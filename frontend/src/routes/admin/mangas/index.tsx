@@ -34,7 +34,7 @@ function MangaListPage() {
   if (isLoading) {
     return (
       <div>
-        <h1 className="display-title text-2xl font-bold text-[var(--sea-ink)]">Mangas</h1>
+        <h1 className="display-title text-2xl font-bold text-(--sea-ink)">Mangas</h1>
         <div className="mt-6 flex flex-col gap-3">
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-14 w-full" />
@@ -59,9 +59,9 @@ function MangaListPage() {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="display-title text-2xl font-bold text-[var(--sea-ink)]">
+        <h1 className="display-title text-2xl font-bold text-(--sea-ink)">
           Mangas
-          <span className="ml-2 text-sm font-normal text-[var(--sea-ink-soft)]">
+          <span className="ml-2 text-sm font-normal text-(--sea-ink-soft)">
             ({data?.total ?? 0} total)
           </span>
         </h1>
@@ -73,7 +73,7 @@ function MangaListPage() {
       </div>
 
       {!data?.data.length ? (
-        <div className="mt-12 text-center text-[var(--sea-ink-soft)]">
+        <div className="mt-12 text-center text-(--sea-ink-soft)">
           <p>No mangas yet.</p>
           <Button variant="link" asChild className="mt-2">
             <Link to="/admin/mangas/new">Create your first manga</Link>

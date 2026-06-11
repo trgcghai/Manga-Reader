@@ -90,7 +90,7 @@ function CreateMangaPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="display-title text-2xl font-bold text-[var(--sea-ink)]">
+      <h1 className="display-title text-2xl font-bold text-(--sea-ink)">
         Add Manga
       </h1>
 

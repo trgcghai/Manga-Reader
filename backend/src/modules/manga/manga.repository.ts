@@ -8,11 +8,7 @@ export class MangaRepository {
     private readonly repo: Repository<Manga>,
   ) {}
 
-  findAll = async (): Promise<Manga[]> => {
-    return await this.repo.find();
-  };
-
-  findAllPaginated = async (
+  findAll = async (
     page: number,
     limit: number,
   ): Promise<{ data: Manga[]; total: number }> => {

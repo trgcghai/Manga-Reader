@@ -3,7 +3,7 @@ import { MangaController } from './manga.controller';
 import { MangaService } from './manga.service';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
 import { NotFoundException } from '@nestjs/common';
-import { CreateMangaDto } from 'src/modules/manga/dto/create-manga.dto';
+import { CreateMangaDto } from 'src/modules/manga/dto/manga.dto';
 import { MangaStatus } from 'src/common/constants/manga.constant';
 
 describe('MangaController', () => {
@@ -44,7 +44,7 @@ describe('MangaController', () => {
 
       const result = await controller.findAll();
 
-      expect(service.findAll).toHaveBeenCalledWith(undefined, undefined);
+      expect(service.findAll).toHaveBeenCalledWith(1, 20);
       expect(result).toEqual(mockMangaList);
     });
 
@@ -91,7 +91,7 @@ describe('MangaController', () => {
         authors: ['Kentaro Miura'],
         genres: ['Action', 'Fantasy'],
       };
-      const createdManga = { id: 3, ...dto } as Manga;
+      const createdManga = { id: 3, ...dto } as unknown as Manga;
       service.create.mockResolvedValue(createdManga);
 
       const result = await controller.create(dto);
