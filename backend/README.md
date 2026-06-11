@@ -44,6 +44,13 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+`PORT` is required for direct local runs. `docker compose up --build` already sets `PORT=3001` for the backend service.
+
+```powershell
+$env:PORT = '3001'
+npm run start:dev
+```
+
 ## Run tests
 
 ```bash
