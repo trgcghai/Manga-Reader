@@ -1,24 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Manga } from 'src/modules/manga/entities/manga.entity';
+import { MangaRepository } from 'src/modules/manga/manga.repository';
 
 @Injectable()
 export class MangaService {
-  create() {
-    return { message: 'This action adds a new manga' };
-  }
+  constructor(private readonly mangaRepository: MangaRepository) {}
 
-  findAll() {
-    return { message: 'This action returns all manga' };
-  }
+  findAll = async (): Promise<Manga[]> => {
+    return await this.mangaRepository.findAll();
+  };
 
-  findOne(id: number) {
-    return { message: `This action returns a #${id} manga` };
-  }
-
-  update(id: number) {
-    return { message: `This action updates a #${id} manga` };
-  }
-
-  remove(id: number) {
-    return { message: `This action removes a #${id} manga` };
-  }
+  findOne = async (id: number): Promise<Manga> => {
+    const result = await this.mangaRepository.findOneById(id);
+    if (!result) {
+      throw new NotFoundException(`Manga with ID ${id} not found`);
+    }
+    return result;
+  };
 }
