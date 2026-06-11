@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useMangaList } from '#/hooks/useManga'
-import { useState } from 'react'
 import {
   Table,
   TableBody,
@@ -13,16 +12,23 @@ import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Skeleton } from '#/components/ui/skeleton'
 import { Card, CardContent } from '#/components/ui/card'
+import { BookOpenText, Plus } from 'lucide-react'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
+import { formatDate } from '#/lib/dateTimeFormatter'
 
 export const Route = createFileRoute('/admin/mangas/')({
   component: MangaListPage,
 })
 
 function MangaListPage() {
-  const [page, setPage] = useState(1)
-  const limit = 20
-
-  const { data, isLoading, isError } = useMangaList(page, limit)
+  const { data, isLoading, isError } = useMangaList(1, 20)
 
   if (isLoading) {
     return (
@@ -49,32 +55,43 @@ function MangaListPage() {
     )
   }
 
-  const totalPages = Math.ceil((data?.total ?? 0) / limit)
-
   return (
     <div>
       <div className="flex items-center justify-between">
         <h1 className="display-title text-2xl font-bold text-(--sea-ink)">
           Mangas
-          <span className="ml-2 text-sm font-normal text-(--sea-ink-soft)">
-            ({data?.total ?? 0} total)
-          </span>
         </h1>
         <Button asChild>
           <Link to="/admin/mangas/new" className="no-underline">
-            + Add Manga
+            <Plus className="h-4 w-4" />
+            Create New
           </Link>
         </Button>
       </div>
 
-      {!data?.data.length ? (
-        <div className="mt-12 text-center text-(--sea-ink-soft)">
-          <p>No mangas yet.</p>
-          <Button variant="link" asChild className="mt-2">
-            <Link to="/admin/mangas/new">Create your first manga</Link>
-          </Button>
-        </div>
-      ) : (
+      {!data?.data.length && (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <BookOpenText />
+            </EmptyMedia>
+            <EmptyTitle>No Mangas Found</EmptyTitle>
+            <EmptyDescription>
+              No mangas available at the moment.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button asChild>
+              <Link to="/admin/mangas/new" className="no-underline">
+                <Plus className="h-4 w-4" />
+                Create New
+              </Link>
+            </Button>
+          </EmptyContent>
+        </Empty>
+      )}
+
+      {data && data.data.length > 0 && (
         <>
           <div className="mt-6">
             <Table>
@@ -103,44 +120,13 @@ function MangaListPage() {
                       {manga.genres?.map((g) => g.name).join(', ')}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {new Date(manga.createdAt).toLocaleDateString()}
+                      {formatDate(manga.createdAt)}
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </div>
-
-          {totalPages > 1 && (
-            <div className="mt-6 flex items-center justify-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-              >
-                Prev
-              </Button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <Button
-                  key={p}
-                  variant={p === page ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setPage(p)}
-                >
-                  {p}
-                </Button>
-              ))}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-              >
-                Next
-              </Button>
-            </div>
-          )}
         </>
       )}
     </div>
