@@ -27,12 +27,12 @@ export const Route = createRootRoute({
       },
     ],
   }),
-  shellComponent: RootDocument,
+  shellComponent: RootLayout,
 })
 
 export const queryClient = new QueryClient()
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
