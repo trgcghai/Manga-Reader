@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createManga, type CreateMangaPayload } from '#/lib/api/mangas'
+import { createManga  } from '#/lib/api/mangas'
+import type {CreateMangaPayload} from '#/lib/api/mangas';
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import { Button } from '#/components/ui/button'
@@ -95,7 +96,7 @@ function CreateMangaPage() {
 
       <form onSubmit={handleSubmit} className="mt-6">
         <FieldGroup>
-          <Field data-invalid={!!errors.title ? true : undefined}>
+          <Field data-invalid={errors.title ? true : undefined}>
             <FieldLabel htmlFor="title">Title *</FieldLabel>
             <Input
               id="title"
@@ -186,7 +187,7 @@ function CreateMangaPage() {
             />
           </Field>
 
-          <Field data-invalid={!!errors.authors ? true : undefined}>
+          <Field data-invalid={errors.authors ? true : undefined}>
             <FieldLabel>Authors *</FieldLabel>
             <div className="flex gap-2">
               <Input
@@ -228,7 +229,7 @@ function CreateMangaPage() {
             )}
           </Field>
 
-          <Field data-invalid={!!errors.genres ? true : undefined}>
+          <Field data-invalid={errors.genres ? true : undefined}>
             <FieldLabel>Genres *</FieldLabel>
             <div className="flex gap-2">
               <Input
@@ -273,7 +274,7 @@ function CreateMangaPage() {
           {mutation.isError && (
             <Field data-invalid>
               <FieldDescription className="text-destructive">
-                {mutation.error?.message || 'Failed to create manga'}
+                {mutation.error.message || 'Failed to create manga'}
               </FieldDescription>
             </Field>
           )}

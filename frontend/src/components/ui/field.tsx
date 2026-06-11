@@ -1,5 +1,6 @@
 import { useMemo } from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+import { cva  } from "class-variance-authority"
+import type {VariantProps} from "class-variance-authority";
 
 import { cn } from "#/lib/utils.ts"
 import { Label } from "#/components/ui/label.tsx"
@@ -202,8 +203,8 @@ function FieldError({
       ...new Map(errors.map((error) => [error?.message, error])).values(),
     ]
 
-    if (uniqueErrors?.length == 1) {
-      return uniqueErrors[0]?.message
+    if (uniqueErrors.length == 1) {
+      return uniqueErrors[0].message
     }
 
     return (
