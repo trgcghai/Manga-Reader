@@ -10,7 +10,7 @@ import {
   UpdateMangaDto,
 } from 'src/modules/manga/dto/manga.dto';
 import { AuthorService } from 'src/modules/author/author.service';
-import { GenreRepository } from 'src/modules/manga/genre.repository';
+import { GenreService } from 'src/modules/manga/genre.service';
 import { Author } from 'src/modules/author/entities/author.entity';
 import { Genre } from 'src/modules/manga/entities/genre.entity';
 
@@ -19,7 +19,7 @@ export class MangaService {
   constructor(
     private readonly mangaRepository: MangaRepository,
     private readonly authorService: AuthorService,
-    private readonly genreRepo: GenreRepository,
+    private readonly genreService: GenreService,
   ) {}
 
   findAll = async (
@@ -56,11 +56,7 @@ export class MangaService {
       if (dto.genres && dto.genres.length !== 0) {
         genres = await Promise.all(
           dto.genres.map(async (name) => {
-            let genre = await this.genreRepo.findOneByName(name);
-            if (!genre) {
-              genre = await this.genreRepo.create({ name });
-            }
-            return genre;
+            return await this.genreService.findOrCreate(name);
           }),
         );
       }
@@ -109,11 +105,7 @@ export class MangaService {
       if (dto.genres) {
         const genres = await Promise.all(
           dto.genres.map(async (name) => {
-            let genre = await this.genreRepo.findOneByName(name);
-            if (!genre) {
-              genre = await this.genreRepo.create({ name });
-            }
-            return genre;
+            return await this.genreService.findOrCreate(name);
           }),
         );
         updateData.genres = genres;

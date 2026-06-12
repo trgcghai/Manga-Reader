@@ -19,6 +19,8 @@ export class Genre {
   @ManyToMany(() => Manga, (manga) => manga.genres)
   mangas: Manga[];
 
+  mangaCount?: number;
+
   @CreateDateColumn()
   createdAt: Date;
 

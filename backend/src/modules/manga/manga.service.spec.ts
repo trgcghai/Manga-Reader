@@ -8,7 +8,7 @@ import { Author } from 'src/modules/author/entities/author.entity';
 import { Genre } from 'src/modules/manga/entities/genre.entity';
 import { CreateMangaDto } from 'src/modules/manga/dto/manga.dto';
 import { MangaStatus } from 'src/common/constants/manga.constant';
-import { GenreRepository } from 'src/modules/manga/genre.repository';
+import { GenreService } from 'src/modules/manga/genre.service';
 import { AuthorService } from 'src/modules/author/author.service';
 
 describe('MangaService', () => {
@@ -28,9 +28,8 @@ describe('MangaService', () => {
     findOrCreate: jest.fn(),
   };
 
-  const mockGenreRepo = {
-    findOneByName: jest.fn(),
-    create: jest.fn(),
+  const mockGenreService = {
+    findOrCreate: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -39,7 +38,7 @@ describe('MangaService', () => {
         MangaService,
         { provide: MangaRepository, useValue: mockMangaRepository },
         { provide: AuthorService, useValue: mockAuthorService },
-        { provide: GenreRepository, useValue: mockGenreRepo },
+        { provide: GenreService, useValue: mockGenreService },
       ],
     }).compile();
 
@@ -109,14 +108,14 @@ describe('MangaService', () => {
       } as Manga;
 
       mockAuthorService.findOrCreate.mockResolvedValue(author);
-      mockGenreRepo.findOneByName.mockResolvedValue(null);
-      mockGenreRepo.create.mockResolvedValue(genre);
+      mockGenreService.findOrCreate.mockResolvedValue(genre);
       mockMangaRepository.create.mockResolvedValue(savedManga);
 
       const result = await service.create(dto);
 
       expect(result.title).toBe('Berserk');
       expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('Kentaro Miura');
+      expect(mockGenreService.findOrCreate).toHaveBeenCalledWith('Fantasy');
       expect(mockMangaRepository.create).toHaveBeenCalledWith({
         title: 'Berserk',
         status: MangaStatus.ONGOING,
@@ -146,14 +145,14 @@ describe('MangaService', () => {
       } as Manga;
 
       mockAuthorService.findOrCreate.mockResolvedValue(existingAuthor);
-      mockGenreRepo.findOneByName.mockResolvedValue(existingGenre);
+      mockGenreService.findOrCreate.mockResolvedValue(existingGenre);
       mockMangaRepository.create.mockResolvedValue(savedManga);
 
       const result = await service.create(dto);
 
       expect(result.id).toBe(2);
       expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('Existing Author');
-      expect(mockGenreRepo.create).not.toHaveBeenCalled();
+      expect(mockGenreService.findOrCreate).toHaveBeenCalledWith('Existing Genre');
     });
   });
 
@@ -263,8 +262,7 @@ describe('MangaService', () => {
       mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
         existingManga,
       );
-      mockGenreRepo.findOneByName.mockResolvedValue(null);
-      mockGenreRepo.create.mockResolvedValue(newGenre);
+      mockGenreService.findOrCreate.mockResolvedValue(newGenre);
       mockMangaRepository.update.mockResolvedValue({
         ...existingManga,
         genres: [newGenre],
@@ -272,8 +270,7 @@ describe('MangaService', () => {
 
       await service.update(1, dto);
 
-      expect(mockGenreRepo.findOneByName).toHaveBeenCalledWith('New Genre');
-      expect(mockGenreRepo.create).toHaveBeenCalledWith({ name: 'New Genre' });
+      expect(mockGenreService.findOrCreate).toHaveBeenCalledWith('New Genre');
       expect(mockMangaRepository.update).toHaveBeenCalledWith(
         1,
         expect.objectContaining({
@@ -302,7 +299,7 @@ describe('MangaService', () => {
       await service.update(1, dto);
 
       expect(mockAuthorService.findOrCreate).not.toHaveBeenCalled();
-      expect(mockGenreRepo.findOneByName).not.toHaveBeenCalled();
+      expect(mockGenreService.findOrCreate).not.toHaveBeenCalled();
       expect(mockMangaRepository.update).toHaveBeenCalledWith(
         1,
         expect.objectContaining({
@@ -384,7 +381,7 @@ describe('MangaService', () => {
         existingManga,
       );
       mockAuthorService.findOrCreate.mockResolvedValue(existingAuthor);
-      mockGenreRepo.findOneByName.mockResolvedValue(existingGenre);
+      mockGenreService.findOrCreate.mockResolvedValue(existingGenre);
       mockMangaRepository.update.mockResolvedValue({
         ...existingManga,
         title: 'Updated',
@@ -395,8 +392,7 @@ describe('MangaService', () => {
       await service.update(1, dto);
 
       expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('Author1');
-      expect(mockGenreRepo.findOneByName).toHaveBeenCalledWith('Genre1');
-      expect(mockGenreRepo.create).not.toHaveBeenCalled();
+      expect(mockGenreService.findOrCreate).toHaveBeenCalledWith('Genre1');
     });
 
     it('should throw NotFoundException when manga does not exist', async () => {
@@ -495,10 +491,9 @@ describe('MangaService', () => {
       mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
         existingManga,
       );
-      mockGenreRepo.findOneByName
+      mockGenreService.findOrCreate
         .mockResolvedValueOnce(existingGenre)
-        .mockResolvedValueOnce(null);
-      mockGenreRepo.create.mockResolvedValue(newGenre);
+        .mockResolvedValueOnce(newGenre);
       mockMangaRepository.update.mockResolvedValue({
         ...existingManga,
         genres: [existingGenre, newGenre],
@@ -506,9 +501,9 @@ describe('MangaService', () => {
 
       const result = await service.update(1, dto);
 
-      expect(mockGenreRepo.findOneByName).toHaveBeenCalledTimes(2);
-      expect(mockGenreRepo.create).toHaveBeenCalledTimes(1);
-      expect(mockGenreRepo.create).toHaveBeenCalledWith({ name: 'New Genre' });
+      expect(mockGenreService.findOrCreate).toHaveBeenCalledTimes(2);
+      expect(mockGenreService.findOrCreate).toHaveBeenCalledWith('Existing Genre');
+      expect(mockGenreService.findOrCreate).toHaveBeenCalledWith('New Genre');
       expect(result.genres).toHaveLength(2);
     });
 
@@ -539,8 +534,7 @@ describe('MangaService', () => {
         existingManga,
       );
       mockAuthorService.findOrCreate.mockResolvedValue(newAuthor);
-      mockGenreRepo.findOneByName.mockResolvedValue(null);
-      mockGenreRepo.create.mockResolvedValue(newGenre);
+      mockGenreService.findOrCreate.mockResolvedValue(newGenre);
       mockMangaRepository.update.mockResolvedValue({
         ...existingManga,
         title: 'New Title',
@@ -686,8 +680,7 @@ describe('MangaService', () => {
       mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
         existingManga,
       );
-      mockGenreRepo.findOneByName.mockResolvedValue(null);
-      mockGenreRepo.create.mockRejectedValue(new Error('Create failed'));
+      mockGenreService.findOrCreate.mockRejectedValue(new Error('Create failed'));
 
       await expect(
         service.update(1, { genres: ['New Genre'] }),
