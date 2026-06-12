@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MangaService } from './manga.service';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { UpdateMangaDto } from 'src/modules/manga/dto/update-manga.dto';
 import { MangaRepository } from 'src/modules/manga/manga.repository';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
 import { Author } from 'src/modules/manga/entities/author.entity';
@@ -18,6 +19,9 @@ describe('MangaService', () => {
     findOneById: jest.fn(),
     findAllPaginated: jest.fn(),
     create: jest.fn(),
+    findOneByIdWithRelations: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
   };
 
   const mockAuthorRepo = {
@@ -149,6 +153,210 @@ describe('MangaService', () => {
       expect(result.id).toBe(2);
       expect(mockAuthorRepo.create).not.toHaveBeenCalled();
       expect(mockGenreRepo.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('update', () => {
+    it('should update scalar fields successfully', async () => {
+      const existingManga = {
+        id: 1,
+        title: 'Old Title',
+        status: 'ongoing',
+        authors: [],
+        genres: [],
+      } as Manga;
+      const dto = { title: 'New Title', status: MangaStatus.COMPLETED } as UpdateMangaDto;
+      const updatedManga = { ...existingManga, title: 'New Title', status: MangaStatus.COMPLETED } as Manga;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(existingManga);
+      mockMangaRepository.update.mockResolvedValue(updatedManga);
+
+      const result = await service.update(1, dto);
+
+      expect(result.title).toBe('New Title');
+      expect(result.status).toBe(MangaStatus.COMPLETED);
+      expect(mockMangaRepository.update).toHaveBeenCalledWith(1, expect.objectContaining({
+        title: 'New Title',
+        status: MangaStatus.COMPLETED,
+      }));
+    });
+
+    it('should update only a subset of fields', async () => {
+      const existingManga = {
+        id: 1,
+        title: 'Original',
+        status: 'ongoing',
+        description: 'Orig desc',
+        authors: [],
+        genres: [],
+      } as Manga;
+      const dto = { description: 'Updated desc' } as UpdateMangaDto;
+      const updatedManga = { ...existingManga, description: 'Updated desc' } as Manga;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(existingManga);
+      mockMangaRepository.update.mockResolvedValue(updatedManga);
+
+      const result = await service.update(1, dto);
+
+      expect(result.description).toBe('Updated desc');
+      expect(result.title).toBe('Original');
+    });
+
+    it('should replace authors list when provided', async () => {
+      const existingManga = {
+        id: 1,
+        title: 'Test',
+        authors: [{ id: 1, name: 'Old Author' }],
+        genres: [],
+      } as unknown as Manga;
+      const dto = { authors: ['New Author'] } as UpdateMangaDto;
+      const newAuthor = { id: 2, name: 'New Author' } as Author;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(existingManga);
+      mockAuthorRepo.findOneByName.mockResolvedValue(null);
+      mockAuthorRepo.create.mockResolvedValue(newAuthor);
+      mockMangaRepository.update.mockResolvedValue({ ...existingManga, authors: [newAuthor] });
+
+      const result = await service.update(1, dto);
+
+      expect(mockAuthorRepo.findOneByName).toHaveBeenCalledWith('New Author');
+      expect(mockAuthorRepo.create).toHaveBeenCalledWith({ name: 'New Author' });
+      expect(mockMangaRepository.update).toHaveBeenCalledWith(1, expect.objectContaining({
+        authors: [newAuthor],
+      }));
+    });
+
+    it('should replace genres list when provided', async () => {
+      const existingManga = {
+        id: 1,
+        title: 'Test',
+        authors: [],
+        genres: [{ id: 1, name: 'Old Genre' }],
+      } as unknown as Manga;
+      const dto = { genres: ['New Genre'] } as UpdateMangaDto;
+      const newGenre = { id: 2, name: 'New Genre' } as Genre;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(existingManga);
+      mockGenreRepo.findOneByName.mockResolvedValue(null);
+      mockGenreRepo.create.mockResolvedValue(newGenre);
+      mockMangaRepository.update.mockResolvedValue({ ...existingManga, genres: [newGenre] });
+
+      const result = await service.update(1, dto);
+
+      expect(mockGenreRepo.findOneByName).toHaveBeenCalledWith('New Genre');
+      expect(mockGenreRepo.create).toHaveBeenCalledWith({ name: 'New Genre' });
+      expect(mockMangaRepository.update).toHaveBeenCalledWith(1, expect.objectContaining({
+        genres: [newGenre],
+      }));
+    });
+
+    it('should leave existing authors/genres when not provided in dto', async () => {
+      const existingManga = {
+        id: 1,
+        title: 'Test',
+        authors: [{ id: 1, name: 'Existing Author' }],
+        genres: [{ id: 1, name: 'Existing Genre' }],
+      } as unknown as Manga;
+      const dto = { title: 'Updated' } as UpdateMangaDto;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(existingManga);
+      mockMangaRepository.update.mockResolvedValue({ ...existingManga, title: 'Updated' });
+
+      await service.update(1, dto);
+
+      expect(mockAuthorRepo.findOneByName).not.toHaveBeenCalled();
+      expect(mockGenreRepo.findOneByName).not.toHaveBeenCalled();
+      expect(mockMangaRepository.update).toHaveBeenCalledWith(1, expect.objectContaining({
+        title: 'Updated',
+      }));
+    });
+
+    it('should create new author entities from new names', async () => {
+      const existingManga = {
+        id: 1, title: 'Test', authors: [], genres: [],
+      } as unknown as Manga;
+      const dto = { authors: ['Author A', 'Author B'] } as UpdateMangaDto;
+      const authorA = { id: 1, name: 'Author A' } as Author;
+      const authorB = { id: 2, name: 'Author B' } as Author;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(existingManga);
+      mockAuthorRepo.findOneByName.mockResolvedValueOnce(null);
+      mockAuthorRepo.create.mockResolvedValueOnce(authorA);
+      mockAuthorRepo.findOneByName.mockResolvedValueOnce(null);
+      mockAuthorRepo.create.mockResolvedValueOnce(authorB);
+      mockMangaRepository.update.mockResolvedValue({ ...existingManga, authors: [authorA, authorB] });
+
+      const result = await service.update(1, dto);
+
+      expect(mockAuthorRepo.create).toHaveBeenCalledTimes(2);
+      expect(result.authors).toHaveLength(2);
+    });
+
+    it('should reuse existing authors by name', async () => {
+      const existingManga = {
+        id: 1, title: 'Test', authors: [], genres: [],
+      } as unknown as Manga;
+      const dto = { authors: ['Existing Author'] } as UpdateMangaDto;
+      const author = { id: 5, name: 'Existing Author' } as Author;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(existingManga);
+      mockAuthorRepo.findOneByName.mockResolvedValue(author);
+      mockMangaRepository.update.mockResolvedValue({ ...existingManga, authors: [author] });
+
+      await service.update(1, dto);
+
+      expect(mockAuthorRepo.create).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when manga does not exist', async () => {
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(null);
+
+      await expect(service.update(999, { title: 'Nope' } as UpdateMangaDto))
+        .rejects.toThrow(NotFoundException);
+    });
+
+    it('should handle empty authors array (clear relations)', async () => {
+      const existingManga = {
+        id: 1, title: 'Test', authors: [{ id: 1, name: 'Old' }], genres: [],
+      } as unknown as Manga;
+      const dto = { authors: [] } as UpdateMangaDto;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(existingManga);
+      mockMangaRepository.update.mockResolvedValue({ ...existingManga, authors: [] });
+
+      const result = await service.update(1, dto);
+
+      expect(mockMangaRepository.update).toHaveBeenCalledWith(1, expect.objectContaining({
+        authors: [],
+      }));
+      expect(result.authors).toEqual([]);
+    });
+
+    it('should throw BadRequestException when no updatable fields provided', async () => {
+      const existingManga = { id: 1, title: 'Test', authors: [], genres: [] } as Manga;
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(existingManga);
+
+      await expect(service.update(1, {} as UpdateMangaDto))
+        .rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete existing manga successfully', async () => {
+      mockMangaRepository.findOneById.mockResolvedValue({ id: 1 } as Manga);
+      mockMangaRepository.delete.mockResolvedValue(true);
+
+      await service.delete(1);
+
+      expect(mockMangaRepository.findOneById).toHaveBeenCalledWith(1);
+      expect(mockMangaRepository.delete).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw NotFoundException when manga does not exist', async () => {
+      mockMangaRepository.findOneById.mockResolvedValue(null);
+
+      await expect(service.delete(999)).rejects.toThrow(NotFoundException);
+      expect(mockMangaRepository.delete).not.toHaveBeenCalled();
     });
   });
 });
