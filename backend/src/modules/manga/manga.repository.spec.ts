@@ -35,24 +35,42 @@ describe('MangaRepository', () => {
   });
 
   describe('update', () => {
-    it('should preload and save manga', async () => {
+    it('should find, mutate, and save manga', async () => {
       const partial = { title: 'Updated' };
-      const preloaded = { id: 1, title: 'Original' } as Manga;
-      const saved = { id: 1, title: 'Updated' } as Manga;
-      mockRepo.preload.mockResolvedValue(preloaded);
+      const existing = { id: 1, title: 'Original', authors: [], genres: [] } as Manga;
+      const saved = { id: 1, title: 'Updated', authors: [], genres: [] } as Manga;
+      mockRepo.findOne.mockResolvedValue(existing);
       mockRepo.save.mockResolvedValue(saved);
 
       const result = await repo.update(1, partial);
 
-      expect(mockRepo.preload).toHaveBeenCalledWith({ id: 1, ...partial });
-      expect(mockRepo.save).toHaveBeenCalledWith(preloaded);
+      expect(mockRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 1 },
+        relations: ['authors', 'genres'],
+      });
+      expect(existing.title).toBe('Updated');
+      expect(mockRepo.save).toHaveBeenCalledWith(existing);
       expect(result).toEqual(saved);
     });
 
-    it('should return null when preload returns null', async () => {
-      mockRepo.preload.mockResolvedValue(null);
+    it('should return null when manga not found', async () => {
+      mockRepo.findOne.mockResolvedValue(null);
       const result = await repo.update(999, { title: 'Nope' });
       expect(result).toBeNull();
+    });
+
+    it('should update authors and genres when provided', async () => {
+      const author = { id: 1, name: 'Author' };
+      const genre = { id: 1, name: 'Genre' };
+      const existing = { id: 1, title: 'Test', authors: [], genres: [] } as Manga;
+      const partial = { authors: [author], genres: [genre] } as any;
+      mockRepo.findOne.mockResolvedValue(existing);
+      mockRepo.save.mockResolvedValue(existing);
+
+      await repo.update(1, partial);
+
+      expect(existing.authors).toEqual([author]);
+      expect(existing.genres).toEqual([genre]);
     });
   });
 

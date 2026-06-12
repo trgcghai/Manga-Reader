@@ -36,8 +36,21 @@ export class MangaRepository {
   };
 
   update = async (id: number, data: Partial<Manga>): Promise<Manga | null> => {
-    const manga = await this.repo.preload({ id, ...data });
+    const manga = await this.repo.findOne({
+      where: { id },
+      relations: ['authors', 'genres'],
+    });
     if (!manga) return null;
+
+    if (data.title !== undefined) manga.title = data.title;
+    if (data.status !== undefined) manga.status = data.status;
+    if (data.description !== undefined) manga.description = data.description;
+    if (data.alternativeTitles !== undefined)
+      manga.alternativeTitles = data.alternativeTitles;
+    if (data.coverPath !== undefined) manga.coverPath = data.coverPath;
+    if (data.authors !== undefined) manga.authors = data.authors;
+    if (data.genres !== undefined) manga.genres = data.genres;
+
     return await this.repo.save(manga);
   };
 
