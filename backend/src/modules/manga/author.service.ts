@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { AuthorRepository } from './author.repository';
 import { CreateAuthorDto } from 'src/modules/manga/dto/create-author.dto';
 import { UpdateAuthorDto } from 'src/modules/manga/dto/update-author.dto';
@@ -40,11 +44,7 @@ export class AuthorService {
       }
     }
 
-    const updated = await this.authorRepository.update(id, dto);
-    if (!updated) {
-      throw new NotFoundException(`Author with ID ${id} not found`);
-    }
-    return updated;
+    return await this.authorRepository.update(id, dto);
   };
 
   delete = async (id: number) => {

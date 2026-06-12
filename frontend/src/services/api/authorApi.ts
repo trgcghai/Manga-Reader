@@ -29,14 +29,10 @@ export async function getAuthors(
   limit: number = 20,
   search?: string,
 ): Promise<PaginatedAuthorResponse> {
-  const params = new URLSearchParams()
-  params.set('page', String(page))
-  params.set('limit', String(limit))
-  if (search) params.set('search', search)
+  const params: Record<string, string | number> = { page, limit }
+  if (search) params.search = search
 
-  const { data } = await axiosInstance.get<PaginatedAuthorResponse>(
-    `/authors?${params.toString()}`,
-  )
+  const { data } = await axiosInstance.get<PaginatedAuthorResponse>('/authors', { params })
   return data
 }
 
