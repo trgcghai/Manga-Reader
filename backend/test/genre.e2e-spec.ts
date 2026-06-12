@@ -107,9 +107,7 @@ describe('Genre CRUD (e2e)', () => {
         { name: 'Comedy' },
       ]);
 
-      const res = await request(app.getHttpServer())
-        .get('/genres')
-        .expect(200);
+      const res = await request(app.getHttpServer()).get('/genres').expect(200);
 
       expect(res.body.data).toHaveLength(3);
       expect(res.body.total).toBe(3);

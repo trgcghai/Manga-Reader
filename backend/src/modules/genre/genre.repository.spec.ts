@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { Repository } from 'typeorm';
 import { GenreRepository } from './genre.repository';
 import { Genre } from 'src/modules/genre/entities/genre.entity';

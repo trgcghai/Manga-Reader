@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Test, TestingModule } from '@nestjs/testing';
 import { GenreController } from './genre.controller';
 import { GenreService } from './genre.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { CreateGenreDto } from 'src/modules/genre/dto/create-genre.dto';
-import { UpdateGenreDto } from 'src/modules/genre/dto/update-genre.dto';
 import { Genre } from 'src/modules/genre/entities/genre.entity';
+import {
+  CreateGenreDto,
+  UpdateGenreDto,
+} from 'src/modules/genre/dto/genre.dto';
 
 describe('GenreController', () => {
   let controller: GenreController;

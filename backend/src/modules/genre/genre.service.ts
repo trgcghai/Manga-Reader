@@ -4,8 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { GenreRepository } from './genre.repository';
-import { CreateGenreDto } from 'src/modules/genre/dto/create-genre.dto';
-import { UpdateGenreDto } from 'src/modules/genre/dto/update-genre.dto';
+import {
+  CreateGenreDto,
+  UpdateGenreDto,
+} from 'src/modules/genre/dto/genre.dto';
 import { Genre } from 'src/modules/genre/entities/genre.entity';
 
 @Injectable()
