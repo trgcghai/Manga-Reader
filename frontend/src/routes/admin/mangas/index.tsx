@@ -1,5 +1,5 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { useMangaList, useDeleteManga } from '#/hooks/useManga'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useMangaList } from '#/hooks/useManga'
 import type { MangaResponse } from '#/services/api/mangaApi'
 import {
   useReactTable,
@@ -19,7 +19,7 @@ import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Skeleton } from '#/components/ui/skeleton'
 import { Card, CardContent } from '#/components/ui/card'
-import { BookOpenText, Loader2, Pencil, Plus, Trash2 } from 'lucide-react'
+import { BookOpenText, Plus } from 'lucide-react'
 import {
   Empty,
   EmptyContent,
@@ -28,18 +28,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '#/components/ui/empty'
-import { formatDate, formatDateTime } from '#/lib/dateTimeFormatter'
-import { useState } from 'react'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '#/components/ui/dialog'
+import { formatDateTime } from '#/lib/dateTimeFormatter'
+import ActionsCell from '#/components/manga/ActionCell'
 
 const columnHelper = createColumnHelper<MangaResponse>()
 
@@ -60,7 +50,7 @@ const columns = [
     header: 'Authors',
     cell: (info) => (
       <div className="flex flex-wrap gap-1">
-        {info.getValue()?.map((a) => (
+        {info.getValue().map((a) => (
           <Badge key={a.id} variant="outline" className="capitalize">
             {a.name}
           </Badge>
@@ -72,7 +62,7 @@ const columns = [
     header: 'Genres',
     cell: (info) => (
       <div className="flex flex-wrap gap-1">
-        {info.getValue()?.map((g) => (
+        {info.getValue().map((g) => (
           <Badge key={g.id} variant="outline" className="capitalize">
             {g.name}
           </Badge>
@@ -102,72 +92,6 @@ const columns = [
     cell: (info) => <ActionsCell manga={info.row.original} />,
   }),
 ]
-
-function ActionsCell({ manga }: { manga: MangaResponse }) {
-  const navigate = useNavigate()
-  const deleteMutation = useDeleteManga()
-  const [open, setOpen] = useState(false)
-
-  return (
-    <div className="flex items-center gap-2">
-      <Button
-        variant="ghost"
-        size="xs"
-        onClick={() =>
-          navigate({
-            to: '/admin/mangas/$id/edit',
-            params: { id: String(manga.id) },
-          })
-        }
-      >
-        <Pencil className="size-4" />
-      </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button
-            variant="ghost"
-            size="xs"
-            className="text-destructive hover:text-destructive"
-          >
-            <Trash2 className="size-4" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Manga</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete <strong>{manga.title}</strong>?
-              This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button
-              variant="destructive"
-              disabled={deleteMutation.isPending}
-              onClick={() => {
-                deleteMutation.mutate(manga.id, {
-                  onSuccess: () => setOpen(false),
-                })
-              }}
-            >
-              {deleteMutation.isPending ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                'Delete'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  )
-}
 
 export const Route = createFileRoute('/admin/mangas/')({
   component: MangaListPage,

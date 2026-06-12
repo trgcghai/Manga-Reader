@@ -2,11 +2,10 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import {
   useAuthorList,
-  useCreateAuthor,
-  useUpdateAuthor,
   useDeleteAuthor,
 } from '#/hooks/useAuthors'
 import type { AuthorResponse } from '#/services/api/authorApi'
+import { DeleteConfirmDialog } from '#/components/common/DeleteConfirmDialog'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import {
@@ -17,15 +16,6 @@ import {
   TableBody,
   TableCell,
 } from '#/components/ui/table'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
 import { Skeleton } from '#/components/ui/skeleton'
 import {
   Empty,
@@ -36,7 +26,9 @@ import {
   EmptyTitle,
 } from '#/components/ui/empty'
 import { Card, CardContent } from '#/components/ui/card'
-import { Loader2, Pencil, Plus, Trash2, Users } from 'lucide-react'
+import { Pencil, Plus, Trash2, Users } from 'lucide-react'
+import AddAuthorDialog from '#/components/author/AddAuthorDialog'
+import EditAuthorDialog from '#/components/author/EditAuthorDialog'
 
 export const Route = createFileRoute('/admin/authors')({
   component: AdminAuthorsPage,
@@ -58,6 +50,8 @@ function AdminAuthorsPage() {
   const [editAuthor, setEditAuthor] = useState<AuthorResponse | null>(null)
   const [deleteAuthor, setDeleteAuthor] = useState<AuthorResponse | null>(null)
   const debouncedSearch = useDebounce(search, 300)
+
+  const deleteMutation = useDeleteAuthor()
 
   const { data, isLoading, isError } = useAuthorList(
     page,
@@ -202,202 +196,21 @@ function AdminAuthorsPage() {
         author={editAuthor}
         onClose={() => setEditAuthor(null)}
       />
-      <DeleteAuthorDialog
-        author={deleteAuthor}
-        onClose={() => setDeleteAuthor(null)}
+      <DeleteConfirmDialog
+        open={!!deleteAuthor}
+        onOpenChange={(open) => {
+          if (!open) setDeleteAuthor(null)
+        }}
+        title="Delete Author"
+        entityName={deleteAuthor?.name ?? ''}
+        onConfirm={() => {
+          if (!deleteAuthor) return
+          deleteMutation.mutate(deleteAuthor.id, {
+            onSuccess: () => setDeleteAuthor(null),
+          })
+        }}
+        isPending={deleteMutation.isPending}
       />
     </div>
-  )
-}
-
-function AddAuthorDialog({
-  open,
-  onOpenChange,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) {
-  const [name, setName] = useState('')
-  const createMutation = useCreateAuthor()
-
-  const handleSave = () => {
-    if (!name.trim() || createMutation.isPending) return
-    createMutation.mutate(
-      { name: name.trim() },
-      {
-        onSuccess: () => {
-          setName('')
-          onOpenChange(false)
-        },
-      },
-    )
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add Author</DialogTitle>
-          <DialogDescription>
-            Enter the name of the new author.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="py-4">
-          <Input
-            placeholder="Author name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSave()
-            }}
-          />
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button
-            onClick={handleSave}
-            disabled={!name.trim() || createMutation.isPending}
-          >
-            {createMutation.isPending ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save'
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-function EditAuthorDialog({
-  author,
-  onClose,
-}: {
-  author: AuthorResponse | null
-  onClose: () => void
-}) {
-  const [name, setName] = useState('')
-  const updateMutation = useUpdateAuthor()
-
-  useEffect(() => {
-    if (author) setName(author.name)
-  }, [author])
-
-  const handleSave = () => {
-    if (!author || !name.trim() || updateMutation.isPending) return
-    updateMutation.mutate(
-      { id: author.id, data: { name: name.trim() } },
-      {
-        onSuccess: () => {
-          setName('')
-          onClose()
-        },
-      },
-    )
-  }
-
-  return (
-    <Dialog
-      open={!!author}
-      onOpenChange={(open) => {
-        if (!open) onClose()
-      }}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit Author</DialogTitle>
-          <DialogDescription>Update the author's name.</DialogDescription>
-        </DialogHeader>
-        <div className="py-4">
-          <Input
-            placeholder="Author name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSave()
-            }}
-          />
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button
-            onClick={handleSave}
-            disabled={!name.trim() || updateMutation.isPending}
-          >
-            {updateMutation.isPending ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save'
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-function DeleteAuthorDialog({
-  author,
-  onClose,
-}: {
-  author: AuthorResponse | null
-  onClose: () => void
-}) {
-  const deleteMutation = useDeleteAuthor()
-
-  const handleDelete = () => {
-    if (!author || deleteMutation.isPending) return
-    deleteMutation.mutate(author.id, {
-      onSuccess: () => onClose(),
-    })
-  }
-
-  return (
-    <Dialog
-      open={!!author}
-      onOpenChange={(open) => {
-        if (!open) onClose()
-      }}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Author</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete <strong>{author?.name}</strong>?
-            This action cannot be undone.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button
-            variant="destructive"
-            disabled={deleteMutation.isPending}
-            onClick={handleDelete}
-          >
-            {deleteMutation.isPending ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                Deleting...
-              </>
-            ) : (
-              'Delete'
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   )
 }

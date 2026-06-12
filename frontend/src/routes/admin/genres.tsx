@@ -2,11 +2,10 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import {
   useGenreList,
-  useCreateGenre,
-  useUpdateGenre,
   useDeleteGenre,
 } from '#/hooks/useGenres'
 import type { GenreResponse } from '#/services/api/genreApi'
+import { DeleteConfirmDialog } from '#/components/common/DeleteConfirmDialog'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import {
@@ -17,15 +16,6 @@ import {
   TableBody,
   TableCell,
 } from '#/components/ui/table'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '#/components/ui/dialog'
 import { Skeleton } from '#/components/ui/skeleton'
 import {
   Empty,
@@ -36,7 +26,9 @@ import {
   EmptyTitle,
 } from '#/components/ui/empty'
 import { Card, CardContent } from '#/components/ui/card'
-import { Loader2, Pencil, Plus, Trash2, Layers } from 'lucide-react'
+import { Pencil, Plus, Trash2, Layers } from 'lucide-react'
+import AddGenreDialog from '#/components/genre/AddGenreDialog'
+import EditGenreDialog from '#/components/genre/EditGenreDialog'
 
 export const Route = createFileRoute('/admin/genres')({
   component: AdminGenresPage,
@@ -58,6 +50,8 @@ function AdminGenresPage() {
   const [editGenre, setEditGenre] = useState<GenreResponse | null>(null)
   const [deleteGenre, setDeleteGenre] = useState<GenreResponse | null>(null)
   const debouncedSearch = useDebounce(search, 300)
+
+  const deleteMutation = useDeleteGenre()
 
   const { data, isLoading, isError } = useGenreList(
     page,
@@ -198,206 +192,22 @@ function AdminGenresPage() {
       )}
 
       <AddGenreDialog open={addOpen} onOpenChange={setAddOpen} />
-      <EditGenreDialog
-        genre={editGenre}
-        onClose={() => setEditGenre(null)}
-      />
-      <DeleteGenreDialog
-        genre={deleteGenre}
-        onClose={() => setDeleteGenre(null)}
+      <EditGenreDialog genre={editGenre} onClose={() => setEditGenre(null)} />
+      <DeleteConfirmDialog
+        open={!!deleteGenre}
+        onOpenChange={(open) => {
+          if (!open) setDeleteGenre(null)
+        }}
+        title="Delete Genre"
+        entityName={deleteGenre?.name ?? ''}
+        onConfirm={() => {
+          if (!deleteGenre) return
+          deleteMutation.mutate(deleteGenre.id, {
+            onSuccess: () => setDeleteGenre(null),
+          })
+        }}
+        isPending={deleteMutation.isPending}
       />
     </div>
-  )
-}
-
-function AddGenreDialog({
-  open,
-  onOpenChange,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) {
-  const [name, setName] = useState('')
-  const createMutation = useCreateGenre()
-
-  const handleSave = () => {
-    if (!name.trim() || createMutation.isPending) return
-    createMutation.mutate(
-      { name: name.trim() },
-      {
-        onSuccess: () => {
-          setName('')
-          onOpenChange(false)
-        },
-      },
-    )
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add Genre</DialogTitle>
-          <DialogDescription>
-            Enter the name of the new genre.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="py-4">
-          <Input
-            placeholder="Genre name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSave()
-            }}
-          />
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button
-            onClick={handleSave}
-            disabled={!name.trim() || createMutation.isPending}
-          >
-            {createMutation.isPending ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save'
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-function EditGenreDialog({
-  genre,
-  onClose,
-}: {
-  genre: GenreResponse | null
-  onClose: () => void
-}) {
-  const [name, setName] = useState('')
-  const updateMutation = useUpdateGenre()
-
-  useEffect(() => {
-    if (genre) setName(genre.name)
-  }, [genre])
-
-  const handleSave = () => {
-    if (!genre || !name.trim() || updateMutation.isPending) return
-    updateMutation.mutate(
-      { id: genre.id, data: { name: name.trim() } },
-      {
-        onSuccess: () => {
-          setName('')
-          onClose()
-        },
-      },
-    )
-  }
-
-  return (
-    <Dialog
-      open={!!genre}
-      onOpenChange={(open) => {
-        if (!open) onClose()
-      }}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit Genre</DialogTitle>
-          <DialogDescription>Update the genre name.</DialogDescription>
-        </DialogHeader>
-        <div className="py-4">
-          <Input
-            placeholder="Genre name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSave()
-            }}
-          />
-        </div>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button
-            onClick={handleSave}
-            disabled={!name.trim() || updateMutation.isPending}
-          >
-            {updateMutation.isPending ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save'
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-function DeleteGenreDialog({
-  genre,
-  onClose,
-}: {
-  genre: GenreResponse | null
-  onClose: () => void
-}) {
-  const deleteMutation = useDeleteGenre()
-
-  const handleDelete = () => {
-    if (!genre || deleteMutation.isPending) return
-    deleteMutation.mutate(genre.id, {
-      onSuccess: () => onClose(),
-    })
-  }
-
-  return (
-    <Dialog
-      open={!!genre}
-      onOpenChange={(open) => {
-        if (!open) onClose()
-      }}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Genre</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete <strong>{genre?.name}</strong>?
-            This action cannot be undone.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <Button
-            variant="destructive"
-            disabled={deleteMutation.isPending}
-            onClick={handleDelete}
-          >
-            {deleteMutation.isPending ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                Deleting...
-              </>
-            ) : (
-              'Delete'
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   )
 }

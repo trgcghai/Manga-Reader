@@ -24,6 +24,7 @@ import {
 import { Badge } from '#/components/ui/badge'
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
+import { addTag } from '#/lib/mangaUtils'
 
 const mangaSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -78,21 +79,6 @@ function CreateMangaPage() {
       })
     },
   })
-
-  function addTag(
-    field: {
-      state: { value: string[] }
-      handleChange: (v: string[]) => void
-    },
-    input: string,
-    setInput: (v: string) => void,
-  ) {
-    const trimmed = input.trim()
-    if (trimmed && !field.state.value.includes(trimmed)) {
-      field.handleChange([...field.state.value, trimmed])
-    }
-    setInput('')
-  }
 
   return (
     <div className="max-w-6xl mx-auto">
