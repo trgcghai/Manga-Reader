@@ -32,15 +32,11 @@ export class MangaService {
   };
 
   findOne = async (id: number): Promise<Manga> => {
-    try {
-      const result = await this.mangaRepository.findOneById(id);
-      if (!result) {
-        throw new NotFoundException(`Manga with ID ${id} not found`);
-      }
-      return result;
-    } catch (error) {
-      throw new BadRequestException(`Failed to retrieve manga: ${error}`);
+    const result = await this.mangaRepository.findOneByIdWithRelations(id);
+    if (!result) {
+      throw new NotFoundException(`Manga with ID ${id} not found`);
     }
+    return result;
   };
 
   create = async (dto: CreateMangaDto): Promise<Manga> => {
@@ -98,8 +94,10 @@ export class MangaService {
 
       if (dto.title !== undefined) updateData.title = dto.title;
       if (dto.status !== undefined) updateData.status = dto.status;
-      if (dto.description !== undefined) updateData.description = dto.description;
-      if (dto.alternativeTitles !== undefined) updateData.alternativeTitles = dto.alternativeTitles;
+      if (dto.description !== undefined)
+        updateData.description = dto.description;
+      if (dto.alternativeTitles !== undefined)
+        updateData.alternativeTitles = dto.alternativeTitles;
       if (dto.coverPath !== undefined) updateData.coverPath = dto.coverPath;
 
       if (dto.authors !== undefined) {
@@ -138,7 +136,10 @@ export class MangaService {
       }
       return updated;
     } catch (error) {
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
         throw error;
       }
       throw new BadRequestException(`Failed to update manga: ${error}`);
