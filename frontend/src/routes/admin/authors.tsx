@@ -1,9 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import {
-  useAuthorList,
-  useDeleteAuthor,
-} from '#/hooks/useAuthors'
+import { useAuthorList, useDeleteAuthor } from '#/hooks/useAuthors'
+import { useDebounce } from '#/hooks/useDebounce'
 import type { AuthorResponse } from '#/services/api/authorApi'
 import { DeleteConfirmDialog } from '#/components/common/DeleteConfirmDialog'
 import { Button } from '#/components/ui/button'
@@ -33,15 +31,6 @@ import EditAuthorDialog from '#/components/author/EditAuthorDialog'
 export const Route = createFileRoute('/admin/authors')({
   component: AdminAuthorsPage,
 })
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState(value)
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay)
-    return () => clearTimeout(timer)
-  }, [value, delay])
-  return debouncedValue
-}
 
 function AdminAuthorsPage() {
   const [search, setSearch] = useState('')

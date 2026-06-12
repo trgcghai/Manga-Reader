@@ -1,9 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import {
-  useGenreList,
-  useDeleteGenre,
-} from '#/hooks/useGenres'
+import { useGenreList, useDeleteGenre } from '#/hooks/useGenres'
+import { useDebounce } from '#/hooks/useDebounce'
 import type { GenreResponse } from '#/services/api/genreApi'
 import { DeleteConfirmDialog } from '#/components/common/DeleteConfirmDialog'
 import { Button } from '#/components/ui/button'
@@ -33,15 +31,6 @@ import EditGenreDialog from '#/components/genre/EditGenreDialog'
 export const Route = createFileRoute('/admin/genres')({
   component: AdminGenresPage,
 })
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState(value)
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay)
-    return () => clearTimeout(timer)
-  }, [value, delay])
-  return debouncedValue
-}
 
 function AdminGenresPage() {
   const [search, setSearch] = useState('')
