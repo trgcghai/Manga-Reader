@@ -8,6 +8,9 @@ describe('AuthorRepository', () => {
     findOne: jest.fn(),
     save: jest.fn(),
     delete: jest.fn(),
+    manager: {
+      query: jest.fn().mockResolvedValue(undefined),
+    },
   };
 
   beforeEach(() => {
@@ -124,10 +127,9 @@ describe('AuthorRepository', () => {
 
       await repo.findAll('miura');
 
-      expect(mockQb.where).toHaveBeenCalledWith(
-        'author.name ILIKE :search',
-        { search: '%miura%' },
-      );
+      expect(mockQb.where).toHaveBeenCalledWith('author.name ILIKE :search', {
+        search: '%miura%',
+      });
     });
 
     it('should calculate correct totalPages', async () => {
@@ -203,6 +205,10 @@ describe('AuthorRepository', () => {
 
       const result = await repo.delete(1);
 
+      expect(mockRepo.manager.query).toHaveBeenCalledWith(
+        'DELETE FROM "manga_authors" WHERE "author_id" = $1',
+        [1],
+      );
       expect(mockRepo.delete).toHaveBeenCalledWith(1);
       expect(result).toBe(true);
     });
@@ -212,6 +218,10 @@ describe('AuthorRepository', () => {
 
       const result = await repo.delete(999);
 
+      expect(mockRepo.manager.query).toHaveBeenCalledWith(
+        'DELETE FROM "manga_authors" WHERE "author_id" = $1',
+        [999],
+      );
       expect(result).toBe(false);
     });
   });

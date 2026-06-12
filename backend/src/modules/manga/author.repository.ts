@@ -53,7 +53,10 @@ export class AuthorRepository {
     return await this.repo.findOne({ where: { id } });
   };
 
-  update = async (id: number, data: Partial<Author>): Promise<Author | null> => {
+  update = async (
+    id: number,
+    data: Partial<Author>,
+  ): Promise<Author | null> => {
     const author = await this.repo.findOne({ where: { id } });
     if (!author) return null;
 
@@ -63,6 +66,10 @@ export class AuthorRepository {
   };
 
   delete = async (id: number): Promise<boolean> => {
+    await this.repo.manager.query(
+      'DELETE FROM "manga_authors" WHERE "author_id" = $1',
+      [id],
+    );
     const result = await this.repo.delete(id);
     return (result.affected ?? 0) > 0;
   };
