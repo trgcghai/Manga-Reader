@@ -15,7 +15,11 @@ import { AuthorController } from './author.controller';
   imports: [TypeOrmModule.forFeature([Manga, Author, Genre])],
   controllers: [MangaController, AuthorController],
   providers: [
-    MangaService, MangaRepository, AuthorRepository, GenreRepository, AuthorService,
+    MangaService,
+    MangaRepository,
+    AuthorRepository,
+    GenreRepository,
+    AuthorService,
   ],
   exports: [MangaRepository, AuthorRepository, GenreRepository],
 })

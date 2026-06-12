@@ -32,7 +32,13 @@ describe('AuthorService', () => {
 
   describe('findAll', () => {
     it('should return paginated authors', async () => {
-      const expected = { data: [], total: 0, page: 1, limit: 20, totalPages: 0 };
+      const expected = {
+        data: [],
+        total: 0,
+        page: 1,
+        limit: 20,
+        totalPages: 0,
+      };
       mockRepo.findAll.mockResolvedValue(expected);
       expect(await service.findAll('search', 2, 10)).toEqual(expected);
       expect(mockRepo.findAll).toHaveBeenCalledWith('search', 2, 10);
@@ -65,8 +71,13 @@ describe('AuthorService', () => {
     });
 
     it('should throw BadRequestException on duplicate name', async () => {
-      mockRepo.findOneByName.mockResolvedValue({ id: 1, name: 'Existing' } as Author);
-      await expect(service.create({ name: 'Existing' })).rejects.toThrow(BadRequestException);
+      mockRepo.findOneByName.mockResolvedValue({
+        id: 1,
+        name: 'Existing',
+      });
+      await expect(service.create({ name: 'Existing' })).rejects.toThrow(
+        BadRequestException,
+      );
       expect(mockRepo.create).not.toHaveBeenCalled();
     });
   });
@@ -87,7 +98,9 @@ describe('AuthorService', () => {
 
     it('should throw NotFoundException when author does not exist', async () => {
       mockRepo.findOneById.mockResolvedValue(null);
-      await expect(service.update(999, { name: 'Nope' })).rejects.toThrow(NotFoundException);
+      await expect(service.update(999, { name: 'Nope' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException when new name is taken', async () => {
@@ -95,13 +108,15 @@ describe('AuthorService', () => {
       const taken = { id: 2, name: 'Taken' } as Author;
       mockRepo.findOneById.mockResolvedValue(existing);
       mockRepo.findOneByName.mockResolvedValue(taken);
-      await expect(service.update(1, { name: 'Taken' })).rejects.toThrow(BadRequestException);
+      await expect(service.update(1, { name: 'Taken' })).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
   describe('delete', () => {
     it('should delete existing author', async () => {
-      mockRepo.findOneById.mockResolvedValue({ id: 1 } as Author);
+      mockRepo.findOneById.mockResolvedValue({ id: 1 });
       mockRepo.delete.mockResolvedValue(true);
       await service.delete(1);
       expect(mockRepo.delete).toHaveBeenCalledWith(1);

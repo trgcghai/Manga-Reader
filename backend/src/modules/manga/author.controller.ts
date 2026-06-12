@@ -1,5 +1,12 @@
 import {
-  Controller, Get, Post, Body, Param, Query, Patch, Delete,
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  Patch,
+  Delete,
 } from '@nestjs/common';
 import { AuthorService } from './author.service';
 import { CreateAuthorDto } from 'src/modules/manga/dto/create-author.dto';

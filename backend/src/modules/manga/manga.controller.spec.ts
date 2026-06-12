@@ -122,7 +122,9 @@ describe('MangaController', () => {
         new NotFoundException('Manga with ID 999 not found'),
       );
 
-      await expect(controller.update('999', dto)).rejects.toThrow(NotFoundException);
+      await expect(controller.update('999', dto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should pass authors and genres in update dto to service', async () => {
@@ -134,7 +136,10 @@ describe('MangaController', () => {
       const updatedManga = {
         id: 1,
         title: 'Updated',
-        authors: [{ id: 1, name: 'Author1' }, { id: 2, name: 'Author2' }],
+        authors: [
+          { id: 1, name: 'Author1' },
+          { id: 2, name: 'Author2' },
+        ],
         genres: [{ id: 1, name: 'Genre1' }],
       } as unknown as Manga;
       service.update.mockResolvedValue(updatedManga);
@@ -146,12 +151,14 @@ describe('MangaController', () => {
     });
 
     it('should throw BadRequestException when service throws it', async () => {
-      const dto: UpdateMangaDto = {} as UpdateMangaDto;
+      const dto: UpdateMangaDto = {};
       service.update.mockRejectedValue(
         new BadRequestException('No updatable fields provided'),
       );
 
-      await expect(controller.update('1', dto)).rejects.toThrow(BadRequestException);
+      await expect(controller.update('1', dto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 

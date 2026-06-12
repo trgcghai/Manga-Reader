@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Param, Query, Patch, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  Patch,
+  Delete,
+} from '@nestjs/common';
 import { MangaService } from './manga.service';
 import { CreateMangaDto } from 'src/modules/manga/dto/manga.dto';
 import { UpdateMangaDto } from 'src/modules/manga/dto/update-manga.dto';

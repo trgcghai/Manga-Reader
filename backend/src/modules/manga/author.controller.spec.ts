@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthorController } from './author.controller';
 import { AuthorService } from './author.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { CreateAuthorDto } from 'src/modules/manga/dto/create-author.dto';
 import { UpdateAuthorDto } from 'src/modules/manga/dto/update-author.dto';
+import { Author } from 'src/modules/manga/entities/author.entity';
 
 describe('AuthorController', () => {
   let controller: AuthorController;
@@ -36,7 +38,13 @@ describe('AuthorController', () => {
 
   describe('findAll', () => {
     it('should return paginated authors', async () => {
-      const expected = { data: [], total: 0, page: 1, limit: 20, totalPages: 0 };
+      const expected = {
+        data: [],
+        total: 0,
+        page: 1,
+        limit: 20,
+        totalPages: 0,
+      };
       service.findAll.mockResolvedValue(expected);
 
       const result = await controller.findAll('search', '2', '10');
@@ -48,7 +56,7 @@ describe('AuthorController', () => {
 
   describe('findOne', () => {
     it('should return author by id', async () => {
-      const author = { id: 1, name: 'Test' };
+      const author = { id: 1, name: 'Test' } as unknown as Author;
       service.findOne.mockResolvedValue(author);
 
       const result = await controller.findOne('1');
@@ -60,14 +68,16 @@ describe('AuthorController', () => {
     it('should throw NotFoundException when author not found', async () => {
       service.findOne.mockRejectedValue(new NotFoundException());
 
-      await expect(controller.findOne('999')).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne('999')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
   describe('create', () => {
     it('should create a new author', async () => {
       const dto: CreateAuthorDto = { name: 'New Author' };
-      const created = { id: 1, name: 'New Author' };
+      const created = { id: 1, name: 'New Author' } as unknown as Author;
       service.create.mockResolvedValue(created);
 
       const result = await controller.create(dto);
@@ -79,14 +89,16 @@ describe('AuthorController', () => {
     it('should throw BadRequestException on duplicate name', async () => {
       service.create.mockRejectedValue(new BadRequestException());
 
-      await expect(controller.create({ name: 'Duplicate' })).rejects.toThrow(BadRequestException);
+      await expect(controller.create({ name: 'Duplicate' })).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
   describe('update', () => {
     it('should update and return the author', async () => {
       const dto: UpdateAuthorDto = { name: 'Updated' };
-      const updated = { id: 1, name: 'Updated' };
+      const updated = { id: 1, name: 'Updated' } as unknown as Author;
       service.update.mockResolvedValue(updated);
 
       const result = await controller.update('1', dto);
@@ -98,7 +110,9 @@ describe('AuthorController', () => {
     it('should throw NotFoundException when author not found', async () => {
       service.update.mockRejectedValue(new NotFoundException());
 
-      await expect(controller.update('999', { name: 'Nope' })).rejects.toThrow(NotFoundException);
+      await expect(controller.update('999', { name: 'Nope' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
