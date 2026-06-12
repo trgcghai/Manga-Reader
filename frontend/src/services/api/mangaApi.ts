@@ -18,6 +18,8 @@ export interface PaginatedResponse<T> {
   total: number
 }
 
+export type UpdateMangaPayload = Partial<CreateMangaPayload>
+
 export interface CreateMangaPayload {
   title: string
   status: string
@@ -48,4 +50,21 @@ export async function createManga(
   const res = await axiosInstance.post<MangaResponse>(`/mangas`, data)
 
   return res.data
+}
+
+export async function getManga(id: number): Promise<MangaResponse> {
+  const res = await axiosInstance.get<MangaResponse>(`/mangas/${id}`)
+  return res.data
+}
+
+export async function updateManga(
+  id: number,
+  data: UpdateMangaPayload,
+): Promise<MangaResponse> {
+  const res = await axiosInstance.patch<MangaResponse>(`/mangas/${id}`, data)
+  return res.data
+}
+
+export async function deleteManga(id: number): Promise<void> {
+  await axiosInstance.delete(`/mangas/${id}`)
 }
