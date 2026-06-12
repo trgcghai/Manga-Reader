@@ -10,7 +10,7 @@ export class GenreRepository {
 
   findOneByName = async (name: string): Promise<Genre | null> => {
     return await this.repo.findOne({
-      where: { name: name.trim().toLowerCase() },
+      where: { name: name.trim() },
     });
   };
 

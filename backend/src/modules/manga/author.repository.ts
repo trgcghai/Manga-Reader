@@ -10,7 +10,7 @@ export class AuthorRepository {
 
   findOneByName = async (name: string): Promise<Author | null> => {
     return await this.repo.findOne({
-      where: { name: name.trim().toLowerCase() },
+      where: { name: name.trim() },
     });
   };
 

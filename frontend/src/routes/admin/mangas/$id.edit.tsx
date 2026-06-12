@@ -59,10 +59,10 @@ function EditMangaPage() {
       title: manga?.title ?? '',
       status: manga?.status ?? 'ongoing',
       description: manga?.description ?? '',
-      alternativeTitles: (manga?.alternativeTitles as string[]) ?? [],
+      alternativeTitles: manga?.alternativeTitles ?? [],
       coverPath: manga?.coverPath ?? '',
-      authors: manga?.authors?.map((a) => a.name) ?? [],
-      genres: manga?.genres?.map((g) => g.name) ?? [],
+      authors: manga?.authors.map((a) => a.name) ?? [],
+      genres: manga?.genres.map((g) => g.name) ?? [],
     },
     onSubmit: async ({ value }) => {
       const payload: UpdateMangaPayload = {
@@ -372,7 +372,7 @@ function EditMangaPage() {
           {mutation.isError && (
             <UiField data-invalid>
               <FieldDescription className="text-destructive">
-                {(mutation.error as Error).message || 'Failed to update manga'}
+                {mutation.error.message || 'Failed to update manga'}
               </FieldDescription>
             </UiField>
           )}

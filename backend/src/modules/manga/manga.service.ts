@@ -71,7 +71,7 @@ export class MangaService {
         title: dto.title,
         status: dto.status,
         description: dto.description,
-        alternativeTitles: dto.alternativeTitles,
+        alternativeTitles: [...(dto.alternativeTitles || []), dto.title],
         coverPath: dto.coverPath,
         authors,
         genres,
@@ -92,15 +92,14 @@ export class MangaService {
 
       const updateData: Partial<Manga> = {};
 
-      if (dto.title !== undefined) updateData.title = dto.title;
-      if (dto.status !== undefined) updateData.status = dto.status;
-      if (dto.description !== undefined)
-        updateData.description = dto.description;
-      if (dto.alternativeTitles !== undefined)
+      if (dto.title) updateData.title = dto.title;
+      if (dto.status) updateData.status = dto.status;
+      if (dto.description) updateData.description = dto.description;
+      if (dto.alternativeTitles)
         updateData.alternativeTitles = dto.alternativeTitles;
-      if (dto.coverPath !== undefined) updateData.coverPath = dto.coverPath;
+      if (dto.coverPath) updateData.coverPath = dto.coverPath;
 
-      if (dto.authors !== undefined) {
+      if (dto.authors) {
         const authors = await Promise.all(
           dto.authors.map(async (name) => {
             let author = await this.authorRepository.findOneByName(name);
@@ -113,7 +112,7 @@ export class MangaService {
         updateData.authors = authors;
       }
 
-      if (dto.genres !== undefined) {
+      if (dto.genres) {
         const genres = await Promise.all(
           dto.genres.map(async (name) => {
             let genre = await this.genreRepo.findOneByName(name);

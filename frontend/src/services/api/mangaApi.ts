@@ -7,8 +7,8 @@ export interface MangaResponse {
   description: string
   coverPath: string
   status: string
-  authors?: { id: number; name: string }[]
-  genres?: { id: number; name: string }[]
+  authors: { id: number; name: string; createdAt: string; updatedAt: string }[]
+  genres: { id: number; name: string; createdAt: string; updatedAt: string }[]
   createdAt: string
   updatedAt: string
 }

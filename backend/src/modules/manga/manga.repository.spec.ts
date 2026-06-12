@@ -1,3 +1,4 @@
+import { Repository } from 'typeorm';
 import { MangaRepository } from './manga.repository';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
 
@@ -11,13 +12,18 @@ describe('MangaRepository', () => {
   };
 
   beforeEach(() => {
-    repo = new MangaRepository(mockRepo as any);
+    repo = new MangaRepository(mockRepo as unknown as Repository<Manga>);
     jest.clearAllMocks();
   });
 
   describe('findOneByIdWithRelations', () => {
     it('should find manga with authors and genres relations', async () => {
-      const expected = { id: 1, title: 'Test', authors: [], genres: [] } as Manga;
+      const expected = {
+        id: 1,
+        title: 'Test',
+        authors: [],
+        genres: [],
+      } as unknown as Manga;
       mockRepo.findOne.mockResolvedValue(expected);
       const result = await repo.findOneByIdWithRelations(1);
       expect(mockRepo.findOne).toHaveBeenCalledWith({
@@ -37,8 +43,18 @@ describe('MangaRepository', () => {
   describe('update', () => {
     it('should find, mutate, and save manga', async () => {
       const partial = { title: 'Updated' };
-      const existing = { id: 1, title: 'Original', authors: [], genres: [] } as Manga;
-      const saved = { id: 1, title: 'Updated', authors: [], genres: [] } as Manga;
+      const existing = {
+        id: 1,
+        title: 'Original',
+        authors: [],
+        genres: [],
+      } as unknown as Manga;
+      const saved = {
+        id: 1,
+        title: 'Updated',
+        authors: [],
+        genres: [],
+      } as unknown as Manga;
       mockRepo.findOne.mockResolvedValue(existing);
       mockRepo.save.mockResolvedValue(saved);
 
@@ -62,8 +78,13 @@ describe('MangaRepository', () => {
     it('should update authors and genres when provided', async () => {
       const author = { id: 1, name: 'Author' };
       const genre = { id: 1, name: 'Genre' };
-      const existing = { id: 1, title: 'Test', authors: [], genres: [] } as Manga;
-      const partial = { authors: [author], genres: [genre] } as any;
+      const existing = {
+        id: 1,
+        title: 'Test',
+        authors: [],
+        genres: [],
+      } as unknown as Manga;
+      const partial = { authors: [author], genres: [genre] } as Partial<Manga>;
       mockRepo.findOne.mockResolvedValue(existing);
       mockRepo.save.mockResolvedValue(existing);
 
@@ -71,6 +92,117 @@ describe('MangaRepository', () => {
 
       expect(existing.authors).toEqual([author]);
       expect(existing.genres).toEqual([genre]);
+    });
+
+    it('should mutate all scalar fields from partial data', async () => {
+      const existing = {
+        id: 1,
+        title: 'Old',
+        status: 'ongoing',
+        description: 'Old desc',
+        alternativeTitles: ['Old'],
+        coverPath: '/old.jpg',
+        authors: [],
+        genres: [],
+      } as unknown as Manga;
+      const partial = {
+        title: 'New',
+        status: 'completed',
+        description: 'New desc',
+        alternativeTitles: ['New'],
+        coverPath: '/new.jpg',
+      } as Partial<Manga>;
+      mockRepo.findOne.mockResolvedValue(existing);
+      mockRepo.save.mockResolvedValue(existing);
+
+      await repo.update(1, partial);
+
+      expect(existing.title).toBe('New');
+      expect(existing.status).toBe('completed');
+      expect(existing.description).toBe('New desc');
+      expect(existing.alternativeTitles).toEqual(['New']);
+      expect(existing.coverPath).toBe('/new.jpg');
+    });
+
+    it('should NOT overwrite fields not present in partial data', async () => {
+      const existing = {
+        id: 1,
+        title: 'Original',
+        status: 'ongoing',
+        description: 'Some desc',
+        alternativeTitles: ['Alt'],
+        coverPath: '/path.jpg',
+        authors: [],
+        genres: [],
+      } as unknown as Manga;
+      mockRepo.findOne.mockResolvedValue(existing);
+      mockRepo.save.mockResolvedValue(existing);
+
+      await repo.update(1, { title: 'Only Title Changed' });
+
+      expect(existing.title).toBe('Only Title Changed');
+      expect(existing.status).toBe('ongoing');
+      expect(existing.description).toBe('Some desc');
+      expect(existing.alternativeTitles).toEqual(['Alt']);
+      expect(existing.coverPath).toBe('/path.jpg');
+    });
+
+    it('should use findOne with relations (NOT preload)', async () => {
+      const existing = {
+        id: 1,
+        title: 'Test',
+        authors: [],
+        genres: [],
+      } as unknown as Manga;
+      mockRepo.findOne.mockResolvedValue(existing);
+      mockRepo.save.mockResolvedValue(existing);
+
+      await repo.update(1, { title: 'Updated' });
+
+      expect(mockRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 1 },
+        relations: ['authors', 'genres'],
+      });
+      expect(mockRepo.preload).not.toHaveBeenCalled();
+    });
+
+    it('should propagate errors from findOne', async () => {
+      mockRepo.findOne.mockRejectedValue(new Error('DB error'));
+
+      await expect(repo.update(1, { title: 'Nope' })).rejects.toThrow(
+        'DB error',
+      );
+    });
+
+    it('should propagate errors from save', async () => {
+      const existing = {
+        id: 1,
+        title: 'Test',
+        authors: [],
+        genres: [],
+      } as unknown as Manga;
+      mockRepo.findOne.mockResolvedValue(existing);
+      mockRepo.save.mockRejectedValue(new Error('Save failed'));
+
+      await expect(repo.update(1, { title: 'Nope' })).rejects.toThrow(
+        'Save failed',
+      );
+    });
+
+    it('should save the same mutated entity reference', async () => {
+      const existing = {
+        id: 1,
+        title: 'Original',
+        authors: [],
+        genres: [],
+      } as unknown as Manga;
+      mockRepo.findOne.mockResolvedValue(existing);
+      mockRepo.save.mockResolvedValue(existing);
+
+      await repo.update(1, { title: 'Mutated' });
+
+      expect(mockRepo.save).toHaveBeenCalledWith(existing);
+      expect(existing.title).toBe('Mutated');
     });
   });
 

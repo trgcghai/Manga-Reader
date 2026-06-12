@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { MangaController } from './manga.controller';
 import { MangaService } from './manga.service';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateMangaDto } from 'src/modules/manga/dto/manga.dto';
 import { UpdateMangaDto } from 'src/modules/manga/dto/update-manga.dto';
 import { MangaStatus } from 'src/common/constants/manga.constant';
@@ -123,6 +123,35 @@ describe('MangaController', () => {
       );
 
       await expect(controller.update('999', dto)).rejects.toThrow(NotFoundException);
+    });
+
+    it('should pass authors and genres in update dto to service', async () => {
+      const dto: UpdateMangaDto = {
+        title: 'Updated',
+        authors: ['Author1', 'Author2'],
+        genres: ['Genre1'],
+      };
+      const updatedManga = {
+        id: 1,
+        title: 'Updated',
+        authors: [{ id: 1, name: 'Author1' }, { id: 2, name: 'Author2' }],
+        genres: [{ id: 1, name: 'Genre1' }],
+      } as unknown as Manga;
+      service.update.mockResolvedValue(updatedManga);
+
+      const result = await controller.update('1', dto);
+
+      expect(service.update).toHaveBeenCalledWith(1, dto);
+      expect(result).toEqual(updatedManga);
+    });
+
+    it('should throw BadRequestException when service throws it', async () => {
+      const dto: UpdateMangaDto = {} as UpdateMangaDto;
+      service.update.mockRejectedValue(
+        new BadRequestException('No updatable fields provided'),
+      );
+
+      await expect(controller.update('1', dto)).rejects.toThrow(BadRequestException);
     });
   });
 

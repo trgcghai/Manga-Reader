@@ -122,7 +122,7 @@ describe('MangaService', () => {
         title: 'Berserk',
         status: MangaStatus.ONGOING,
         description: undefined,
-        alternativeTitles: undefined,
+        alternativeTitles: ['Berserk'],
         coverPath: undefined,
         authors: [author],
         genres: [genre],
@@ -369,6 +369,41 @@ describe('MangaService', () => {
       expect(mockAuthorRepo.create).not.toHaveBeenCalled();
     });
 
+    it('should not create duplicate authors when same name appears in update', async () => {
+      const existingManga = {
+        id: 1,
+        title: 'Test',
+        authors: [{ id: 1, name: 'Author1' } as Author],
+        genres: [],
+      } as unknown as Manga;
+      const dto = {
+        title: 'Updated',
+        authors: ['Author1'],
+        genres: ['Genre1'],
+      } as UpdateMangaDto;
+      const existingAuthor = { id: 1, name: 'Author1' } as Author;
+      const existingGenre = { id: 1, name: 'Genre1' } as Genre;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
+        existingManga,
+      );
+      mockAuthorRepo.findOneByName.mockResolvedValue(existingAuthor);
+      mockGenreRepo.findOneByName.mockResolvedValue(existingGenre);
+      mockMangaRepository.update.mockResolvedValue({
+        ...existingManga,
+        title: 'Updated',
+        authors: [existingAuthor],
+        genres: [existingGenre],
+      });
+
+      await service.update(1, dto);
+
+      expect(mockAuthorRepo.findOneByName).toHaveBeenCalledWith('Author1');
+      expect(mockAuthorRepo.create).not.toHaveBeenCalled();
+      expect(mockGenreRepo.findOneByName).toHaveBeenCalledWith('Genre1');
+      expect(mockGenreRepo.create).not.toHaveBeenCalled();
+    });
+
     it('should throw NotFoundException when manga does not exist', async () => {
       mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(null);
 
@@ -417,6 +452,260 @@ describe('MangaService', () => {
       );
 
       await expect(service.update(1, {})).rejects.toThrow(BadRequestException);
+    });
+
+    it('should mix existing and new authors', async () => {
+      const existingManga = {
+        id: 1,
+        title: 'Test',
+        authors: [],
+        genres: [],
+      } as unknown as Manga;
+      const dto = {
+        authors: ['Existing Author', 'New Author'],
+      } as UpdateMangaDto;
+      const existingAuthor = { id: 5, name: 'Existing Author' } as Author;
+      const newAuthor = { id: 10, name: 'New Author' } as Author;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
+        existingManga,
+      );
+      mockAuthorRepo.findOneByName
+        .mockResolvedValueOnce(existingAuthor)
+        .mockResolvedValueOnce(null);
+      mockAuthorRepo.create.mockResolvedValue(newAuthor);
+      mockMangaRepository.update.mockResolvedValue({
+        ...existingManga,
+        authors: [existingAuthor, newAuthor],
+      });
+
+      const result = await service.update(1, dto);
+
+      expect(mockAuthorRepo.findOneByName).toHaveBeenCalledTimes(2);
+      expect(mockAuthorRepo.findOneByName).toHaveBeenCalledWith(
+        'Existing Author',
+      );
+      expect(mockAuthorRepo.findOneByName).toHaveBeenCalledWith('New Author');
+      expect(mockAuthorRepo.create).toHaveBeenCalledTimes(1);
+      expect(mockAuthorRepo.create).toHaveBeenCalledWith({
+        name: 'New Author',
+      });
+      expect(result.authors).toHaveLength(2);
+    });
+
+    it('should mix existing and new genres', async () => {
+      const existingManga = {
+        id: 1,
+        title: 'Test',
+        authors: [],
+        genres: [],
+      } as unknown as Manga;
+      const dto = { genres: ['Existing Genre', 'New Genre'] } as UpdateMangaDto;
+      const existingGenre = { id: 3, name: 'Existing Genre' } as Genre;
+      const newGenre = { id: 8, name: 'New Genre' } as Genre;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
+        existingManga,
+      );
+      mockGenreRepo.findOneByName
+        .mockResolvedValueOnce(existingGenre)
+        .mockResolvedValueOnce(null);
+      mockGenreRepo.create.mockResolvedValue(newGenre);
+      mockMangaRepository.update.mockResolvedValue({
+        ...existingManga,
+        genres: [existingGenre, newGenre],
+      });
+
+      const result = await service.update(1, dto);
+
+      expect(mockGenreRepo.findOneByName).toHaveBeenCalledTimes(2);
+      expect(mockGenreRepo.create).toHaveBeenCalledTimes(1);
+      expect(mockGenreRepo.create).toHaveBeenCalledWith({ name: 'New Genre' });
+      expect(result.genres).toHaveLength(2);
+    });
+
+    it('should update all optional fields simultaneously', async () => {
+      const existingManga = {
+        id: 1,
+        title: 'Old Title',
+        status: 'ongoing',
+        description: 'Old desc',
+        alternativeTitles: ['Old Alt'],
+        coverPath: '/old.jpg',
+        authors: [{ id: 1, name: 'Old Author' }],
+        genres: [{ id: 1, name: 'Old Genre' }],
+      } as unknown as Manga;
+      const dto = {
+        title: 'New Title',
+        status: 'completed' as const,
+        description: 'New desc',
+        alternativeTitles: ['New Alt'],
+        coverPath: '/new.jpg',
+        authors: ['New Author'],
+        genres: ['New Genre'],
+      } as UpdateMangaDto;
+      const newAuthor = { id: 10, name: 'New Author' } as Author;
+      const newGenre = { id: 8, name: 'New Genre' } as Genre;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
+        existingManga,
+      );
+      mockAuthorRepo.findOneByName.mockResolvedValue(null);
+      mockAuthorRepo.create.mockResolvedValue(newAuthor);
+      mockGenreRepo.findOneByName.mockResolvedValue(null);
+      mockGenreRepo.create.mockResolvedValue(newGenre);
+      mockMangaRepository.update.mockResolvedValue({
+        ...existingManga,
+        title: 'New Title',
+        status: 'completed',
+        description: 'New desc',
+        alternativeTitles: ['New Alt'],
+        coverPath: '/new.jpg',
+        authors: [newAuthor],
+        genres: [newGenre],
+      });
+
+      const result = await service.update(1, dto);
+
+      expect(result.title).toBe('New Title');
+      expect(result.status).toBe('completed');
+      expect(result.description).toBe('New desc');
+      expect(result.alternativeTitles).toEqual(['New Alt']);
+      expect(result.description).toBe('New desc');
+      expect(mockMangaRepository.update).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({
+          title: 'New Title',
+          status: 'completed',
+          description: 'New desc',
+          alternativeTitles: ['New Alt'],
+          coverPath: '/new.jpg',
+          authors: [newAuthor],
+          genres: [newGenre],
+        }),
+      );
+    });
+
+    it('should handle empty genres array (clear relations)', async () => {
+      const existingManga = {
+        id: 1,
+        title: 'Test',
+        authors: [],
+        genres: [{ id: 1, name: 'Old Genre' }],
+      } as unknown as Manga;
+      const dto = { genres: [] } as UpdateMangaDto;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
+        existingManga,
+      );
+      mockMangaRepository.update.mockResolvedValue({
+        ...existingManga,
+        genres: [],
+      });
+
+      const result = await service.update(1, dto);
+
+      expect(mockMangaRepository.update).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({
+          genres: [],
+        }),
+      );
+      expect(result.genres).toEqual([]);
+    });
+
+    it('should throw NotFoundException when repository update returns null (race condition)', async () => {
+      const existingManga = {
+        id: 1,
+        title: 'Test',
+        authors: [],
+        genres: [],
+      } as unknown as Manga;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
+        existingManga,
+      );
+      mockMangaRepository.update.mockResolvedValue(null);
+
+      await expect(service.update(1, { title: 'Race' })).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('should wrap findOneByName errors in BadRequestException', async () => {
+      const existingManga = {
+        id: 1,
+        title: 'Test',
+        authors: [],
+        genres: [],
+      } as unknown as Manga;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
+        existingManga,
+      );
+      mockAuthorRepo.findOneByName.mockRejectedValue(
+        new Error('DB error on lookup'),
+      );
+
+      await expect(service.update(1, { authors: ['Test'] })).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should wrap repository update errors in BadRequestException', async () => {
+      const existingManga = {
+        id: 1,
+        title: 'Test',
+        authors: [],
+        genres: [],
+      } as unknown as Manga;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
+        existingManga,
+      );
+      mockMangaRepository.update.mockRejectedValue(new Error('Save failure'));
+
+      await expect(service.update(1, { title: 'Boom' })).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should wrap author create errors in BadRequestException', async () => {
+      const existingManga = {
+        id: 1,
+        title: 'Test',
+        authors: [],
+        genres: [],
+      } as unknown as Manga;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
+        existingManga,
+      );
+      mockAuthorRepo.findOneByName.mockResolvedValue(null);
+      mockAuthorRepo.create.mockRejectedValue(new Error('Create failed'));
+
+      await expect(
+        service.update(1, { authors: ['New Author'] }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should wrap genre create errors in BadRequestException', async () => {
+      const existingManga = {
+        id: 1,
+        title: 'Test',
+        authors: [],
+        genres: [],
+      } as unknown as Manga;
+
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
+        existingManga,
+      );
+      mockGenreRepo.findOneByName.mockResolvedValue(null);
+      mockGenreRepo.create.mockRejectedValue(new Error('Create failed'));
+
+      await expect(
+        service.update(1, { genres: ['New Genre'] }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
