@@ -6,7 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Manga } from './manga.entity';
+import { Manga } from 'src/modules/manga/entities/manga.entity';
 
 @Entity()
 export class Genre {

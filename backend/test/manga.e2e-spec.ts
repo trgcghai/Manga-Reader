@@ -9,7 +9,7 @@ import { Repository, DataSource } from 'typeorm';
 import { MangaModule } from '../src/modules/manga/manga.module';
 import { Manga } from '../src/modules/manga/entities/manga.entity';
 import { Author } from '../src/modules/author/entities/author.entity';
-import { Genre } from '../src/modules/manga/entities/genre.entity';
+import { Genre } from '../src/modules/genre/entities/genre.entity';
 import { Chapter } from '../src/modules/chapter/entities/chapter.entity';
 import { Translation } from '../src/modules/chapter/entities/translation.entity';
 import { Translator } from '../src/modules/translator/entities/translator.entity';

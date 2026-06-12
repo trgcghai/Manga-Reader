@@ -3,9 +3,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { GenreController } from './genre.controller';
 import { GenreService } from './genre.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { CreateGenreDto } from 'src/modules/manga/dto/create-genre.dto';
-import { UpdateGenreDto } from 'src/modules/manga/dto/update-genre.dto';
-import { Genre } from 'src/modules/manga/entities/genre.entity';
+import { CreateGenreDto } from 'src/modules/genre/dto/create-genre.dto';
+import { UpdateGenreDto } from 'src/modules/genre/dto/update-genre.dto';
+import { Genre } from 'src/modules/genre/entities/genre.entity';
 
 describe('GenreController', () => {
   let controller: GenreController;

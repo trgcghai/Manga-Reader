@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { GenreService } from './genre.service';
 import { GenreRepository } from './genre.repository';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { Genre } from 'src/modules/manga/entities/genre.entity';
+import { Genre } from 'src/modules/genre/entities/genre.entity';
 
 describe('GenreService', () => {
   let service: GenreService;

@@ -10,9 +10,9 @@ import {
   UpdateMangaDto,
 } from 'src/modules/manga/dto/manga.dto';
 import { AuthorService } from 'src/modules/author/author.service';
-import { GenreService } from 'src/modules/manga/genre.service';
+import { GenreService } from 'src/modules/genre/genre.service';
 import { Author } from 'src/modules/author/entities/author.entity';
-import { Genre } from 'src/modules/manga/entities/genre.entity';
+import { Genre } from 'src/modules/genre/entities/genre.entity';
 
 @Injectable()
 export class MangaService {

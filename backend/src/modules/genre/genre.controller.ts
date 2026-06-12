@@ -9,8 +9,8 @@ import {
   Delete,
 } from '@nestjs/common';
 import { GenreService } from './genre.service';
-import { CreateGenreDto } from 'src/modules/manga/dto/create-genre.dto';
-import { UpdateGenreDto } from 'src/modules/manga/dto/update-genre.dto';
+import { CreateGenreDto } from 'src/modules/genre/dto/create-genre.dto';
+import { UpdateGenreDto } from 'src/modules/genre/dto/update-genre.dto';
 
 @Controller('genres')
 export class GenreController {

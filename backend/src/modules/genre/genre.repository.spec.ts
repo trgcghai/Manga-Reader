@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Repository } from 'typeorm';
 import { GenreRepository } from './genre.repository';
-import { Genre } from 'src/modules/manga/entities/genre.entity';
+import { Genre } from 'src/modules/genre/entities/genre.entity';
 
 describe('GenreRepository', () => {
   let repo: GenreRepository;

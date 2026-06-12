@@ -5,10 +5,10 @@ import { UpdateMangaDto } from 'src/modules/manga/dto/update-manga.dto';
 import { MangaRepository } from 'src/modules/manga/manga.repository';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
 import { Author } from 'src/modules/author/entities/author.entity';
-import { Genre } from 'src/modules/manga/entities/genre.entity';
+import { Genre } from 'src/modules/genre/entities/genre.entity';
 import { CreateMangaDto } from 'src/modules/manga/dto/manga.dto';
 import { MangaStatus } from 'src/common/constants/manga.constant';
-import { GenreService } from 'src/modules/manga/genre.service';
+import { GenreService } from 'src/modules/genre/genre.service';
 import { AuthorService } from 'src/modules/author/author.service';
 
 describe('MangaService', () => {

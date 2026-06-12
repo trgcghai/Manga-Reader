@@ -1,5 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Genre } from 'src/modules/manga/entities/genre.entity';
+import { Genre } from 'src/modules/genre/entities/genre.entity';
 import { Repository } from 'typeorm';
 
 export class GenreRepository {

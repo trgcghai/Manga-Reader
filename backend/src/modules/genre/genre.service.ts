@@ -4,9 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { GenreRepository } from './genre.repository';
-import { CreateGenreDto } from 'src/modules/manga/dto/create-genre.dto';
-import { UpdateGenreDto } from 'src/modules/manga/dto/update-genre.dto';
-import { Genre } from 'src/modules/manga/entities/genre.entity';
+import { CreateGenreDto } from 'src/modules/genre/dto/create-genre.dto';
+import { UpdateGenreDto } from 'src/modules/genre/dto/update-genre.dto';
+import { Genre } from 'src/modules/genre/entities/genre.entity';
 
 @Injectable()
 export class GenreService {
