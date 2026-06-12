@@ -27,4 +27,22 @@ export class MangaRepository {
   create = async (data: Partial<Manga>): Promise<Manga> => {
     return await this.repo.save(data);
   };
+
+  findOneByIdWithRelations = async (id: number): Promise<Manga | null> => {
+    return await this.repo.findOne({
+      where: { id },
+      relations: ['authors', 'genres'],
+    });
+  };
+
+  update = async (id: number, data: Partial<Manga>): Promise<Manga | null> => {
+    const manga = await this.repo.preload({ id, ...data });
+    if (!manga) return null;
+    return await this.repo.save(manga);
+  };
+
+  delete = async (id: number): Promise<boolean> => {
+    const result = await this.repo.delete(id);
+    return (result.affected ?? 0) > 0;
+  };
 }
