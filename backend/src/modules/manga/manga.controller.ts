@@ -9,8 +9,10 @@ import {
   Delete,
 } from '@nestjs/common';
 import { MangaService } from './manga.service';
-import { CreateMangaDto } from 'src/modules/manga/dto/manga.dto';
-import { UpdateMangaDto } from 'src/modules/manga/dto/update-manga.dto';
+import {
+  CreateMangaDto,
+  UpdateMangaDto,
+} from 'src/modules/manga/dto/manga.dto';
 
 @Controller('mangas')
 export class MangaController {

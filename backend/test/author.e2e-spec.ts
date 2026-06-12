@@ -6,7 +6,7 @@ import type { App } from 'supertest/types';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { MangaModule } from '../src/modules/manga/manga.module';
-import { Author } from '../src/modules/manga/entities/author.entity';
+import { Author } from '../src/modules/author/entities/author.entity';
 import { Manga } from '../src/modules/manga/entities/manga.entity';
 import { Genre } from '../src/modules/manga/entities/genre.entity';
 import { Chapter } from '../src/modules/chapter/entities/chapter.entity';

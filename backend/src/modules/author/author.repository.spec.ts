@@ -1,6 +1,6 @@
 import { Repository } from 'typeorm';
 import { AuthorRepository } from './author.repository';
-import { Author } from 'src/modules/manga/entities/author.entity';
+import { Author } from 'src/modules/author/entities/author.entity';
 
 describe('AuthorRepository', () => {
   let repo: AuthorRepository;

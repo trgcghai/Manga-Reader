@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthorController } from './author.controller';
 import { AuthorService } from './author.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { CreateAuthorDto } from 'src/modules/manga/dto/create-author.dto';
-import { UpdateAuthorDto } from 'src/modules/manga/dto/update-author.dto';
-import { Author } from 'src/modules/manga/entities/author.entity';
+import {
+  CreateAuthorDto,
+  UpdateAuthorDto,
+} from 'src/modules/author/dto/author.dto';
+import { Author } from 'src/modules/author/entities/author.entity';
 
 describe('AuthorController', () => {
   let controller: AuthorController;

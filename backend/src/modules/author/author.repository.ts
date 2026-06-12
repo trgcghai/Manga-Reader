@@ -1,5 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Author } from 'src/modules/manga/entities/author.entity';
+import { Author } from 'src/modules/author/entities/author.entity';
 import { Repository } from 'typeorm';
 
 export class AuthorRepository {

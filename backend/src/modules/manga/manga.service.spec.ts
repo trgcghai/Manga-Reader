@@ -4,12 +4,12 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UpdateMangaDto } from 'src/modules/manga/dto/update-manga.dto';
 import { MangaRepository } from 'src/modules/manga/manga.repository';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
-import { Author } from 'src/modules/manga/entities/author.entity';
+import { Author } from 'src/modules/author/entities/author.entity';
 import { Genre } from 'src/modules/manga/entities/genre.entity';
 import { CreateMangaDto } from 'src/modules/manga/dto/manga.dto';
 import { MangaStatus } from 'src/common/constants/manga.constant';
 import { GenreRepository } from 'src/modules/manga/genre.repository';
-import { AuthorRepository } from 'src/modules/manga/author.repository';
+import { AuthorService } from 'src/modules/author/author.service';
 
 describe('MangaService', () => {
   let service: MangaService;
@@ -24,9 +24,8 @@ describe('MangaService', () => {
     delete: jest.fn(),
   };
 
-  const mockAuthorRepo = {
-    findOneByName: jest.fn(),
-    create: jest.fn(),
+  const mockAuthorService = {
+    findOrCreate: jest.fn(),
   };
 
   const mockGenreRepo = {
@@ -39,7 +38,7 @@ describe('MangaService', () => {
       providers: [
         MangaService,
         { provide: MangaRepository, useValue: mockMangaRepository },
-        { provide: AuthorRepository, useValue: mockAuthorRepo },
+        { provide: AuthorService, useValue: mockAuthorService },
         { provide: GenreRepository, useValue: mockGenreRepo },
       ],
     }).compile();
@@ -109,8 +108,7 @@ describe('MangaService', () => {
         genres: [genre],
       } as Manga;
 
-      mockAuthorRepo.findOneByName.mockResolvedValue(null);
-      mockAuthorRepo.create.mockResolvedValue(author);
+      mockAuthorService.findOrCreate.mockResolvedValue(author);
       mockGenreRepo.findOneByName.mockResolvedValue(null);
       mockGenreRepo.create.mockResolvedValue(genre);
       mockMangaRepository.create.mockResolvedValue(savedManga);
@@ -118,6 +116,7 @@ describe('MangaService', () => {
       const result = await service.create(dto);
 
       expect(result.title).toBe('Berserk');
+      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('Kentaro Miura');
       expect(mockMangaRepository.create).toHaveBeenCalledWith({
         title: 'Berserk',
         status: MangaStatus.ONGOING,
@@ -146,14 +145,14 @@ describe('MangaService', () => {
         genres: [existingGenre],
       } as Manga;
 
-      mockAuthorRepo.findOneByName.mockResolvedValue(existingAuthor);
+      mockAuthorService.findOrCreate.mockResolvedValue(existingAuthor);
       mockGenreRepo.findOneByName.mockResolvedValue(existingGenre);
       mockMangaRepository.create.mockResolvedValue(savedManga);
 
       const result = await service.create(dto);
 
       expect(result.id).toBe(2);
-      expect(mockAuthorRepo.create).not.toHaveBeenCalled();
+      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('Existing Author');
       expect(mockGenreRepo.create).not.toHaveBeenCalled();
     });
   });
@@ -234,8 +233,7 @@ describe('MangaService', () => {
       mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
         existingManga,
       );
-      mockAuthorRepo.findOneByName.mockResolvedValue(null);
-      mockAuthorRepo.create.mockResolvedValue(newAuthor);
+      mockAuthorService.findOrCreate.mockResolvedValue(newAuthor);
       mockMangaRepository.update.mockResolvedValue({
         ...existingManga,
         authors: [newAuthor],
@@ -243,10 +241,7 @@ describe('MangaService', () => {
 
       await service.update(1, dto);
 
-      expect(mockAuthorRepo.findOneByName).toHaveBeenCalledWith('New Author');
-      expect(mockAuthorRepo.create).toHaveBeenCalledWith({
-        name: 'New Author',
-      });
+      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('New Author');
       expect(mockMangaRepository.update).toHaveBeenCalledWith(
         1,
         expect.objectContaining({
@@ -306,7 +301,7 @@ describe('MangaService', () => {
 
       await service.update(1, dto);
 
-      expect(mockAuthorRepo.findOneByName).not.toHaveBeenCalled();
+      expect(mockAuthorService.findOrCreate).not.toHaveBeenCalled();
       expect(mockGenreRepo.findOneByName).not.toHaveBeenCalled();
       expect(mockMangaRepository.update).toHaveBeenCalledWith(
         1,
@@ -330,10 +325,9 @@ describe('MangaService', () => {
       mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
         existingManga,
       );
-      mockAuthorRepo.findOneByName.mockResolvedValueOnce(null);
-      mockAuthorRepo.create.mockResolvedValueOnce(authorA);
-      mockAuthorRepo.findOneByName.mockResolvedValueOnce(null);
-      mockAuthorRepo.create.mockResolvedValueOnce(authorB);
+      mockAuthorService.findOrCreate
+        .mockResolvedValueOnce(authorA)
+        .mockResolvedValueOnce(authorB);
       mockMangaRepository.update.mockResolvedValue({
         ...existingManga,
         authors: [authorA, authorB],
@@ -341,7 +335,9 @@ describe('MangaService', () => {
 
       const result = await service.update(1, dto);
 
-      expect(mockAuthorRepo.create).toHaveBeenCalledTimes(2);
+      expect(mockAuthorService.findOrCreate).toHaveBeenCalledTimes(2);
+      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('Author A');
+      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('Author B');
       expect(result.authors).toHaveLength(2);
     });
 
@@ -358,7 +354,7 @@ describe('MangaService', () => {
       mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
         existingManga,
       );
-      mockAuthorRepo.findOneByName.mockResolvedValue(author);
+      mockAuthorService.findOrCreate.mockResolvedValue(author);
       mockMangaRepository.update.mockResolvedValue({
         ...existingManga,
         authors: [author],
@@ -366,7 +362,7 @@ describe('MangaService', () => {
 
       await service.update(1, dto);
 
-      expect(mockAuthorRepo.create).not.toHaveBeenCalled();
+      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('Existing Author');
     });
 
     it('should not create duplicate authors when same name appears in update', async () => {
@@ -387,7 +383,7 @@ describe('MangaService', () => {
       mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
         existingManga,
       );
-      mockAuthorRepo.findOneByName.mockResolvedValue(existingAuthor);
+      mockAuthorService.findOrCreate.mockResolvedValue(existingAuthor);
       mockGenreRepo.findOneByName.mockResolvedValue(existingGenre);
       mockMangaRepository.update.mockResolvedValue({
         ...existingManga,
@@ -398,8 +394,7 @@ describe('MangaService', () => {
 
       await service.update(1, dto);
 
-      expect(mockAuthorRepo.findOneByName).toHaveBeenCalledWith('Author1');
-      expect(mockAuthorRepo.create).not.toHaveBeenCalled();
+      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('Author1');
       expect(mockGenreRepo.findOneByName).toHaveBeenCalledWith('Genre1');
       expect(mockGenreRepo.create).not.toHaveBeenCalled();
     });
@@ -470,10 +465,9 @@ describe('MangaService', () => {
       mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
         existingManga,
       );
-      mockAuthorRepo.findOneByName
+      mockAuthorService.findOrCreate
         .mockResolvedValueOnce(existingAuthor)
-        .mockResolvedValueOnce(null);
-      mockAuthorRepo.create.mockResolvedValue(newAuthor);
+        .mockResolvedValueOnce(newAuthor);
       mockMangaRepository.update.mockResolvedValue({
         ...existingManga,
         authors: [existingAuthor, newAuthor],
@@ -481,15 +475,9 @@ describe('MangaService', () => {
 
       const result = await service.update(1, dto);
 
-      expect(mockAuthorRepo.findOneByName).toHaveBeenCalledTimes(2);
-      expect(mockAuthorRepo.findOneByName).toHaveBeenCalledWith(
-        'Existing Author',
-      );
-      expect(mockAuthorRepo.findOneByName).toHaveBeenCalledWith('New Author');
-      expect(mockAuthorRepo.create).toHaveBeenCalledTimes(1);
-      expect(mockAuthorRepo.create).toHaveBeenCalledWith({
-        name: 'New Author',
-      });
+      expect(mockAuthorService.findOrCreate).toHaveBeenCalledTimes(2);
+      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('Existing Author');
+      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('New Author');
       expect(result.authors).toHaveLength(2);
     });
 
@@ -550,8 +538,7 @@ describe('MangaService', () => {
       mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
         existingManga,
       );
-      mockAuthorRepo.findOneByName.mockResolvedValue(null);
-      mockAuthorRepo.create.mockResolvedValue(newAuthor);
+      mockAuthorService.findOrCreate.mockResolvedValue(newAuthor);
       mockGenreRepo.findOneByName.mockResolvedValue(null);
       mockGenreRepo.create.mockResolvedValue(newGenre);
       mockMangaRepository.update.mockResolvedValue({
@@ -632,7 +619,7 @@ describe('MangaService', () => {
       );
     });
 
-    it('should wrap findOneByName errors in BadRequestException', async () => {
+    it('should wrap findOrCreate errors in BadRequestException', async () => {
       const existingManga = {
         id: 1,
         title: 'Test',
@@ -643,7 +630,7 @@ describe('MangaService', () => {
       mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
         existingManga,
       );
-      mockAuthorRepo.findOneByName.mockRejectedValue(
+      mockAuthorService.findOrCreate.mockRejectedValue(
         new Error('DB error on lookup'),
       );
 
@@ -670,7 +657,7 @@ describe('MangaService', () => {
       );
     });
 
-    it('should wrap author create errors in BadRequestException', async () => {
+    it('should wrap author findOrCreate errors in BadRequestException', async () => {
       const existingManga = {
         id: 1,
         title: 'Test',
@@ -681,8 +668,7 @@ describe('MangaService', () => {
       mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
         existingManga,
       );
-      mockAuthorRepo.findOneByName.mockResolvedValue(null);
-      mockAuthorRepo.create.mockRejectedValue(new Error('Create failed'));
+      mockAuthorService.findOrCreate.mockRejectedValue(new Error('Create failed'));
 
       await expect(
         service.update(1, { authors: ['New Author'] }),

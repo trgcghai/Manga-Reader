@@ -1,6 +1,6 @@
 import { validate } from 'class-validator';
-import { UpdateMangaDto } from './update-manga.dto';
 import { MangaStatus } from 'src/common/constants/manga.constant';
+import { UpdateMangaDto } from 'src/modules/manga/dto/manga.dto';
 
 describe('UpdateMangaDto', () => {
   it('should pass with empty object (all fields optional)', async () => {
@@ -31,7 +31,7 @@ describe('UpdateMangaDto', () => {
 
   it('should reject invalid status enum', async () => {
     const dto = new UpdateMangaDto();
-    (dto as any).status = 'invalid_status';
+    dto.status = 'invalid_status' as MangaStatus;
     const errors = await validate(dto);
     expect(errors.some((e) => e.property === 'status')).toBe(true);
   });
@@ -45,7 +45,7 @@ describe('UpdateMangaDto', () => {
 
   it('should reject non-string items in authors array', async () => {
     const dto = new UpdateMangaDto();
-    (dto as any).authors = [123];
+    dto.authors = [123] as unknown as string[];
     const errors = await validate(dto);
     expect(errors.some((e) => e.property === 'authors')).toBe(true);
   });

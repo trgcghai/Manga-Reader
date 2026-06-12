@@ -9,8 +9,10 @@ import {
   Delete,
 } from '@nestjs/common';
 import { AuthorService } from './author.service';
-import { CreateAuthorDto } from 'src/modules/manga/dto/create-author.dto';
-import { UpdateAuthorDto } from 'src/modules/manga/dto/update-author.dto';
+import {
+  CreateAuthorDto,
+  UpdateAuthorDto,
+} from 'src/modules/author/dto/author.dto';
 
 @Controller('authors')
 export class AuthorController {

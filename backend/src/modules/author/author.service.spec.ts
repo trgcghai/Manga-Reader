@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthorService } from './author.service';
 import { AuthorRepository } from './author.repository';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { Author } from 'src/modules/manga/entities/author.entity';
+import { Author } from 'src/modules/author/entities/author.entity';
 
 describe('AuthorService', () => {
   let service: AuthorService;
@@ -55,6 +55,29 @@ describe('AuthorService', () => {
     it('should throw NotFoundException when not found', async () => {
       mockRepo.findOneById.mockResolvedValue(null);
       await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('findOrCreate', () => {
+    it('should return existing author when found', async () => {
+      const author = { id: 1, name: 'Existing' } as Author;
+      mockRepo.findOneByName.mockResolvedValue(author);
+
+      const result = await service.findOrCreate('Existing');
+
+      expect(result).toEqual(author);
+      expect(mockRepo.create).not.toHaveBeenCalled();
+    });
+
+    it('should create and return new author when not found', async () => {
+      mockRepo.findOneByName.mockResolvedValue(null);
+      const saved = { id: 2, name: 'New Author' } as Author;
+      mockRepo.create.mockResolvedValue(saved);
+
+      const result = await service.findOrCreate('New Author');
+
+      expect(result).toEqual(saved);
+      expect(mockRepo.create).toHaveBeenCalledWith({ name: 'New Author' });
     });
   });
 

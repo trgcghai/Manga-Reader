@@ -4,8 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { AuthorRepository } from './author.repository';
-import { CreateAuthorDto } from 'src/modules/manga/dto/create-author.dto';
-import { UpdateAuthorDto } from 'src/modules/manga/dto/update-author.dto';
+import {
+  CreateAuthorDto,
+  UpdateAuthorDto,
+} from 'src/modules/author/dto/author.dto';
+import { Author } from 'src/modules/author/entities/author.entity';
 
 @Injectable()
 export class AuthorService {
@@ -19,6 +22,14 @@ export class AuthorService {
     const author = await this.authorRepository.findOneById(id);
     if (!author) {
       throw new NotFoundException(`Author with ID ${id} not found`);
+    }
+    return author;
+  };
+
+  findOrCreate = async (name: string): Promise<Author> => {
+    let author = await this.authorRepository.findOneByName(name);
+    if (!author) {
+      author = await this.authorRepository.create({ name });
     }
     return author;
   };

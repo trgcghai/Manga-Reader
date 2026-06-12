@@ -5,18 +5,20 @@ import {
 } from '@nestjs/common';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
 import { MangaRepository } from 'src/modules/manga/manga.repository';
-import { CreateMangaDto } from 'src/modules/manga/dto/manga.dto';
-import { UpdateMangaDto } from 'src/modules/manga/dto/update-manga.dto';
-import { AuthorRepository } from 'src/modules/manga/author.repository';
+import {
+  CreateMangaDto,
+  UpdateMangaDto,
+} from 'src/modules/manga/dto/manga.dto';
+import { AuthorService } from 'src/modules/author/author.service';
 import { GenreRepository } from 'src/modules/manga/genre.repository';
-import { Author } from 'src/modules/manga/entities/author.entity';
+import { Author } from 'src/modules/author/entities/author.entity';
 import { Genre } from 'src/modules/manga/entities/genre.entity';
 
 @Injectable()
 export class MangaService {
   constructor(
     private readonly mangaRepository: MangaRepository,
-    private readonly authorRepository: AuthorRepository,
+    private readonly authorService: AuthorService,
     private readonly genreRepo: GenreRepository,
   ) {}
 
@@ -45,11 +47,7 @@ export class MangaService {
       if (dto.authors && dto.authors.length !== 0) {
         authors = await Promise.all(
           dto.authors.map(async (name) => {
-            let author = await this.authorRepository.findOneByName(name);
-            if (!author) {
-              author = await this.authorRepository.create({ name });
-            }
-            return author;
+            return await this.authorService.findOrCreate(name);
           }),
         );
       }
@@ -102,11 +100,7 @@ export class MangaService {
       if (dto.authors) {
         const authors = await Promise.all(
           dto.authors.map(async (name) => {
-            let author = await this.authorRepository.findOneByName(name);
-            if (!author) {
-              author = await this.authorRepository.create({ name });
-            }
-            return author;
+            return await this.authorService.findOrCreate(name);
           }),
         );
         updateData.authors = authors;

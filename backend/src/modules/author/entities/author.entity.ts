@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   ManyToMany,
 } from 'typeorm';
-import { Manga } from './manga.entity';
+import { Manga } from 'src/modules/manga/entities/manga.entity';
 
 @Entity()
 export class Author {
