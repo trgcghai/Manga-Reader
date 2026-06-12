@@ -113,13 +113,22 @@ function ActionsCell({ manga }: { manga: MangaResponse }) {
       <Button
         variant="ghost"
         size="xs"
-        onClick={() => navigate({ to: '/admin/mangas/$id/edit', params: { id: String(manga.id) } })}
+        onClick={() =>
+          navigate({
+            to: '/admin/mangas/$id/edit',
+            params: { id: String(manga.id) },
+          })
+        }
       >
         <Pencil className="size-4" />
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="ghost" size="xs" className="text-destructive hover:text-destructive">
+          <Button
+            variant="ghost"
+            size="xs"
+            className="text-destructive hover:text-destructive"
+          >
             <Trash2 className="size-4" />
           </Button>
         </DialogTrigger>

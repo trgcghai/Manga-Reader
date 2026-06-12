@@ -1,4 +1,10 @@
-import { createManga, getAllMangas, getManga, updateManga, deleteManga } from '#/services/api/mangaApi'
+import {
+  createManga,
+  getAllMangas,
+  getManga,
+  updateManga,
+  deleteManga,
+} from '#/services/api/mangaApi'
 import type {
   CreateMangaPayload,
   MangaResponse,
