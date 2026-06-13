@@ -9,15 +9,8 @@ import {
   DialogFooter,
 } from '#/components/ui/dialog'
 import { Button } from '#/components/ui/button'
-import {
-  Upload,
-  FileSpreadsheet,
-  Download,
-  CheckCircle2,
-  XCircle,
-} from 'lucide-react'
+import { Upload, FileSpreadsheet, Download } from 'lucide-react'
 import { useGetTemplateImport, useImportMangas } from '#/hooks/useManga'
-import type { ImportResult } from '#/services/api/mangaApi'
 
 interface ImportDialogProps {
   open: boolean
@@ -64,7 +57,7 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
 
   const handleImport = () => {
     if (!file) return
-    mutation.mutate(file)
+    mutation.mutate(file, { onSettled: () => handleOpenChange(false) })
   }
 
   const handleDownloadTemplate = async () => {
@@ -80,10 +73,7 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
     URL.revokeObjectURL(url)
   }
 
-  const result: ImportResult | undefined = mutation.data
   const isPending = mutation.isPending
-  const isError = mutation.isError
-  const errorMessage = mutation.error?.message
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -95,115 +85,62 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <button
-          type="button"
-          onClick={handleDownloadTemplate}
-          className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
-        >
+        <Button type="button" variant="outline" onClick={handleDownloadTemplate}>
           <Download className="size-4" />
           Download template
-        </button>
+        </Button>
 
-        {isError && (
-          <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-700">
-            Import failed: {errorMessage ?? 'Unknown error'}
-          </div>
-        )}
-
-        {!result ? (
-          <div
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 transition-colors ${
-              dragOver
-                ? 'border-primary bg-primary/5'
-                : 'border-muted-foreground/25 hover:border-muted-foreground/50'
-            }`}
-          >
-            <Upload className="size-8 text-muted-foreground" />
-            {file ? (
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <FileSpreadsheet className="size-5 text-green-600" />
-                {file.name}
-              </div>
-            ) : (
-              <>
-                <p className="text-sm text-muted-foreground">
-                  Drag and drop your .xlsx file here, or click to browse
-                </p>
-                <Button type="button" variant="outline" size="sm">
-                  Browse Files
-                </Button>
-              </>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".xlsx"
-              className="hidden"
-              onChange={handleFileSelect}
-            />
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm">
-              <CheckCircle2 className="size-5 text-green-600" />
-              <span className="font-medium">
-                {result.created} manga created successfully
-              </span>
+        <div
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+          className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 transition-colors ${
+            dragOver
+              ? 'border-primary bg-primary/5'
+              : 'border-muted-foreground/25 hover:border-muted-foreground/50'
+          }`}
+        >
+          <Upload className="size-8 text-muted-foreground" />
+          {file ? (
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <FileSpreadsheet className="size-5 text-green-600" />
+              {file.name}
             </div>
-
-            {result.errors.length > 0 && (
-              <div className="space-y-1">
-                <p className="flex items-center gap-2 text-sm font-medium text-destructive">
-                  <XCircle className="size-4" />
-                  Errors
-                </p>
-                <ul className="max-h-32 space-y-1 overflow-y-auto rounded-md border p-2 text-sm">
-                  {result.errors.map((err, i) => (
-                    <li key={i} className="text-muted-foreground">
-                      Row {err.row}: {err.message}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <p className="text-xs text-muted-foreground">
-              Processed {result.total} rows
-            </p>
-          </div>
-        )}
-
-        <DialogFooter>
-          {!result ? (
+          ) : (
             <>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-              >
-                Close
-              </Button>
-              <Button
-                type="button"
-                onClick={handleImport}
-                disabled={!file || isPending}
-              >
-                {isPending ? 'Importing...' : 'Import'}
+              <p className="text-sm text-muted-foreground">
+                Drag and drop your .xlsx file here, or click to browse
+              </p>
+              <Button type="button" variant="outline" size="sm">
+                Browse Files
               </Button>
             </>
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-            >
-              Close
-            </Button>
           )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx"
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+        </div>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handleOpenChange(false)}
+          >
+            Close
+          </Button>
+          <Button
+            type="button"
+            onClick={handleImport}
+            disabled={!file || isPending}
+          >
+            {isPending ? 'Importing...' : 'Import'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

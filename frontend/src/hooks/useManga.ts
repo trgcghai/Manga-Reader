@@ -14,6 +14,7 @@ import type {
   PaginatedResponse,
   UpdateMangaPayload,
 } from '#/services/api/mangaApi'
+import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 const mangaKeys = {
@@ -35,8 +36,12 @@ export function useCreateManga() {
 
   return useMutation({
     mutationFn: (data: CreateMangaPayload) => createManga(data),
-    onSuccess: () => {
+    onSuccess: (manga) => {
       queryClient.invalidateQueries({ queryKey: mangaKeys.all })
+      toast.success(`Manga "${manga.title}" created`)
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Failed to create manga')
     },
   })
 }
@@ -55,8 +60,12 @@ export function useUpdateManga() {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateMangaPayload }) =>
       updateManga(id, data),
-    onSuccess: () => {
+    onSuccess: (manga) => {
       queryClient.invalidateQueries({ queryKey: mangaKeys.all })
+      toast.success(`Manga "${manga.title}" updated`)
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Failed to update manga')
     },
   })
 }
@@ -66,8 +75,12 @@ export function useDeleteManga() {
 
   return useMutation({
     mutationFn: (id: number) => deleteManga(id),
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: mangaKeys.all })
+      toast.success(`Manga deleted`)
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete manga')
     },
   })
 }
@@ -84,8 +97,18 @@ export function useImportMangas() {
 
   return useMutation<ImportResult, Error, File>({
     mutationFn: (file: File) => importMangas(file),
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['mangas'] })
+      if (data.errors.length > 0) {
+        toast.warning(
+          `Imported ${data.created}/${data.total} mangas with ${data.errors.length} error${data.errors.length > 1 ? 's' : ''}`,
+        )
+      } else {
+        toast.success(`${data.created} manga${data.created !== 1 ? 's' : ''} imported successfully`)
+      }
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Import failed')
     },
   })
 }
