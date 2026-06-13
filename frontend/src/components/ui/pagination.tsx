@@ -57,9 +57,6 @@ export function Pagination({
   onPageSizeChange,
 }: PaginationProps) {
   const currentCount = Math.min(pageSize, totalItems - (page - 1) * pageSize)
-
-  if (totalPages <= 1 && totalItems <= pageSize) return null
-
   const pageNumbers = getPageNumbers(page, totalPages)
 
   return (
@@ -85,63 +82,68 @@ export function Pagination({
         </Select>
       </div>
 
-      <div className="flex items-center gap-1">
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={page <= 1}
-          onClick={() => onPageChange(1)}
-          aria-label="First page"
-        >
-          <ChevronsLeft className="size-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={page <= 1}
-          onClick={() => onPageChange(page - 1)}
-          aria-label="Previous page"
-        >
-          <ChevronLeft className="size-4" />
-        </Button>
+      {totalPages > 1 && (
+        <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => onPageChange(1)}
+            aria-label="First page"
+          >
+            <ChevronsLeft className="size-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => onPageChange(page - 1)}
+            aria-label="Previous page"
+          >
+            <ChevronLeft className="size-4" />
+          </Button>
 
-        {pageNumbers.map((p, i) =>
-          p === 'ellipsis' ? (
-            <span key={`ellipsis-${i}`} className="px-1 text-muted-foreground">
-              ...
-            </span>
-          ) : (
-            <Button
-              key={p}
-              variant={p === page ? 'default' : 'outline'}
-              size="sm"
-              className="min-w-9"
-              onClick={() => onPageChange(p)}
-            >
-              {p}
-            </Button>
-          ),
-        )}
+          {pageNumbers.map((p, i) =>
+            p === 'ellipsis' ? (
+              <span
+                key={`ellipsis-${i}`}
+                className="px-1 text-muted-foreground"
+              >
+                ...
+              </span>
+            ) : (
+              <Button
+                key={p}
+                variant={p === page ? 'default' : 'outline'}
+                size="sm"
+                className="min-w-9"
+                onClick={() => onPageChange(p)}
+              >
+                {p}
+              </Button>
+            ),
+          )}
 
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={page >= totalPages}
-          onClick={() => onPageChange(page + 1)}
-          aria-label="Next page"
-        >
-          <ChevronRight className="size-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={page >= totalPages}
-          onClick={() => onPageChange(totalPages)}
-          aria-label="Last page"
-        >
-          <ChevronsRight className="size-4" />
-        </Button>
-      </div>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages}
+            onClick={() => onPageChange(page + 1)}
+            aria-label="Next page"
+          >
+            <ChevronRight className="size-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages}
+            onClick={() => onPageChange(totalPages)}
+            aria-label="Last page"
+          >
+            <ChevronsRight className="size-4" />
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

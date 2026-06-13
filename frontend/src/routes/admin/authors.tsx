@@ -162,16 +162,14 @@ function AdminAuthorsPage() {
             </TableBody>
           </Table>
 
-          {totalPages > 1 && (
-            <Pagination
-              page={page}
-              totalPages={totalPages}
-              totalItems={data.total}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
-            />
-          )}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            totalItems={data.total}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
         </div>
       )}
 
