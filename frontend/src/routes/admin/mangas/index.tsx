@@ -19,7 +19,9 @@ import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Skeleton } from '#/components/ui/skeleton'
 import { Card, CardContent } from '#/components/ui/card'
-import { BookOpenText, Plus } from 'lucide-react'
+import { useState } from 'react'
+import { BookOpenText, Plus, Upload } from 'lucide-react'
+import ImportDialog from '#/components/manga/ImportDialog'
 import {
   Empty,
   EmptyContent,
@@ -99,6 +101,7 @@ export const Route = createFileRoute('/admin/mangas/')({
 
 function MangaListPage() {
   const { data, isLoading, isError } = useMangaList(1, 20)
+  const [importOpen, setImportOpen] = useState(false)
 
   const table = useReactTable({
     data: data?.data ?? [],
@@ -133,12 +136,18 @@ function MangaListPage() {
     <div>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Mangas</h1>
-        <Button asChild>
-          <Link to="/admin/mangas/new" className="no-underline">
-            <Plus className="h-4 w-4" />
-            Create New
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <Upload className="h-4 w-4" />
+            Import Excel
+          </Button>
+          <Button asChild>
+            <Link to="/admin/mangas/new" className="no-underline">
+              <Plus className="h-4 w-4" />
+              Create New
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {!data?.data.length && (
@@ -200,6 +209,8 @@ function MangaListPage() {
           </Table>
         </div>
       )}
+
+      <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
     </div>
   )
 }
