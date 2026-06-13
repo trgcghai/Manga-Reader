@@ -6,11 +6,12 @@ import { Manga } from 'src/modules/manga/entities/manga.entity';
 import { MangaRepository } from 'src/modules/manga/manga.repository';
 import { AuthorModule } from 'src/modules/author/author.module';
 import { GenreModule } from 'src/modules/genre/genre.module';
+import { ImportMangaService } from './services/import-manga.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Manga]), AuthorModule, GenreModule],
   controllers: [MangaController],
-  providers: [MangaService, MangaRepository],
+  providers: [MangaService, MangaRepository, ImportMangaService],
   exports: [MangaRepository],
 })
 export class MangaModule {}
