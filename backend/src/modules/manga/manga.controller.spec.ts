@@ -207,9 +207,9 @@ describe('MangaController', () => {
     });
 
     it('should return 400 when no file provided', async () => {
-      await expect(
-        controller.import(undefined as any),
-      ).rejects.toThrow(BadRequestException);
+      await expect(controller.import(undefined as any)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });

@@ -16,7 +16,10 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as XLSX from 'xlsx';
 import { MangaService } from './manga.service';
-import { ImportMangaService, ImportResult } from './services/import-manga.service';
+import {
+  ImportMangaService,
+  ImportResult,
+} from './services/import-manga.service';
 import {
   CreateMangaDto,
   UpdateMangaDto,
@@ -54,19 +57,27 @@ export class MangaController {
   }
 
   @Get('import-template')
-  @Header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-  @Header('Content-Disposition', 'attachment; filename="manga-import-template.xlsx"')
+  @Header(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  )
+  @Header(
+    'Content-Disposition',
+    'attachment; filename="manga-import-template.xlsx"',
+  )
   downloadTemplate(): StreamableFile {
     const workbook = XLSX.utils.book_new();
-    const headerRow = [{
-      Title: '',
-      Status: '',
-      Description: '',
-      'Alternative Titles': '',
-      'Cover Path': '',
-      Authors: '',
-      Genres: '',
-    }];
+    const headerRow = [
+      {
+        Title: '',
+        Status: '',
+        Description: '',
+        'Alternative Titles': '',
+        'Cover Path': '',
+        Authors: '',
+        Genres: '',
+      },
+    ];
     const sheet = XLSX.utils.json_to_sheet(headerRow);
     XLSX.utils.book_append_sheet(workbook, sheet, 'Template');
     const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });

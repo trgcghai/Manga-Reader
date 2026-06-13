@@ -56,35 +56,54 @@ export class ImportMangaService {
     const sheetName = workbook.SheetNames[0];
     if (!sheetName) return [];
     const sheet = workbook.Sheets[sheetName];
-    const data = XLSX.utils.sheet_to_json<Record<string, string>>(sheet, { defval: '' });
+    const data = XLSX.utils.sheet_to_json<Record<string, string>>(sheet, {
+      defval: '',
+    });
     return data;
   }
 
   private rowToCreateMangaDto(row: Record<string, string>) {
-    const normalizeKey = (key: string) =>
-      key.toLowerCase().replace(/\s+/g, '');
+    const normalizeKey = (key: string) => key.toLowerCase().replace(/\s+/g, '');
 
-    const title = row[Object.keys(row).find((k) => normalizeKey(k) === 'title') ?? ''];
-    const status = row[Object.keys(row).find((k) => normalizeKey(k) === 'status') ?? ''];
-    const description = row[Object.keys(row).find((k) => normalizeKey(k) === 'description') ?? ''];
-    const alternativeTitles = row[Object.keys(row).find((k) => normalizeKey(k) === 'alternativetitles') ?? ''];
-    const coverPath = row[Object.keys(row).find((k) => normalizeKey(k) === 'coverpath') ?? ''];
-    const authors = row[Object.keys(row).find((k) => normalizeKey(k) === 'authors') ?? ''];
-    const genres = row[Object.keys(row).find((k) => normalizeKey(k) === 'genres') ?? ''];
+    const title =
+      row[Object.keys(row).find((k) => normalizeKey(k) === 'title') ?? ''];
+    const status =
+      row[Object.keys(row).find((k) => normalizeKey(k) === 'status') ?? ''];
+    const description =
+      row[
+        Object.keys(row).find((k) => normalizeKey(k) === 'description') ?? ''
+      ];
+    const alternativeTitles =
+      row[
+        Object.keys(row).find((k) => normalizeKey(k) === 'alternativetitles') ??
+          ''
+      ];
+    const coverPath =
+      row[Object.keys(row).find((k) => normalizeKey(k) === 'coverpath') ?? ''];
+    const authors =
+      row[Object.keys(row).find((k) => normalizeKey(k) === 'authors') ?? ''];
+    const genres =
+      row[Object.keys(row).find((k) => normalizeKey(k) === 'genres') ?? ''];
 
     if (!title || !title.trim()) {
       throw new Error('Title is required');
     }
-    const validStatuses = Object.values(MangaStatus).map(v => v.toLowerCase());
+    const validStatuses = Object.values(MangaStatus).map((v) =>
+      v.toLowerCase(),
+    );
     if (!status || !validStatuses.includes(status.trim().toLowerCase())) {
-      throw new Error(`Status is required and must be one of: ${validStatuses.join(', ')}`);
+      throw new Error(
+        `Status is required and must be one of: ${validStatuses.join(', ')}`,
+      );
     }
 
     return {
       title: title.trim(),
       status: status.trim().toLowerCase() as MangaStatus,
       description: description?.trim() || undefined,
-      alternativeTitles: alternativeTitles ? this.parseCsvCell(alternativeTitles) : undefined,
+      alternativeTitles: alternativeTitles
+        ? this.parseCsvCell(alternativeTitles)
+        : undefined,
       coverPath: coverPath?.trim() || undefined,
       authors: authors ? this.parseCsvCell(authors) : undefined,
       genres: genres ? this.parseCsvCell(genres) : undefined,

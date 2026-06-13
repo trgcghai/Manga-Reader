@@ -67,8 +67,18 @@ describe('ImportMangaService', () => {
       const XLSX = require('xlsx');
       const workbook = XLSX.utils.book_new();
       const data = [
-        { Title: 'Manga A', Status: 'ongoing', Authors: 'Author1', Genres: 'Fantasy' },
-        { Title: 'Manga B', Status: 'completed', Authors: 'Author2', Genres: 'Action' },
+        {
+          Title: 'Manga A',
+          Status: 'ongoing',
+          Authors: 'Author1',
+          Genres: 'Fantasy',
+        },
+        {
+          Title: 'Manga B',
+          Status: 'completed',
+          Authors: 'Author2',
+          Genres: 'Action',
+        },
       ];
       const sheet = XLSX.utils.json_to_sheet(data);
       XLSX.utils.book_append_sheet(workbook, sheet, 'Sheet1');
@@ -76,7 +86,11 @@ describe('ImportMangaService', () => {
 
       mockMangaService.create.mockResolvedValue({ id: 1 } as any);
 
-      const file = { buffer, mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' } as Express.Multer.File;
+      const file = {
+        buffer,
+        mimetype:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      } as Express.Multer.File;
       const result = await service.import(file);
 
       expect(result.total).toBe(2);
@@ -107,9 +121,7 @@ describe('ImportMangaService', () => {
 
       expect(result.total).toBe(3);
       expect(result.created).toBe(2);
-      expect(result.errors).toEqual([
-        { row: 2, message: 'Database error' },
-      ]);
+      expect(result.errors).toEqual([{ row: 2, message: 'Database error' }]);
       expect(mockMangaService.create).toHaveBeenCalledTimes(3);
     });
 
@@ -153,7 +165,11 @@ describe('ImportMangaService', () => {
       const XLSX = require('xlsx');
       const workbook = XLSX.utils.book_new();
       const data = [
-        { Title: 'Manga', Status: 'ongoing', Genres: '"Action, Adventure", Fantasy' },
+        {
+          Title: 'Manga',
+          Status: 'ongoing',
+          Genres: '"Action, Adventure", Fantasy',
+        },
       ];
       const sheet = XLSX.utils.json_to_sheet(data);
       XLSX.utils.book_append_sheet(workbook, sheet, 'Sheet1');

@@ -330,8 +330,18 @@ describe('Manga CRUD (e2e)', () => {
       const XLSX = require('xlsx');
       const workbook = XLSX.utils.book_new();
       const data = [
-        { Title: 'Imported Manga 1', Status: 'ongoing', Authors: 'Author A', Genres: 'Fantasy' },
-        { Title: 'Imported Manga 2', Status: 'completed', Authors: 'Author B', Genres: 'Action' },
+        {
+          Title: 'Imported Manga 1',
+          Status: 'ongoing',
+          Authors: 'Author A',
+          Genres: 'Fantasy',
+        },
+        {
+          Title: 'Imported Manga 2',
+          Status: 'completed',
+          Authors: 'Author B',
+          Genres: 'Action',
+        },
       ];
       const sheet = XLSX.utils.json_to_sheet(data);
       XLSX.utils.book_append_sheet(workbook, sheet, 'Sheet1');
@@ -346,7 +356,9 @@ describe('Manga CRUD (e2e)', () => {
       expect(res.body.created).toBe(2);
       expect(res.body.errors).toEqual([]);
 
-      const listRes = await request(app.getHttpServer()).get('/mangas').expect(200);
+      const listRes = await request(app.getHttpServer())
+        .get('/mangas')
+        .expect(200);
       const titles = listRes.body.data.map((m: any) => m.title);
       expect(titles).toContain('Imported Manga 1');
       expect(titles).toContain('Imported Manga 2');
@@ -376,9 +388,7 @@ describe('Manga CRUD (e2e)', () => {
     });
 
     it('should return 400 when no file provided', async () => {
-      await request(app.getHttpServer())
-        .post('/mangas/import')
-        .expect(400);
+      await request(app.getHttpServer()).post('/mangas/import').expect(400);
     });
   });
 });

@@ -10,6 +10,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ChapterModule } from './modules/chapter/chapter.module';
 import { TranslatorModule } from './modules/translator/translator.module';
+import { LanguageModule } from './modules/language/language.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { TranslatorModule } from './modules/translator/translator.module';
     MangaModule,
     ChapterModule,
     TranslatorModule,
+    LanguageModule,
   ],
   controllers: [HealthController],
   providers: [

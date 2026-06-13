@@ -114,7 +114,9 @@ describe('MangaService', () => {
       const result = await service.create(dto);
 
       expect(result.title).toBe('Berserk');
-      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('Kentaro Miura');
+      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith(
+        'Kentaro Miura',
+      );
       expect(mockGenreService.findOrCreate).toHaveBeenCalledWith('Fantasy');
       expect(mockMangaRepository.create).toHaveBeenCalledWith({
         title: 'Berserk',
@@ -151,8 +153,12 @@ describe('MangaService', () => {
       const result = await service.create(dto);
 
       expect(result.id).toBe(2);
-      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('Existing Author');
-      expect(mockGenreService.findOrCreate).toHaveBeenCalledWith('Existing Genre');
+      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith(
+        'Existing Author',
+      );
+      expect(mockGenreService.findOrCreate).toHaveBeenCalledWith(
+        'Existing Genre',
+      );
     });
   });
 
@@ -359,7 +365,9 @@ describe('MangaService', () => {
 
       await service.update(1, dto);
 
-      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('Existing Author');
+      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith(
+        'Existing Author',
+      );
     });
 
     it('should not create duplicate authors when same name appears in update', async () => {
@@ -472,7 +480,9 @@ describe('MangaService', () => {
       const result = await service.update(1, dto);
 
       expect(mockAuthorService.findOrCreate).toHaveBeenCalledTimes(2);
-      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('Existing Author');
+      expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith(
+        'Existing Author',
+      );
       expect(mockAuthorService.findOrCreate).toHaveBeenCalledWith('New Author');
       expect(result.authors).toHaveLength(2);
     });
@@ -502,7 +512,9 @@ describe('MangaService', () => {
       const result = await service.update(1, dto);
 
       expect(mockGenreService.findOrCreate).toHaveBeenCalledTimes(2);
-      expect(mockGenreService.findOrCreate).toHaveBeenCalledWith('Existing Genre');
+      expect(mockGenreService.findOrCreate).toHaveBeenCalledWith(
+        'Existing Genre',
+      );
       expect(mockGenreService.findOrCreate).toHaveBeenCalledWith('New Genre');
       expect(result.genres).toHaveLength(2);
     });
@@ -662,7 +674,9 @@ describe('MangaService', () => {
       mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
         existingManga,
       );
-      mockAuthorService.findOrCreate.mockRejectedValue(new Error('Create failed'));
+      mockAuthorService.findOrCreate.mockRejectedValue(
+        new Error('Create failed'),
+      );
 
       await expect(
         service.update(1, { authors: ['New Author'] }),
@@ -680,7 +694,9 @@ describe('MangaService', () => {
       mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
         existingManga,
       );
-      mockGenreService.findOrCreate.mockRejectedValue(new Error('Create failed'));
+      mockGenreService.findOrCreate.mockRejectedValue(
+        new Error('Create failed'),
+      );
 
       await expect(
         service.update(1, { genres: ['New Genre'] }),

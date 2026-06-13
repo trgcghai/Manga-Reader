@@ -8,7 +8,7 @@ import {
   Unique,
 } from 'typeorm';
 import { Chapter } from './chapter.entity';
-import { Language } from 'src/modules/translator/entities/language.entity';
+import { Language } from 'src/modules/language/entities/language.entity';
 import { Translator } from 'src/modules/translator/entities/translator.entity';
 
 @Entity()
