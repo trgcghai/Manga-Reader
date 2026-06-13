@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
+import * as XLSX from 'xlsx';
 import { MangaService } from './manga.service';
 import { ImportMangaService, ImportResult } from './services/import-manga.service';
 import {
@@ -68,8 +69,7 @@ export class MangaController {
   }
 
   @Get('import/template')
-  async downloadTemplate(@Res() res: Response) {
-    const XLSX = require('xlsx');
+  async downloadTemplate(@Res({ passthrough: true }) res: Response) {
     const workbook = XLSX.utils.book_new();
     const headerRow = [{
       Title: '',
