@@ -7,12 +7,12 @@ import {
   Query,
   Patch,
   Delete,
-  Res,
+  Header,
+  StreamableFile,
   UseInterceptors,
   UploadedFile,
   BadRequestException,
 } from '@nestjs/common';
-import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as XLSX from 'xlsx';
 import { MangaService } from './manga.service';
@@ -42,21 +42,6 @@ export class MangaController {
     return this.mangaService.findAll(parseInt(page), parseInt(limit));
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.mangaService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateMangaDto) {
-    return this.mangaService.update(+id, dto);
-  }
-
-  @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.mangaService.delete(+id);
-  }
-
   @Post('import')
   @UseInterceptors(FileInterceptor('file'))
   async import(
@@ -68,8 +53,10 @@ export class MangaController {
     return this.importMangaService.import(file);
   }
 
-  @Get('import/template')
-  async downloadTemplate(@Res({ passthrough: true }) res: Response) {
+  @Get('import-template')
+  @Header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  @Header('Content-Disposition', 'attachment; filename="manga-import-template.xlsx"')
+  downloadTemplate(): StreamableFile {
     const workbook = XLSX.utils.book_new();
     const headerRow = [{
       Title: '',
@@ -83,9 +70,21 @@ export class MangaController {
     const sheet = XLSX.utils.json_to_sheet(headerRow);
     XLSX.utils.book_append_sheet(workbook, sheet, 'Template');
     const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    return new StreamableFile(buffer);
+  }
 
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename="manga-import-template.xlsx"');
-    res.send(buffer);
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.mangaService.findOne(+id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateMangaDto) {
+    return this.mangaService.update(+id, dto);
+  }
+
+  @Delete(':id')
+  delete(@Param('id') id: string) {
+    return this.mangaService.delete(+id);
   }
 }

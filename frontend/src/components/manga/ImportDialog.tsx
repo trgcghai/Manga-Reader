@@ -12,6 +12,7 @@ import { Button } from '#/components/ui/button'
 import { Upload, FileSpreadsheet, Download, CheckCircle2, XCircle } from 'lucide-react'
 import { useImportMangas } from '#/hooks/useImportMangas'
 import type { ImportResult } from '#/services/api/mangaApi'
+import axiosInstance from '#/services/api/api'
 
 interface ImportDialogProps {
   open: boolean
@@ -60,12 +61,28 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
     mutation.mutate(file)
   }
 
+  const handleDownloadTemplate = async () => {
+    try {
+      const res = await axiosInstance.get('/mangas/import-template', {
+        responseType: 'blob',
+      })
+      const url = URL.createObjectURL(res.data)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'manga-import-template.xlsx'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch {
+      // silently fail — template download is a convenience, not critical
+    }
+  }
+
   const result: ImportResult | undefined = mutation.data
   const isPending = mutation.isPending
   const isError = mutation.isError
   const errorMessage = mutation.error?.message
-  const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/+$/, '') ?? ''
-  const templateUrl = `${apiUrl}/mangas/import/template`
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -77,15 +94,14 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <a
-          href={templateUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={handleDownloadTemplate}
           className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
         >
           <Download className="size-4" />
           Download template
-        </a>
+        </button>
 
         {isError && (
           <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-700">
