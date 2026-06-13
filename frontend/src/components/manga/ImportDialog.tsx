@@ -9,10 +9,15 @@ import {
   DialogFooter,
 } from '#/components/ui/dialog'
 import { Button } from '#/components/ui/button'
-import { Upload, FileSpreadsheet, Download, CheckCircle2, XCircle } from 'lucide-react'
-import { useImportMangas } from '#/hooks/useImportMangas'
+import {
+  Upload,
+  FileSpreadsheet,
+  Download,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-react'
+import { useGetTemplateImport, useImportMangas } from '#/hooks/useManga'
 import type { ImportResult } from '#/services/api/mangaApi'
-import axiosInstance from '#/services/api/api'
 
 interface ImportDialogProps {
   open: boolean
@@ -24,6 +29,7 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
   const [dragOver, setDragOver] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const mutation = useImportMangas()
+  const { data: templateBlob } = useGetTemplateImport()
 
   const reset = () => {
     setFile(null)
@@ -62,21 +68,16 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
   }
 
   const handleDownloadTemplate = async () => {
-    try {
-      const res = await axiosInstance.get('/mangas/import-template', {
-        responseType: 'blob',
-      })
-      const url = URL.createObjectURL(res.data)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'manga-import-template.xlsx'
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-    } catch {
-      // silently fail — template download is a convenience, not critical
-    }
+    if (!templateBlob) return
+
+    const url = URL.createObjectURL(templateBlob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'manga_import_template.xlsx'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   const result: ImportResult | undefined = mutation.data

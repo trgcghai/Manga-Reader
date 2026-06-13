@@ -4,9 +4,12 @@ import {
   getManga,
   updateManga,
   deleteManga,
+  importMangas,
+  getTemplateImport,
 } from '#/services/api/mangaApi'
 import type {
   CreateMangaPayload,
+  ImportResult,
   MangaResponse,
   PaginatedResponse,
   UpdateMangaPayload,
@@ -65,6 +68,24 @@ export function useDeleteManga() {
     mutationFn: (id: number) => deleteManga(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mangaKeys.all })
+    },
+  })
+}
+
+export function useGetTemplateImport() {
+  return useQuery({
+    queryKey: ['mangas', 'import-template'],
+    queryFn: () => getTemplateImport(),
+  })
+}
+
+export function useImportMangas() {
+  const queryClient = useQueryClient()
+
+  return useMutation<ImportResult, Error, File>({
+    mutationFn: (file: File) => importMangas(file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mangas'] })
     },
   })
 }
