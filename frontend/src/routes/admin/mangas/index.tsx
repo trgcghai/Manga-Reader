@@ -22,6 +22,7 @@ import { Card, CardContent } from '#/components/ui/card'
 import { useState } from 'react'
 import { BookOpenText, Plus, Upload } from 'lucide-react'
 import { ImportDialog } from '#/components/manga/ImportDialog'
+import { Pagination } from '#/components/ui/pagination'
 import {
   Empty,
   EmptyContent,
@@ -100,8 +101,10 @@ export const Route = createFileRoute('/admin/mangas/')({
 })
 
 function MangaListPage() {
-  const { data, isLoading, isError } = useMangaList(1, 20)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const [importOpen, setImportOpen] = useState(false)
+  const { data, isLoading, isError } = useMangaList(page, pageSize)
 
   const table = useReactTable({
     data: data?.data ?? [],
@@ -207,6 +210,14 @@ function MangaListPage() {
               ))}
             </TableBody>
           </Table>
+          <Pagination
+            page={page}
+            totalPages={data.totalPages}
+            totalItems={data.total}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
         </div>
       )}
 
