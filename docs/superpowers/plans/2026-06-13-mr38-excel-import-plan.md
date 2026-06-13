@@ -8,9 +8,23 @@
 
 **Tech Stack:** NestJS + xlsx (SheetJS), React + Radix Dialog + React Query + axios FormData
 
+## Skills Reference
+
+| Skill | Applies To | Purpose |
+|-------|-----------|---------|
+| `nestjs-best-practices` | Tasks 2, 3, 4 | Backend service/controller patterns, DI, module setup |
+| `nestjs-testing` | Tasks 2, 3, 5 | Unit test setup with Test.createTestingModule, mocks, E2E patterns |
+| `javascript-typescript-jest` | Task 2 | Jest mock structure, clearMocks patterns |
+| `tanstack-query-best-practices` | Task 6 | useMutation hook structure, query invalidation |
+| `frontend-design` | Task 7 | Dialog component design, drag-and-drop UX, result display |
+| `shadcn` | Tasks 7, 8 | Dialog, Button, Badge component usage patterns |
+| `tanstack-router-best-practices` | Task 8 | Route component structure, Link navigation |
+
 ---
 
 ### Task 1: Install `xlsx` dependency in backend
+
+**Skills:** none (simple npm install)
 
 **Files:**
 - Modify: `backend/package.json` (dependency add)
@@ -35,6 +49,8 @@ git commit -m "feat: add xlsx dependency for Excel import"
 ---
 
 ### Task 2: Create ImportMangaService with unit tests
+
+**Skills:** `nestjs-best-practices` (service pattern, DI), `nestjs-testing` (Test.createTestingModule, mocks), `javascript-typescript-jest` (mock setup, clearMocks)
 
 **Files:**
 - Create: `backend/src/modules/manga/services/import-manga.service.ts`
@@ -367,6 +383,8 @@ git commit -m "feat: add ImportMangaService with Excel parsing and per-row error
 
 ### Task 3: Add import endpoint to MangaController
 
+**Skills:** `nestjs-best-practices` (controller endpoint, FileInterceptor), `nestjs-testing` (controller unit tests with mocked service)
+
 **Files:**
 - Modify: `backend/src/modules/manga/manga.controller.ts`
 - Modify: `backend/src/modules/manga/manga.controller.spec.ts`
@@ -533,6 +551,8 @@ git commit -m "feat: add POST /mangas/import endpoint with file upload"
 
 ### Task 4: Add template download endpoint
 
+**Skills:** `nestjs-best-practices` (controller endpoint with @Res, response headers)
+
 **Files:**
 - Modify: `backend/src/modules/manga/manga.controller.ts`
 - Modify: `backend/src/modules/manga/manga.controller.spec.ts`
@@ -581,6 +601,8 @@ git commit -m "feat: add GET /mangas/import/template endpoint"
 ---
 
 ### Task 5: Add E2E test for import
+
+**Skills:** `nestjs-testing` (E2E patterns: beforeAll, supertest, test DB setup, TRUNCATE cleanup)
 
 **Files:**
 - Modify: `backend/test/manga.e2e-spec.ts`
@@ -666,6 +688,8 @@ git commit -m "test: add E2E tests for manga import endpoint"
 
 ### Task 6: Add importMangas API function and useImportMangas hook
 
+**Skills:** `tanstack-query-best-practices` (useMutation pattern, query key invalidation, mutationFn typing)
+
 **Files:**
 - Modify: `frontend/src/services/api/mangaApi.ts`
 - Create: `frontend/src/hooks/useImportMangas.ts`
@@ -721,6 +745,8 @@ git commit -m "feat: add importMangas API and useImportMangas hook"
 ---
 
 ### Task 7: Create ImportDialog component
+
+**Skills:** `frontend-design` (dialog UX, drag-and-drop zone, result summary layout), `shadcn` (Dialog, Button usage patterns)
 
 **Files:**
 - Create: `frontend/src/components/manga/ImportDialog.tsx`
@@ -923,6 +949,8 @@ git commit -m "feat: add ImportDialog component with drag-and-drop and result di
 ---
 
 ### Task 8: Add import button to admin manga list page
+
+**Skills:** `shadcn` (Button styling, icon composition), `tanstack-router-best-practices` (Link component, route structure)
 
 **Files:**
 - Modify: `frontend/src/routes/admin/mangas/index.tsx`
