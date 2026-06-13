@@ -7,10 +7,12 @@ import {
   Query,
   Patch,
   Delete,
+  Res,
   UseInterceptors,
   UploadedFile,
   BadRequestException,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MangaService } from './manga.service';
 import { ImportMangaService, ImportResult } from './services/import-manga.service';
@@ -63,5 +65,27 @@ export class MangaController {
       throw new BadRequestException('File is required');
     }
     return this.importMangaService.import(file);
+  }
+
+  @Get('import/template')
+  async downloadTemplate(@Res() res: Response) {
+    const XLSX = require('xlsx');
+    const workbook = XLSX.utils.book_new();
+    const headerRow = [{
+      Title: '',
+      Status: '',
+      Description: '',
+      'Alternative Titles': '',
+      'Cover Path': '',
+      Authors: '',
+      Genres: '',
+    }];
+    const sheet = XLSX.utils.json_to_sheet(headerRow);
+    XLSX.utils.book_append_sheet(workbook, sheet, 'Template');
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="manga-import-template.xlsx"');
+    res.send(buffer);
   }
 }
