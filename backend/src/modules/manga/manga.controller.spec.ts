@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { MangaController } from './manga.controller';
 import { MangaService } from './manga.service';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
+import { ImportMangaService } from './services/import-manga.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateMangaDto } from 'src/modules/manga/dto/manga.dto';
 import { UpdateMangaDto } from 'src/modules/manga/dto/update-manga.dto';
@@ -10,6 +11,7 @@ import { MangaStatus } from 'src/common/constants/manga.constant';
 describe('MangaController', () => {
   let controller: MangaController;
   let service: jest.Mocked<MangaService>;
+  let importService: jest.Mocked<ImportMangaService>;
 
   const mockMangaList: Manga[] = [
     { id: 1, title: 'One Piece' } as Manga,
@@ -30,11 +32,18 @@ describe('MangaController', () => {
             delete: jest.fn(),
           },
         },
+        {
+          provide: ImportMangaService,
+          useValue: {
+            import: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     controller = module.get<MangaController>(MangaController);
     service = module.get(MangaService);
+    importService = module.get(ImportMangaService);
   });
 
   it('should be defined', () => {
@@ -178,6 +187,29 @@ describe('MangaController', () => {
       );
 
       await expect(controller.delete('999')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('import', () => {
+    it('should call ImportMangaService.import with the uploaded file', async () => {
+      const mockFile = {
+        buffer: Buffer.from('fake'),
+        mimetype:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      } as Express.Multer.File;
+      const importResult = { total: 2, created: 2, errors: [] };
+      importService.import.mockResolvedValue(importResult);
+
+      const result = await controller.import(mockFile);
+
+      expect(importService.import).toHaveBeenCalledWith(mockFile);
+      expect(result).toEqual(importResult);
+    });
+
+    it('should return 400 when no file provided', async () => {
+      await expect(
+        controller.import(undefined as any),
+      ).rejects.toThrow();
     });
   });
 });

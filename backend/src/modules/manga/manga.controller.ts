@@ -7,8 +7,13 @@ import {
   Query,
   Patch,
   Delete,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { MangaService } from './manga.service';
+import { ImportMangaService, ImportResult } from './services/import-manga.service';
 import {
   CreateMangaDto,
   UpdateMangaDto,
@@ -16,7 +21,10 @@ import {
 
 @Controller('mangas')
 export class MangaController {
-  constructor(private readonly mangaService: MangaService) {}
+  constructor(
+    private readonly mangaService: MangaService,
+    private readonly importMangaService: ImportMangaService,
+  ) {}
 
   @Post()
   create(@Body() dto: CreateMangaDto) {
@@ -44,5 +52,16 @@ export class MangaController {
   @Delete(':id')
   delete(@Param('id') id: string) {
     return this.mangaService.delete(+id);
+  }
+
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  async import(
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<ImportResult> {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+    return this.importMangaService.import(file);
   }
 }
