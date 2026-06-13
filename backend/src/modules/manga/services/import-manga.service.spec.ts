@@ -132,14 +132,14 @@ describe('ImportMangaService', () => {
       const XLSX = require('xlsx');
       const workbook = XLSX.utils.book_new();
       const data = [
-        { Title: '', Status: 'ongoing' },
-        { Title: '', Status: 'ongoing' },
+        { Title: 'Valid Manga 1', Status: 'ongoing' },
+        { Title: 'Valid Manga 2', Status: 'ongoing' },
       ];
       const sheet = XLSX.utils.json_to_sheet(data);
       XLSX.utils.book_append_sheet(workbook, sheet, 'Sheet1');
       const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
 
-      mockMangaService.create.mockRejectedValue(new Error('Title is required'));
+      mockMangaService.create.mockRejectedValue(new Error('Database error'));
 
       const file = { buffer } as Express.Multer.File;
       const result = await service.import(file);

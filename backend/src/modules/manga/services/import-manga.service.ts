@@ -75,7 +75,8 @@ export class ImportMangaService {
     if (!title || !title.trim()) {
       throw new Error('Title is required');
     }
-    if (!status || !['ongoing', 'completed', 'paused'].includes(status.trim().toLowerCase())) {
+    const validStatuses = Object.values(MangaStatus).map(v => v.toLowerCase());
+    if (!status || !validStatuses.includes(status.trim().toLowerCase())) {
       throw new Error('Status is required and must be one of: ongoing, completed, paused');
     }
 
