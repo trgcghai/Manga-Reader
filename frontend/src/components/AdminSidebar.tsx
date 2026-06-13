@@ -1,9 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import {
-  BookOpen,
-} from 'lucide-react'
+import { BookOpen, Languages } from 'lucide-react'
 
 import { NavMain } from '#/components/nav-main.tsx'
 import { NavSub } from '#/components/nav-sub'
@@ -41,7 +39,13 @@ const data = {
       ],
     },
   ],
-  navSub: [],
+  navSub: [
+    {
+      name: 'Language',
+      url: '/admin/languages',
+      icon: Languages,
+    },
+  ],
 }
 
 export function AdminSidebar({
