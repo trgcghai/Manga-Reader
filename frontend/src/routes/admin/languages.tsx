@@ -22,6 +22,8 @@ import {
 import { Card, CardContent } from '#/components/ui/card'
 import { Globe } from 'lucide-react'
 
+const PAGE_SIZE = 100
+
 export const Route = createFileRoute('/admin/languages')({
   component: AdminLanguagesPage,
 })
@@ -35,6 +37,11 @@ function AdminLanguagesPage() {
       lang.name.toLowerCase().includes(search.toLowerCase()) ||
       lang.code.toLowerCase().includes(search.toLowerCase()),
   )
+
+  const chunks: typeof filtered = filtered && [
+    filtered.slice(0, PAGE_SIZE),
+    filtered.slice(PAGE_SIZE),
+  ]
 
   return (
     <div>
@@ -84,33 +91,40 @@ function AdminLanguagesPage() {
       )}
 
       {filtered && filtered.length > 0 && (
-        <div className="mt-6">
-          <Table className="border">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-base font-semibold text-muted-foreground">
-                  Code
-                </TableHead>
-                <TableHead className="text-base font-semibold text-muted-foreground">
-                  Name
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((lang) => (
-                <TableRow key={lang.id}>
-                  <TableCell className="font-mono font-medium uppercase">
-                    {lang.code}
-                  </TableCell>
-                  <TableCell>{lang.name}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-
-          <p className="mt-2 text-sm text-muted-foreground">
-            Showing {filtered.length} of {data?.length ?? 0} languages
-          </p>
+        <div className="mt-6 grid grid-cols-2 gap-6">
+          {chunks!.map((chunk, chunkIndex) =>
+            chunk.length > 0 ? (
+              <div key={chunkIndex}>
+                <Table className="border">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-base font-semibold text-muted-foreground">
+                        Code
+                      </TableHead>
+                      <TableHead className="text-base font-semibold text-muted-foreground">
+                        Name
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {chunk.map((lang) => (
+                      <TableRow key={lang.id}>
+                        <TableCell className="font-mono font-medium uppercase">
+                          {lang.code}
+                        </TableCell>
+                        <TableCell>{lang.name}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {chunkIndex === 0
+                    ? `1 – ${chunk.length}`
+                    : `${PAGE_SIZE + 1} – ${PAGE_SIZE + chunk.length}`}
+                </p>
+              </div>
+            ) : null,
+          )}
         </div>
       )}
     </div>
