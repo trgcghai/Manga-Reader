@@ -68,3 +68,18 @@ export async function updateManga(
 export async function deleteManga(id: number): Promise<void> {
   await axiosInstance.delete(`/mangas/${id}`)
 }
+
+export interface ImportResult {
+  total: number
+  created: number
+  errors: Array<{ row: number; message: string }>
+}
+
+export async function importMangas(file: File): Promise<ImportResult> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const res = await axiosInstance.post<ImportResult>('/mangas/import', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return res.data
+}
