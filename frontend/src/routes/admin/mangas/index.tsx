@@ -21,7 +21,7 @@ import { Skeleton } from '#/components/ui/skeleton'
 import { Card, CardContent } from '#/components/ui/card'
 import { useState } from 'react'
 import { BookOpenText, Plus, Upload } from 'lucide-react'
-import ImportDialog from '#/components/manga/ImportDialog'
+import { ImportDialog } from '#/components/manga/ImportDialog'
 import {
   Empty,
   EmptyContent,

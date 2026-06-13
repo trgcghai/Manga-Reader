@@ -62,7 +62,10 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
 
   const result: ImportResult | undefined = mutation.data
   const isPending = mutation.isPending
-  const templateUrl = `${import.meta.env.VITE_API_URL}/mangas/import/template`
+  const isError = mutation.isError
+  const errorMessage = mutation.error?.message
+  const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/+$/, '') ?? ''
+  const templateUrl = `${apiUrl}/mangas/import/template`
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -83,6 +86,12 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
           <Download className="size-4" />
           Download template
         </a>
+
+        {isError && (
+          <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+            Import failed: {errorMessage ?? 'Unknown error'}
+          </div>
+        )}
 
         {!result ? (
           <div
