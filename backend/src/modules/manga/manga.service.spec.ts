@@ -58,6 +58,9 @@ describe('MangaService', () => {
       const paginatedResult = {
         data: [{ id: 1, title: 'Naruto' } as Manga],
         total: 1,
+        page: 1,
+        limit: 20,
+        totalPages: 1,
       };
       mockMangaRepository.findAll.mockResolvedValue(paginatedResult);
 

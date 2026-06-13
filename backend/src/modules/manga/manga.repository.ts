@@ -11,13 +11,19 @@ export class MangaRepository {
   findAll = async (
     page: number,
     limit: number,
-  ): Promise<{ data: Manga[]; total: number }> => {
+  ): Promise<{
+    data: Manga[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> => {
     const [data, total] = await this.repo.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
       relations: ['authors', 'genres'],
     });
-    return { data, total };
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   };
 
   findOneById = async (id: number): Promise<Manga | null> => {

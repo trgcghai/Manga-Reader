@@ -51,19 +51,29 @@ describe('MangaController', () => {
   });
 
   describe('findAll', () => {
-    it('should return manga list without pagination', async () => {
-      service.findAll.mockResolvedValue(mockMangaList);
+    it('should return paginated mangas with defaults', async () => {
+      const paginatedResult = {
+        data: mockMangaList,
+        total: 2,
+        page: 1,
+        limit: 20,
+        totalPages: 1,
+      };
+      service.findAll.mockResolvedValue(paginatedResult);
 
       const result = await controller.findAll();
 
       expect(service.findAll).toHaveBeenCalledWith(1, 20);
-      expect(result).toEqual(mockMangaList);
+      expect(result).toEqual(paginatedResult);
     });
 
     it('should return paginated result when page and limit provided', async () => {
       const paginatedResult = {
         data: mockMangaList,
         total: 2,
+        page: 1,
+        limit: 20,
+        totalPages: 1,
       };
       service.findAll.mockResolvedValue(paginatedResult);
 

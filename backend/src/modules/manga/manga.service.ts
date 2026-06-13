@@ -25,12 +25,14 @@ export class MangaService {
   findAll = async (
     page: number = 1,
     limit: number = 20,
-  ): Promise<{ data: Manga[]; total: number } | Manga[]> => {
-    try {
-      return await this.mangaRepository.findAll(page, limit);
-    } catch (error) {
-      throw new BadRequestException(`Failed to retrieve mangas: ${error}`);
-    }
+  ): Promise<{
+    data: Manga[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> => {
+    return await this.mangaRepository.findAll(page, limit);
   };
 
   findOne = async (id: number): Promise<Manga> => {
