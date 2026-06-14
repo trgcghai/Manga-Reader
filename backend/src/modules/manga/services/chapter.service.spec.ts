@@ -149,7 +149,7 @@ describe('ChapterService', () => {
       number: dto.number,
       title: dto.title,
       releaseDate: new Date(dto.releaseDate as string),
-      note: dto.note ?? null,
+      note: dto.note ?? undefined,
     });
     expect(translationRepo.create).toHaveBeenCalledWith({
       chapter,

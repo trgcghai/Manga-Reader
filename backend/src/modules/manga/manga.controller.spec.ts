@@ -4,7 +4,11 @@ import { MangaService } from './manga.service';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
 import { ImportMangaService } from './services/import-manga.service';
 import { ChapterService } from './services/chapter.service';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateMangaDto } from 'src/modules/manga/dto/manga.dto';
 import { UpdateMangaDto } from 'src/modules/manga/dto/update-manga.dto';
 import { MangaStatus } from 'src/common/constants/manga.constant';
@@ -13,6 +17,7 @@ describe('MangaController', () => {
   let controller: MangaController;
   let service: jest.Mocked<MangaService>;
   let importService: jest.Mocked<ImportMangaService>;
+  let chapterService: jest.Mocked<ChapterService>;
 
   const mockMangaList: Manga[] = [
     { id: 1, title: 'One Piece' } as Manga,
@@ -51,6 +56,7 @@ describe('MangaController', () => {
     controller = module.get<MangaController>(MangaController);
     service = module.get(MangaService);
     importService = module.get(ImportMangaService);
+    chapterService = module.get(ChapterService);
   });
 
   it('should be defined', () => {
@@ -226,6 +232,46 @@ describe('MangaController', () => {
     it('should return 400 when no file provided', async () => {
       await expect(controller.import(undefined as any)).rejects.toThrow(
         BadRequestException,
+      );
+    });
+  });
+
+  describe('createChapter', () => {
+    const chapterDto = {
+      number: 1,
+      title: 'Chapter 1',
+      languageId: 1,
+      translatorId: 1,
+      folderPath: '/chapters/1',
+    };
+
+    it('should call ChapterService.create and return 201', async () => {
+      const expected = { id: 1, ...chapterDto };
+      chapterService.create.mockResolvedValue(expected as any);
+
+      const result = await controller.createChapter(1, chapterDto as any);
+
+      expect(chapterService.create).toHaveBeenCalledWith(1, chapterDto);
+      expect(result).toEqual(expected);
+    });
+
+    it('should propagate NotFoundException from ChapterService', async () => {
+      chapterService.create.mockRejectedValue(
+        new NotFoundException('Manga #999 not found'),
+      );
+
+      await expect(controller.createChapter(999, chapterDto as any)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('should propagate ConflictException from ChapterService', async () => {
+      chapterService.create.mockRejectedValue(
+        new ConflictException('A translation for chapter #1 with this language and translator already exists'),
+      );
+
+      await expect(controller.createChapter(1, chapterDto as any)).rejects.toThrow(
+        ConflictException,
       );
     });
   });
