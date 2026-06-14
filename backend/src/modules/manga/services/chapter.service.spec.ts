@@ -172,7 +172,7 @@ describe('ChapterService', () => {
     await service.create(1, dtoWithoutDate);
 
     expect(chapterRepo.create).toHaveBeenCalledWith(
-      expect.objectContaining({ releaseDate: null }),
+      expect.objectContaining({ releaseDate: undefined }),
     );
   });
 });

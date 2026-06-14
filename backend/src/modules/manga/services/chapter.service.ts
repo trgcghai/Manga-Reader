@@ -86,8 +86,8 @@ export class ChapterService {
       manga,
       number: dto.number,
       title: dto.title,
-      releaseDate: dto.releaseDate ? new Date(dto.releaseDate) : null,
-      note: dto.note ?? null,
+      releaseDate: dto.releaseDate ? new Date(dto.releaseDate) : undefined,
+      note: dto.note ?? undefined,
     });
 
     await this.translationRepo.create({
