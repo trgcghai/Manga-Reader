@@ -5,7 +5,7 @@ import type { UpdateMangaPayload } from '#/services/api/mangaApi'
 import { MangaForm } from '#/components/manga/MangaForm'
 import { Save } from 'lucide-react'
 import { Skeleton } from '#/components/ui/skeleton'
-import { Card, CardContent } from '#/components/ui/card'
+import { ErrorDisplay, ErrorTitle, ErrorDescription } from '#/components/ui/error-display'
 
 export const Route = createFileRoute('/admin/mangas/$id/edit')({
   component: EditMangaPage,
@@ -32,11 +32,12 @@ function EditMangaPage() {
 
   if (isError || !manga) {
     return (
-      <Card className="border-red-300 bg-red-50">
-        <CardContent className="p-6 text-red-700">
-          Failed to load manga. It may not exist or the backend is unavailable.
-        </CardContent>
-      </Card>
+      <ErrorDisplay className="mt-6">
+        <ErrorTitle>Failed to Load Manga</ErrorTitle>
+        <ErrorDescription>
+          It may not exist or the backend is unavailable.
+        </ErrorDescription>
+      </ErrorDisplay>
     )
   }
 

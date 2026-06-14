@@ -23,7 +23,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '#/components/ui/empty'
-import { Card, CardContent } from '#/components/ui/card'
+import { ErrorDisplay, ErrorTitle, ErrorDescription } from '#/components/ui/error-display'
 import { Pencil, Plus, Trash2, Users } from 'lucide-react'
 import AddAuthorDialog from '#/components/author/AddAuthorDialog'
 import EditAuthorDialog from '#/components/author/EditAuthorDialog'
@@ -88,11 +88,12 @@ function AdminAuthorsPage() {
       )}
 
       {isError && (
-        <Card className="mt-6 border-red-300 bg-red-50">
-          <CardContent className="p-6 text-red-700">
-            Failed to load authors. Make sure the backend is running.
-          </CardContent>
-        </Card>
+        <ErrorDisplay className="mt-6">
+          <ErrorTitle>Failed to Load Authors</ErrorTitle>
+          <ErrorDescription>
+            Make sure the backend is running.
+          </ErrorDescription>
+        </ErrorDisplay>
       )}
 
       {data && data.data.length === 0 && (

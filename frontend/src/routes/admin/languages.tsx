@@ -18,7 +18,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '#/components/ui/empty'
-import { Card, CardContent } from '#/components/ui/card'
+import { ErrorDisplay, ErrorTitle, ErrorDescription } from '#/components/ui/error-display'
 import { Globe } from 'lucide-react'
 import type { LanguageResponse } from '#/services/api/languageApi'
 
@@ -67,11 +67,12 @@ function AdminLanguagesPage() {
       )}
 
       {isError && (
-        <Card className="mt-6 border-red-300 bg-red-50">
-          <CardContent className="p-6 text-red-700">
-            Failed to load languages. Make sure the backend is running.
-          </CardContent>
-        </Card>
+        <ErrorDisplay className="mt-6">
+          <ErrorTitle>Failed to Load Languages</ErrorTitle>
+          <ErrorDescription>
+            Make sure the backend is running.
+          </ErrorDescription>
+        </ErrorDisplay>
       )}
 
       {filtered && filtered.length === 0 && (

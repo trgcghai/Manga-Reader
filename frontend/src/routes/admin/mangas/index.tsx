@@ -18,7 +18,7 @@ import {
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Skeleton } from '#/components/ui/skeleton'
-import { Card, CardContent } from '#/components/ui/card'
+import { ErrorDisplay, ErrorTitle, ErrorDescription } from '#/components/ui/error-display'
 import { useState } from 'react'
 import { BookOpenText, Plus, Upload } from 'lucide-react'
 import { ImportDialog } from '#/components/manga/ImportDialog'
@@ -127,11 +127,12 @@ function MangaListPage() {
 
   if (isError) {
     return (
-      <Card className="border-red-300 bg-red-50">
-        <CardContent className="p-6 text-red-700">
-          Failed to load mangas. Make sure the backend is running.
-        </CardContent>
-      </Card>
+      <ErrorDisplay className="mt-6">
+        <ErrorTitle>Failed to Load Mangas</ErrorTitle>
+        <ErrorDescription>
+          Make sure the backend is running.
+        </ErrorDescription>
+      </ErrorDisplay>
     )
   }
 

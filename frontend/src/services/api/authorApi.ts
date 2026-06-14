@@ -32,7 +32,7 @@ export async function getAuthors(
   const params: Record<string, string | number> = { page, limit }
   if (search) params.search = search
 
-  const { data } = await axiosInstance.get<PaginatedAuthorResponse>('/authors', { params })
+  const { data } = await axiosInstance.get<PaginatedAuthorResponse>('/authorss', { params })
   return data
 }
 
