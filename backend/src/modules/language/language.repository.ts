@@ -11,4 +11,8 @@ export class LanguageRepository {
   findAll = async (): Promise<Language[]> => {
     return await this.repo.find();
   };
+
+  findOneById = async (id: number): Promise<Language | null> => {
+    return await this.repo.findOne({ where: { id } });
+  };
 }
