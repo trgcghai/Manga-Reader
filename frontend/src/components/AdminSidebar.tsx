@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { BookOpen, Languages } from 'lucide-react'
+import { BookOpen, BookUser, Languages } from 'lucide-react'
 
 import { NavMain } from '#/components/nav-main.tsx'
 import { NavSub } from '#/components/nav-sub'
@@ -38,6 +38,17 @@ const data = {
         },
       ],
     },
+    {
+      title: "Translator",
+      url: '#',
+      icon: BookUser,
+      items: [
+        {
+          title: 'Translator List',
+          url: '/admin/translators',
+        },
+      ]
+    }
   ],
   navSub: [
     {
