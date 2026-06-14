@@ -16,7 +16,7 @@ export class Translator {
   @Column()
   name: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text', nullable: true, default: '-' })
   note: string;
 
   @CreateDateColumn()

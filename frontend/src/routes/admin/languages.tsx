@@ -13,7 +13,6 @@ import {
 import { Skeleton } from '#/components/ui/skeleton'
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -21,6 +20,7 @@ import {
 } from '#/components/ui/empty'
 import { Card, CardContent } from '#/components/ui/card'
 import { Globe } from 'lucide-react'
+import type { LanguageResponse } from '#/services/api/languageApi'
 
 const PAGE_SIZE = 100
 
@@ -38,7 +38,7 @@ function AdminLanguagesPage() {
       lang.code.toLowerCase().includes(search.toLowerCase()),
   )
 
-  const chunks: typeof filtered = filtered && [
+  const chunks: LanguageResponse[][] | undefined = filtered && [
     filtered.slice(0, PAGE_SIZE),
     filtered.slice(PAGE_SIZE),
   ]
@@ -119,8 +119,8 @@ function AdminLanguagesPage() {
                 </Table>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {chunkIndex === 0
-                    ? `1 – ${chunk.length}`
-                    : `${PAGE_SIZE + 1} – ${PAGE_SIZE + chunk.length}`}
+                    ? `1 - ${chunk.length}`
+                    : `${PAGE_SIZE + 1} - ${PAGE_SIZE + chunk.length}`}
                 </p>
               </div>
             ) : null,

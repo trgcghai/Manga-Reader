@@ -39,7 +39,7 @@ const data = {
       ],
     },
     {
-      title: "Translator",
+      title: 'Translator',
       url: '#',
       icon: BookUser,
       items: [
@@ -47,8 +47,8 @@ const data = {
           title: 'Translator List',
           url: '/admin/translators',
         },
-      ]
-    }
+      ],
+    },
   ],
   navSub: [
     {

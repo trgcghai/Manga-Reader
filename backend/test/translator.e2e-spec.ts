@@ -70,7 +70,7 @@ describe('Translator CRUD (e2e)', () => {
         .expect(201);
 
       expect(res.body.name).toBe('No Note Translator');
-      expect(res.body.note).toBeNull();
+      expect(res.body.note).toBe('-');
     });
 
     it('should return 400 for duplicate name', async () => {
@@ -81,7 +81,9 @@ describe('Translator CRUD (e2e)', () => {
         .send({ name: 'Duplicate Translator' })
         .expect(400);
 
-      expect(res.body.message).toBe('Translator "Duplicate Translator" already exists');
+      expect(res.body.message).toBe(
+        'Translator "Duplicate Translator" already exists',
+      );
     });
 
     it('should return 400 for empty name', async () => {
@@ -148,7 +150,9 @@ describe('Translator CRUD (e2e)', () => {
 
   describe('GET /translators/:id', () => {
     it('should return a translator by id', async () => {
-      const translator = await translatorRepo.save({ name: 'Unique Translator' });
+      const translator = await translatorRepo.save({
+        name: 'Unique Translator',
+      });
 
       const res = await request(app.getHttpServer())
         .get(`/translators/${translator.id}`)
@@ -165,7 +169,10 @@ describe('Translator CRUD (e2e)', () => {
 
   describe('PATCH /translators/:id', () => {
     it('should update translator name and note', async () => {
-      const translator = await translatorRepo.save({ name: 'Old Name', note: 'Old note' });
+      const translator = await translatorRepo.save({
+        name: 'Old Name',
+        note: 'Old note',
+      });
 
       const res = await request(app.getHttpServer())
         .patch(`/translators/${translator.id}`)
@@ -205,12 +212,16 @@ describe('Translator CRUD (e2e)', () => {
         .delete(`/translators/${translator.id}`)
         .expect(200);
 
-      const check = await translatorRepo.findOne({ where: { id: translator.id } });
+      const check = await translatorRepo.findOne({
+        where: { id: translator.id },
+      });
       expect(check).toBeNull();
     });
 
     it('should return 404 for non-existent translator', async () => {
-      await request(app.getHttpServer()).delete('/translators/99999').expect(404);
+      await request(app.getHttpServer())
+        .delete('/translators/99999')
+        .expect(404);
     });
   });
 });
