@@ -11,7 +11,11 @@ import { GenreModule } from 'src/modules/genre/genre.module';
 import { ImportMangaService } from './services/import-manga.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Manga, Chapter, Translation]), AuthorModule, GenreModule],
+  imports: [
+    TypeOrmModule.forFeature([Manga, Chapter, Translation]),
+    AuthorModule,
+    GenreModule,
+  ],
   controllers: [MangaController],
   providers: [MangaService, MangaRepository, ImportMangaService],
   exports: [MangaRepository],
