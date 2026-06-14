@@ -12,7 +12,7 @@ import { Genre } from '../src/modules/genre/entities/genre.entity';
 import { Chapter } from '../src/modules/chapter/entities/chapter.entity';
 import { Translation } from '../src/modules/chapter/entities/translation.entity';
 import { Translator } from '../src/modules/translator/entities/translator.entity';
-import { Language } from '../src/modules/translator/entities/language.entity';
+import { Language } from '../src/modules/language/entities/language.entity';
 
 describe('Author CRUD (e2e)', () => {
   let app: INestApplication<App>;

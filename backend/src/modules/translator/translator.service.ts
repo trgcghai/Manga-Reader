@@ -1,24 +1,67 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { TranslatorRepository } from './translator.repository';
+import {
+  CreateTranslatorDto,
+  UpdateTranslatorDto,
+} from 'src/modules/translator/dto/translator.dto';
 
 @Injectable()
 export class TranslatorService {
-  create() {
-    return 'This action adds a new translator';
-  }
+  constructor(private readonly translatorRepository: TranslatorRepository) {}
 
-  findAll() {
-    return `This action returns all translator`;
-  }
+  findAll = async (search?: string, page?: number, limit?: number) => {
+    return await this.translatorRepository.findAll(search, page, limit);
+  };
 
-  findOne(id: number) {
-    return `This action returns a #${id} translator`;
-  }
+  findOne = async (id: number) => {
+    const translator = await this.translatorRepository.findOneById(id);
+    if (!translator) {
+      throw new NotFoundException(`Translator with ID ${id} not found`);
+    }
+    return translator;
+  };
 
-  update(id: number) {
-    return `This action updates a #${id} translator`;
-  }
+  create = async (dto: CreateTranslatorDto) => {
+    const existing = await this.translatorRepository.findOneByName(dto.name);
+    if (existing) {
+      throw new BadRequestException(`Translator "${dto.name}" already exists`);
+    }
+    return await this.translatorRepository.create({
+      name: dto.name,
+      note: dto.note ?? undefined,
+    });
+  };
 
-  remove(id: number) {
-    return `This action removes a #${id} translator`;
-  }
+  update = async (id: number, dto: UpdateTranslatorDto) => {
+    const translator = await this.translatorRepository.findOneById(id);
+    if (!translator) {
+      throw new NotFoundException(`Translator with ID ${id} not found`);
+    }
+
+    if (dto.name && dto.name !== translator.name) {
+      const taken = await this.translatorRepository.findOneByName(dto.name);
+      if (taken) {
+        throw new BadRequestException(
+          `Translator "${dto.name}" already exists`,
+        );
+      }
+    }
+
+    return await this.translatorRepository.update(id, {
+      name: dto.name,
+      note: dto.note,
+    });
+  };
+
+  delete = async (id: number) => {
+    const translator = await this.translatorRepository.findOneById(id);
+    if (!translator) {
+      throw new NotFoundException(`Translator with ID ${id} not found`);
+    }
+    await this.translatorRepository.delete(id);
+  };
 }

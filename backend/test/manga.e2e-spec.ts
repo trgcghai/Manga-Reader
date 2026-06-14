@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { INestApplication } from '@nestjs/common';
@@ -13,7 +15,7 @@ import { Genre } from '../src/modules/genre/entities/genre.entity';
 import { Chapter } from '../src/modules/chapter/entities/chapter.entity';
 import { Translation } from '../src/modules/chapter/entities/translation.entity';
 import { Translator } from '../src/modules/translator/entities/translator.entity';
-import { Language } from '../src/modules/translator/entities/language.entity';
+import { Language } from 'src/modules/language/entities/language.entity';
 
 describe('Manga CRUD (e2e)', () => {
   let app: INestApplication<App>;
@@ -21,7 +23,6 @@ describe('Manga CRUD (e2e)', () => {
   let mangaRepo: Repository<Manga>;
   let authorRepo: Repository<Author>;
   let genreRepo: Repository<Genre>;
-
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
@@ -57,7 +58,7 @@ describe('Manga CRUD (e2e)', () => {
 
   beforeEach(async () => {
     await dataSource.query(
-      'TRUNCATE manga_authors, manga_genres, manga, author, genre CASCADE',
+      'TRUNCATE manga_authors, manga_genres, manga, author, genre, language CASCADE',
     );
   });
 
@@ -359,7 +360,7 @@ describe('Manga CRUD (e2e)', () => {
       const listRes = await request(app.getHttpServer())
         .get('/mangas')
         .expect(200);
-      const titles = listRes.body.data.map((m: any) => m.title);
+      const titles = listRes.body.data.map((m: { title: string }) => m.title);
       expect(titles).toContain('Imported Manga 1');
       expect(titles).toContain('Imported Manga 2');
     });
