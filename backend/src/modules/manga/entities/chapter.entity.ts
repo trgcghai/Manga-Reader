@@ -9,7 +9,7 @@ import {
   Unique,
 } from 'typeorm';
 import { Translation } from './translation.entity';
-import { Manga } from 'src/modules/manga/entities/manga.entity';
+import { Manga } from './manga.entity';
 
 @Entity()
 @Unique(['manga', 'number'])
