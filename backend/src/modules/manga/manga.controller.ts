@@ -8,10 +8,13 @@ import {
   Patch,
   Delete,
   Header,
+  HttpCode,
+  HttpStatus,
   StreamableFile,
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as XLSX from 'xlsx';
@@ -24,12 +27,15 @@ import {
   CreateMangaDto,
   UpdateMangaDto,
 } from 'src/modules/manga/dto/manga.dto';
+import { ChapterService } from './services/chapter.service';
+import { CreateChapterDto } from 'src/modules/manga/dto/chapter.dto';
 
 @Controller('mangas')
 export class MangaController {
   constructor(
     private readonly mangaService: MangaService,
     private readonly importMangaService: ImportMangaService,
+    private readonly chapterService: ChapterService,
   ) {}
 
   @Post()
@@ -97,5 +103,14 @@ export class MangaController {
   @Delete(':id')
   delete(@Param('id') id: string) {
     return this.mangaService.delete(+id);
+  }
+
+  @Post(':mangaId/chapter')
+  @HttpCode(HttpStatus.CREATED)
+  createChapter(
+    @Param('mangaId', ParseIntPipe) mangaId: number,
+    @Body() dto: CreateChapterDto,
+  ) {
+    return this.chapterService.create(mangaId, dto);
   }
 }

@@ -3,6 +3,7 @@ import { MangaController } from './manga.controller';
 import { MangaService } from './manga.service';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
 import { ImportMangaService } from './services/import-manga.service';
+import { ChapterService } from './services/chapter.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateMangaDto } from 'src/modules/manga/dto/manga.dto';
 import { UpdateMangaDto } from 'src/modules/manga/dto/update-manga.dto';
@@ -36,6 +37,12 @@ describe('MangaController', () => {
           provide: ImportMangaService,
           useValue: {
             import: jest.fn(),
+          },
+        },
+        {
+          provide: ChapterService,
+          useValue: {
+            create: jest.fn(),
           },
         },
       ],
