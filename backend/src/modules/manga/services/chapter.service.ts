@@ -30,19 +30,25 @@ export class ChapterService {
     let language: any;
     try {
       language = await this.languageService.findOne(dto.languageId);
-    } catch {
-      throw new BadRequestException(
-        'Language #' + dto.languageId + ' not found',
-      );
+    } catch (err) {
+      if (err instanceof NotFoundException) {
+        throw new BadRequestException(
+          'Language #' + dto.languageId + ' not found',
+        );
+      }
+      throw err;
     }
 
     let translator: any;
     try {
       translator = await this.translatorService.findOne(dto.translatorId);
-    } catch {
-      throw new BadRequestException(
-        'Translator #' + dto.translatorId + ' not found',
-      );
+    } catch (err) {
+      if (err instanceof NotFoundException) {
+        throw new BadRequestException(
+          'Translator #' + dto.translatorId + ' not found',
+        );
+      }
+      throw err;
     }
 
     const existingChapter = await this.chapterRepo.findByMangaAndNumber(

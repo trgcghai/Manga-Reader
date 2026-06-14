@@ -159,4 +159,20 @@ describe('ChapterService', () => {
     });
     expect(result).toEqual(chapter);
   });
+
+  it('should handle undefined releaseDate', async () => {
+    mangaRepo.findOneById.mockResolvedValue(manga);
+    languageService.findOne.mockResolvedValue(language);
+    translatorService.findOne.mockResolvedValue(translator);
+    chapterRepo.findByMangaAndNumber.mockResolvedValue(null);
+    chapterRepo.create.mockResolvedValue(chapter);
+    translationRepo.create.mockResolvedValue(translation);
+
+    const dtoWithoutDate = { ...dto, releaseDate: undefined };
+    await service.create(1, dtoWithoutDate);
+
+    expect(chapterRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ releaseDate: null }),
+    );
+  });
 });
