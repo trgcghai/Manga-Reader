@@ -5,6 +5,7 @@ import { MangaService } from './manga.service';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
 import { ImportMangaService } from './services/import-manga.service';
 import { ChapterService } from './services/chapter.service';
+import { TranslationService } from './services/translation.service';
 import {
   BadRequestException,
   ConflictException,
@@ -21,6 +22,7 @@ describe('MangaController', () => {
   let service: jest.Mocked<MangaService>;
   let importService: jest.Mocked<ImportMangaService>;
   let chapterService: jest.Mocked<ChapterService>;
+  let translationService: jest.Mocked<TranslationService>;
 
   const mockMangaList: Manga[] = [
     { id: 1, title: 'One Piece' } as Manga,
@@ -53,6 +55,13 @@ describe('MangaController', () => {
             create: jest.fn(),
           },
         },
+        {
+          provide: TranslationService,
+          useValue: {
+            update: jest.fn(),
+            delete: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -60,6 +69,7 @@ describe('MangaController', () => {
     service = module.get(MangaService);
     importService = module.get(ImportMangaService);
     chapterService = module.get(ChapterService);
+    translationService = module.get(TranslationService);
   });
 
   it('should be defined', () => {

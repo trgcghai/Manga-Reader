@@ -10,6 +10,7 @@ import { AuthorModule } from 'src/modules/author/author.module';
 import { GenreModule } from 'src/modules/genre/genre.module';
 import { ImportMangaService } from './services/import-manga.service';
 import { ChapterService } from './services/chapter.service';
+import { TranslationService } from './services/translation.service';
 import { ChapterRepository } from './chapter.repository';
 import { TranslationRepository } from './translation.repository';
 import { LanguageModule } from 'src/modules/language/language.module';
@@ -31,6 +32,7 @@ import { TranslatorModule } from 'src/modules/translator/translator.module';
     ChapterService,
     ChapterRepository,
     TranslationRepository,
+    TranslationService,
   ],
   exports: [MangaRepository],
 })

@@ -28,7 +28,9 @@ import {
   UpdateMangaDto,
 } from 'src/modules/manga/dto/manga.dto';
 import { ChapterService } from './services/chapter.service';
+import { TranslationService } from './services/translation.service';
 import { CreateChapterDto } from 'src/modules/manga/dto/chapter.dto';
+import { UpdateTranslationDto } from 'src/modules/manga/dto/translation.dto';
 
 @Controller('mangas')
 export class MangaController {
@@ -36,6 +38,7 @@ export class MangaController {
     private readonly mangaService: MangaService,
     private readonly importMangaService: ImportMangaService,
     private readonly chapterService: ChapterService,
+    private readonly translationService: TranslationService,
   ) {}
 
   @Post()
@@ -114,5 +117,25 @@ export class MangaController {
     @Body() dto: CreateChapterDto,
   ) {
     return this.chapterService.create(mangaId, dto);
+  }
+
+  @Patch(':mangaId/chapter/:chapterId/translations/:translationId')
+  updateTranslation(
+    @Param('mangaId', ParseIntPipe) mangaId: number,
+    @Param('chapterId', ParseIntPipe) chapterId: number,
+    @Param('translationId', ParseIntPipe) translationId: number,
+    @Body() dto: UpdateTranslationDto,
+  ) {
+    return this.translationService.update(mangaId, chapterId, translationId, dto)
+  }
+
+  @Delete(':mangaId/chapter/:chapterId/translations/:translationId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteTranslation(
+    @Param('mangaId', ParseIntPipe) mangaId: number,
+    @Param('chapterId', ParseIntPipe) chapterId: number,
+    @Param('translationId', ParseIntPipe) translationId: number,
+  ) {
+    return this.translationService.delete(mangaId, chapterId, translationId)
   }
 }
