@@ -34,7 +34,10 @@ export class MangaRepository {
     return await this.repo.save(data);
   };
 
-  findOneByIdWithRelations = async (id: number, includeDetail?: boolean): Promise<Manga | null> => {
+  findOneByIdWithRelations = async (
+    id: number,
+    includeDetail?: boolean,
+  ): Promise<Manga | null> => {
     const relations: string[] = ['authors', 'genres'];
     if (includeDetail) {
       relations.push('chapters', 'chapters.translations');

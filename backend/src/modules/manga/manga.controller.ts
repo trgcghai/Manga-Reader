@@ -93,10 +93,7 @@ export class MangaController {
   }
 
   @Get(':id')
-  findOne(
-    @Param('id') id: string,
-    @Query('include') include?: string,
-  ) {
+  findOne(@Param('id') id: string, @Query('include') include?: string) {
     return this.mangaService.findOne(+id, include);
   }
 

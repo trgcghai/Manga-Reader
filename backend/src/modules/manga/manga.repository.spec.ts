@@ -35,8 +35,24 @@ describe('MangaRepository', () => {
 
     it('should load chapters and translations when includeDetail is true', async () => {
       const mockManga = {
-        id: 1, title: 'Test', authors: [], genres: [],
-        chapters: [{ id: 1, number: 1, translations: [{ id: 1, folderPath: '/path', language: { id: 1, code: 'en', name: 'English' }, translator: { id: 1, name: 'T1' } }] }],
+        id: 1,
+        title: 'Test',
+        authors: [],
+        genres: [],
+        chapters: [
+          {
+            id: 1,
+            number: 1,
+            translations: [
+              {
+                id: 1,
+                folderPath: '/path',
+                language: { id: 1, code: 'en', name: 'English' },
+                translator: { id: 1, name: 'T1' },
+              },
+            ],
+          },
+        ],
       } as unknown as Manga;
       mockRepo.findOne.mockResolvedValue(mockManga);
       const result = await repo.findOneByIdWithRelations(1, true);

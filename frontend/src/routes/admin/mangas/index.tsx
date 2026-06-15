@@ -18,7 +18,11 @@ import {
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Skeleton } from '#/components/ui/skeleton'
-import { ErrorDisplay, ErrorTitle, ErrorDescription } from '#/components/ui/error-display'
+import {
+  ErrorDisplay,
+  ErrorTitle,
+  ErrorDescription,
+} from '#/components/ui/error-display'
 import { useState } from 'react'
 import { BookOpenText, Plus, Upload } from 'lucide-react'
 import { ImportDialog } from '#/components/manga/ImportDialog'
@@ -43,11 +47,19 @@ const columns = [
   }),
   columnHelper.accessor('status', {
     header: 'Status',
-    cell: (info) => (
-      <Badge variant="secondary" className="capitalize">
-        {info.getValue()}
-      </Badge>
-    ),
+    cell: (info) => {
+      const variant =
+        info.getValue() === 'completed'
+          ? 'default'
+          : info.getValue() === 'ongoing'
+            ? 'outline'
+            : 'destructive'
+      return (
+        <Badge variant={variant} className="capitalize">
+          {info.getValue()}
+        </Badge>
+      )
+    },
   }),
   columnHelper.accessor('authors', {
     header: 'Authors',
@@ -130,9 +142,7 @@ function MangaListPage() {
     return (
       <ErrorDisplay className="mt-6">
         <ErrorTitle>Failed to Load Mangas</ErrorTitle>
-        <ErrorDescription>
-          Make sure the backend is running.
-        </ErrorDescription>
+        <ErrorDescription>Make sure the backend is running.</ErrorDescription>
       </ErrorDisplay>
     )
   }
@@ -202,7 +212,12 @@ function MangaListPage() {
                 <TableRow
                   key={row.id}
                   className="cursor-pointer"
-                  onClick={() => navigate({ to: '/admin/mangas/$id', params: { id: String(row.original.id) } })}
+                  onClick={() =>
+                    navigate({
+                      to: '/admin/mangas/$id',
+                      params: { id: String(row.original.id) },
+                    })
+                  }
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
