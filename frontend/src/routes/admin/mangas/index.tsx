@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useMangaList } from '#/hooks/useManga'
 import type { MangaResponse } from '#/services/api/mangaApi'
 import {
@@ -104,6 +104,7 @@ function MangaListPage() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [importOpen, setImportOpen] = useState(false)
+  const navigate = useNavigate()
   const { data, isLoading, isError } = useMangaList(page, pageSize)
 
   const table = useReactTable({
@@ -198,7 +199,11 @@ function MangaListPage() {
             </TableHeader>
             <TableBody>
               {table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow
+                  key={row.id}
+                  className="cursor-pointer"
+                  onClick={() => navigate({ to: '/admin/mangas/$id', params: { id: String(row.original.id) } })}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
