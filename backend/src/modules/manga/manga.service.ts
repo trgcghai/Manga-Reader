@@ -42,8 +42,10 @@ export class MangaService {
   findOne = async (
     id: number,
     include?: string,
-  ): Promise<MangaResponse | MangaDetailResponse> => {
-    const includeDetail = include === 'chapters,translations';
+  ): Promise<MangaResponse | MangaDetailResponse | null> => {
+    const included = include?.split(',').map((s) => s.trim()) ?? [];
+    const includeDetail =
+      included.includes('chapters') && included.includes('translations');
     const manga = await this.mangaRepository.findOneByIdWithRelations(
       id,
       includeDetail,
@@ -51,7 +53,7 @@ export class MangaService {
 
     if (!manga) {
       if (includeDetail) {
-        return null as unknown as MangaDetailResponse;
+        return null;
       }
       throw new NotFoundException(`Manga with ID ${id} not found`);
     }
