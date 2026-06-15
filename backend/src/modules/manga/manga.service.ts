@@ -12,7 +12,7 @@ import {
 import {
   MangaResponse,
   MangaDetailResponse,
-} from 'src/modules/manga/dto/manga-response.dto';
+} from 'src/modules/manga/dto/manga.dto';
 import { AuthorService } from 'src/modules/author/author.service';
 import { GenreService } from 'src/modules/genre/genre.service';
 import { Author } from 'src/modules/author/entities/author.entity';
