@@ -1,3 +1,4 @@
+import { Button } from '#/components/ui/button'
 import { Link } from '@tanstack/react-router'
 import { BookOpen } from 'lucide-react'
 
@@ -9,18 +10,15 @@ export function AppHeader() {
           <div className="flex size-9 items-center justify-center rounded-lg bg-foreground text-background">
             <BookOpen className="size-5" />
           </div>
-          <span className="font-serif text-lg font-semibold tracking-tight">
+          <span className="font-heading text-lg font-semibold tracking-tight">
             Manga Reader
           </span>
         </Link>
 
         <nav className="flex items-center gap-6">
-          <Link
-            to="/admin"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Admin
-          </Link>
+          <Button variant="secondary" size="sm" title="Admin Dashboard">
+            <Link to="/admin">Admin Dashboard</Link>
+          </Button>
         </nav>
       </div>
     </header>

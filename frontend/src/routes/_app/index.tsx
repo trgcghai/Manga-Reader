@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useMangaList } from '#/hooks/useManga'
 import type { MangaResponse } from '#/services/api/mangaApi'
-import { MangaCoverCard } from '#/components/manga/MangaCoverCard'
+import { MangaCard } from '#/components/manga/MangaCard'
 import { Pagination } from '#/components/ui/pagination'
 import { Skeleton } from '#/components/ui/skeleton'
 import {
@@ -74,7 +74,7 @@ function LibraryPage() {
     <div>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:gap-6">
         {data.data.map((manga: MangaResponse) => (
-          <MangaCoverCard key={manga.id} manga={manga} />
+          <MangaCard key={manga.id} manga={manga} />
         ))}
       </div>
 
