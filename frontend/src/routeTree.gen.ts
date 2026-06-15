@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
@@ -22,6 +23,11 @@ import { Route as AdminMangasIdRouteImport } from './routes/admin/mangas/$id'
 import { Route as AdminMangasIdIndexRouteImport } from './routes/admin/mangas/$id.index'
 import { Route as AdminMangasIdEditRouteImport } from './routes/admin/mangas/$id.edit'
 
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -86,6 +92,7 @@ const AdminMangasIdEditRoute = AdminMangasIdEditRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/app': typeof AppRoute
   '/admin/authors': typeof AdminAuthorsRoute
   '/admin/genres': typeof AdminGenresRoute
   '/admin/languages': typeof AdminLanguagesRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app': typeof AppRoute
   '/admin/authors': typeof AdminAuthorsRoute
   '/admin/genres': typeof AdminGenresRoute
   '/admin/languages': typeof AdminLanguagesRoute
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/app': typeof AppRoute
   '/admin/authors': typeof AdminAuthorsRoute
   '/admin/genres': typeof AdminGenresRoute
   '/admin/languages': typeof AdminLanguagesRoute
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/app'
     | '/admin/authors'
     | '/admin/genres'
     | '/admin/languages'
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/app'
     | '/admin/authors'
     | '/admin/genres'
     | '/admin/languages'
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/app'
     | '/admin/authors'
     | '/admin/genres'
     | '/admin/languages'
@@ -170,10 +182,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  AppRoute: typeof AppRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -302,6 +322,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  AppRoute: AppRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
