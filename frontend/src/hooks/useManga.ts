@@ -140,16 +140,14 @@ export function useCreateChapterForManga(mangaId: number) {
   })
 }
 
-export function useUpdateTranslation(mangaId: number) {
+export function useUpdateTranslation(mangaId: number, chapterId: number) {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({
-      chapterId,
       translationId,
       data,
     }: {
-      chapterId: number
       translationId: number
       data: UpdateTranslationPayload
     }) => updateTranslation(mangaId, chapterId, translationId, data),
@@ -165,17 +163,12 @@ export function useUpdateTranslation(mangaId: number) {
   })
 }
 
-export function useDeleteTranslation(mangaId: number) {
+export function useDeleteTranslation(mangaId: number, chapterId: number) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({
-      chapterId,
-      translationId,
-    }: {
-      chapterId: number
-      translationId: number
-    }) => deleteTranslation(mangaId, chapterId, translationId),
+    mutationFn: ({ translationId }: { translationId: number }) =>
+      deleteTranslation(mangaId, chapterId, translationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mangas', 'detail', mangaId] })
       toast.success('Translation deleted')

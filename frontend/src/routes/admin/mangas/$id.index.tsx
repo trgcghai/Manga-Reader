@@ -44,11 +44,16 @@ import {
   Pencil,
   ArrowLeft,
   Plus,
+  Trash2,
 } from 'lucide-react'
+import * as React from 'react'
 import { useState } from 'react'
 import { formatDateTime } from '#/lib/dateTimeFormatter'
 import AddChapterDialog from '#/components/chapter/AddChapterDialog'
 import AddTranslationDialog from '#/components/chapter/AddTranslationDialog'
+import EditTranslationDialog from '#/components/chapter/EditTranslationDialog'
+import { DeleteConfirmDialog } from '#/components/common/DeleteConfirmDialog'
+import { useDeleteTranslation } from '#/hooks/useManga'
 
 export const Route = createFileRoute('/admin/mangas/$id/')({
   component: MangaDetailPage,
@@ -234,6 +239,9 @@ function ChapterRow({
 }) {
   const [open, setOpen] = useState(false)
   const [translationDialogOpen, setTranslationDialogOpen] = useState(false)
+  const [editDialogId, setEditDialogId] = useState<number | null>(null)
+  const [deleteDialogId, setDeleteDialogId] = useState<number | null>(null)
+  const deleteMutation = useDeleteTranslation(Number(mangaId))
 
   return (
     <Collapsible open={open} onOpenChange={setOpen} asChild>
@@ -278,20 +286,68 @@ function ChapterRow({
                 <Table>
                   <TableBody>
                     {chapter.translations.map((tr) => (
-                      <TableRow key={tr.id} className="text-muted-foreground">
-                        <TableCell className="pl-10 w-1/10">
-                          {tr.language.name}
-                        </TableCell>
-                        <TableCell className="w-1/5 truncate">
-                          {tr.translator.name}
-                        </TableCell>
-                        <TableCell className="w-1/5">
-                          {formatDateTime(tr.createdAt)}
-                        </TableCell>
-                        <TableCell className="font-mono text-sm w-1/2 truncate">
-                          {tr.folderPath}
-                        </TableCell>
-                      </TableRow>
+                      <React.Fragment key={tr.id}>
+                        <TableRow className="text-muted-foreground">
+                          <TableCell className="pl-10 w-1/10">
+                            {tr.language.name}
+                          </TableCell>
+                          <TableCell className="w-1/5 truncate">
+                            {tr.translator.name}
+                          </TableCell>
+                          <TableCell className="w-1/5">
+                            {formatDateTime(tr.createdAt)}
+                          </TableCell>
+                          <TableCell className="font-mono text-sm w-1/2 truncate">
+                            {tr.folderPath}
+                          </TableCell>
+                          <TableCell className="w-20">
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => setEditDialogId(tr.id)}
+                                title="Edit translation"
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:text-destructive"
+                                onClick={() => setDeleteDialogId(tr.id)}
+                                title="Delete translation"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+
+                        <EditTranslationDialog
+                          open={editDialogId === tr.id}
+                          onOpenChange={(o) => setEditDialogId(o ? tr.id : null)}
+                          mangaId={Number(mangaId)}
+                          chapterId={chapter.id}
+                          translation={tr}
+                        />
+
+                        <DeleteConfirmDialog
+                          open={deleteDialogId === tr.id}
+                          onOpenChange={(o) => setDeleteDialogId(o ? tr.id : null)}
+                          title="Delete Translation"
+                          entityName={`${tr.language.name} by ${tr.translator.name}`}
+                          onConfirm={() => {
+                            deleteMutation.mutate(
+                              { chapterId: chapter.id, translationId: tr.id },
+                              {
+                                onSuccess: () => setDeleteDialogId(null),
+                              },
+                            )
+                          }}
+                          isPending={deleteMutation.isPending}
+                        />
+                      </React.Fragment>
                     ))}
                   </TableBody>
                 </Table>
