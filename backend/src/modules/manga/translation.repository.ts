@@ -25,4 +25,20 @@ export class TranslationRepository {
   create = async (data: Partial<Translation>): Promise<Translation> => {
     return await this.repo.save(data);
   };
+
+  findById = async (id: number): Promise<Translation | null> => {
+    return await this.repo.findOne({
+      where: { id },
+      relations: ['chapter', 'chapter.manga'],
+    })
+  }
+
+  update = async (id: number, data: Partial<Translation>): Promise<Translation> => {
+    await this.repo.update(id, data)
+    return await this.repo.findOne({ where: { id } })
+  }
+
+  delete = async (id: number): Promise<void> => {
+    await this.repo.delete(id)
+  }
 }
