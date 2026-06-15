@@ -22,6 +22,7 @@ import {
 import { ChevronDown, ChevronRight, BookOpen, Pencil, ArrowLeft, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { formatDateTime } from '#/lib/dateTimeFormatter'
+import AddChapterDialog from '#/components/chapter/AddChapterDialog'
 
 export const Route = createFileRoute('/admin/mangas/$id/')({
   component: MangaDetailPage,
@@ -31,6 +32,7 @@ function MangaDetailPage() {
   const { id } = useParams({ from: '/admin/mangas/$id/' })
   const navigate = useNavigate()
   const mangaId = Number(id)
+  const [chapterDialogOpen, setChapterDialogOpen] = useState(false)
   const { data, isLoading, isError } = useManga(mangaId, {
     include: 'chapters,translations',
   })
@@ -145,7 +147,13 @@ function MangaDetailPage() {
         </dl>
       </div>
 
-      <h2 className="mb-4 text-xl font-semibold">Chapters</h2>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Chapters</h2>
+        <Button onClick={() => setChapterDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Chapter
+        </Button>
+      </div>
 
       {manga.chapters.length === 0 ? (
         <Empty>
@@ -156,12 +164,7 @@ function MangaDetailPage() {
             <EmptyTitle>No Chapters Yet</EmptyTitle>
           </EmptyHeader>
           <EmptyContent>
-            <Button
-              onClick={() =>
-                navigate({ to: '/admin/mangas/$id/edit', params: { id } })
-              }
-            >
-              <Plus className="mr-2 h-4 w-4" />
+            <Button onClick={() => setChapterDialogOpen(true)}>
               Add Chapter
             </Button>
           </EmptyContent>
@@ -185,6 +188,12 @@ function MangaDetailPage() {
           </TableBody>
         </Table>
       )}
+
+      <AddChapterDialog
+        open={chapterDialogOpen}
+        onOpenChange={setChapterDialogOpen}
+        mangaId={mangaId}
+      />
     </div>
   )
 }
