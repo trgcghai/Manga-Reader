@@ -1,9 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { LibraryPage } from '#/components/manga/LibraryPage'
 
-export const Route = createFileRoute('/')({ component: Home })
-
-export function Home() {
-  return (
-    <h1>Hello, Manga Reader!</h1>
-  )
-}
+export const Route = createFileRoute('/')({ component: LibraryPage })
