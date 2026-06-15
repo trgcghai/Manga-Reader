@@ -107,30 +107,40 @@ describe('MangaService', () => {
         genres: [{ id: 1, name: 'Genre1' }],
         createdAt: new Date('2024-01-01'),
         updatedAt: new Date('2024-01-01'),
-        chapters: [{
-          id: 1,
-          number: 1,
-          title: 'Ch1',
-          releaseDate: new Date('2024-01-01'),
-          note: null,
-          translations: [{
+        chapters: [
+          {
             id: 1,
-            folderPath: '/path',
+            number: 1,
+            title: 'Ch1',
+            releaseDate: new Date('2024-01-01'),
             note: null,
-            language: { id: 1, code: 'en', name: 'English' },
-            translator: { id: 1, name: 'T1' },
-          }],
-        }],
+            translations: [
+              {
+                id: 1,
+                folderPath: '/path',
+                note: null,
+                language: { id: 1, code: 'en', name: 'English' },
+                translator: { id: 1, name: 'T1' },
+              },
+            ],
+          },
+        ],
       };
 
-      (mockMangaRepository.findOneByIdWithRelations as jest.Mock).mockResolvedValue(mockManga);
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(mockManga);
 
       const result = await service.findOne(1, 'chapters,translations');
 
-      expect(mockMangaRepository.findOneByIdWithRelations).toHaveBeenCalledWith(1, true);
+      expect(mockMangaRepository.findOneByIdWithRelations).toHaveBeenCalledWith(
+        1,
+        true,
+      );
       expect(result).toHaveProperty('chapters');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect((result as any).chapters).toHaveLength(1);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect((result as any).chapters[0].translations).toHaveLength(1);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect((result as any).chapters[0].releaseDate).toBe('2024-01-01');
     });
 
@@ -148,16 +158,19 @@ describe('MangaService', () => {
         updatedAt: new Date('2024-01-01'),
       };
 
-      (mockMangaRepository.findOneByIdWithRelations as jest.Mock).mockResolvedValue(mockManga);
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(mockManga);
 
       const result = await service.findOne(1);
 
-      expect(mockMangaRepository.findOneByIdWithRelations).toHaveBeenCalledWith(1, false);
+      expect(mockMangaRepository.findOneByIdWithRelations).toHaveBeenCalledWith(
+        1,
+        false,
+      );
       expect(result).not.toHaveProperty('chapters');
     });
 
     it('should return null when manga not found with include param', async () => {
-      (mockMangaRepository.findOneByIdWithRelations as jest.Mock).mockResolvedValue(null);
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(null);
 
       const result = await service.findOne(999, 'chapters,translations');
 
