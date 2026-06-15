@@ -46,7 +46,7 @@ interface AddTranslationDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   mangaId: number
-  chapterNumber: number
+  chapterNumber: string
   chapterTitle?: string
 }
 
@@ -68,7 +68,7 @@ export default function AddTranslationDialog({
     onSubmit: async (values) => {
       createMutation.mutate(
         {
-          number: chapterNumber,
+          number: parseFloat(chapterNumber),
           title: chapterTitle ?? '',
           languageId: values.value.languageId,
           translatorId: values.value.translatorId,

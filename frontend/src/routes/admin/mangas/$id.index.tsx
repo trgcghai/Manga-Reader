@@ -4,7 +4,6 @@ import {
   useNavigate,
   useParams,
 } from '@tanstack/react-router'
-import { useManga } from '#/hooks/useManga'
 import type {
   MangaDetailResponse,
   ChapterDetail,
@@ -53,7 +52,7 @@ import AddChapterDialog from '#/components/chapter/AddChapterDialog'
 import AddTranslationDialog from '#/components/chapter/AddTranslationDialog'
 import EditTranslationDialog from '#/components/chapter/EditTranslationDialog'
 import { DeleteConfirmDialog } from '#/components/common/DeleteConfirmDialog'
-import { useDeleteTranslation } from '#/hooks/useManga'
+import { useDeleteTranslation, useManga } from '#/hooks/useManga'
 
 export const Route = createFileRoute('/admin/mangas/$id/')({
   component: MangaDetailPage,
@@ -241,7 +240,7 @@ function ChapterRow({
   const [translationDialogOpen, setTranslationDialogOpen] = useState(false)
   const [editDialogId, setEditDialogId] = useState<number | null>(null)
   const [deleteDialogId, setDeleteDialogId] = useState<number | null>(null)
-  const deleteMutation = useDeleteTranslation(Number(mangaId))
+  const deleteMutation = useDeleteTranslation(Number(mangaId), chapter.id)
 
   return (
     <Collapsible open={open} onOpenChange={setOpen} asChild>
@@ -326,7 +325,9 @@ function ChapterRow({
 
                         <EditTranslationDialog
                           open={editDialogId === tr.id}
-                          onOpenChange={(o) => setEditDialogId(o ? tr.id : null)}
+                          onOpenChange={(o) =>
+                            setEditDialogId(o ? tr.id : null)
+                          }
                           mangaId={Number(mangaId)}
                           chapterId={chapter.id}
                           translation={tr}
@@ -334,12 +335,14 @@ function ChapterRow({
 
                         <DeleteConfirmDialog
                           open={deleteDialogId === tr.id}
-                          onOpenChange={(o) => setDeleteDialogId(o ? tr.id : null)}
+                          onOpenChange={(o) =>
+                            setDeleteDialogId(o ? tr.id : null)
+                          }
                           title="Delete Translation"
                           entityName={`${tr.language.name} by ${tr.translator.name}`}
                           onConfirm={() => {
                             deleteMutation.mutate(
-                              { chapterId: chapter.id, translationId: tr.id },
+                              { translationId: tr.id },
                               {
                                 onSuccess: () => setDeleteDialogId(null),
                               },
@@ -360,7 +363,7 @@ function ChapterRow({
           open={translationDialogOpen}
           onOpenChange={setTranslationDialogOpen}
           mangaId={Number(mangaId)}
-          chapterNumber={chapter.number}
+          chapterNumber={String(chapter.number)}
           chapterTitle={chapter.title}
         />
       </>

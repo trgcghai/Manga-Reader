@@ -52,7 +52,7 @@ export default function EditTranslationDialog({
   chapterId,
   translation,
 }: EditTranslationDialogProps) {
-  const updateMutation = useUpdateTranslation(mangaId)
+  const updateMutation = useUpdateTranslation(mangaId, chapterId)
   const { data: languages, isLoading: languagesLoading } = useLanguageList()
   const { data: translatorsData, isLoading: translatorsLoading } =
     useTranslatorList(1, 100)
@@ -69,7 +69,6 @@ export default function EditTranslationDialog({
     onSubmit: async (values) => {
       updateMutation.mutate(
         {
-          chapterId,
           translationId: translation.id,
           data: {
             languageId: values.value.languageId,
