@@ -33,6 +33,20 @@ describe('MangaRepository', () => {
       expect(result).toEqual(expected);
     });
 
+    it('should load chapters and translations when includeDetail is true', async () => {
+      const mockManga = {
+        id: 1, title: 'Test', authors: [], genres: [],
+        chapters: [{ id: 1, number: 1, translations: [{ id: 1, folderPath: '/path', language: { id: 1, code: 'en', name: 'English' }, translator: { id: 1, name: 'T1' } }] }],
+      } as unknown as Manga;
+      mockRepo.findOne.mockResolvedValue(mockManga);
+      const result = await repo.findOneByIdWithRelations(1, true);
+      expect(mockRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 1 },
+        relations: ['authors', 'genres', 'chapters', 'chapters.translations'],
+      });
+      expect(result).toEqual(mockManga);
+    });
+
     it('should return null when not found', async () => {
       mockRepo.findOne.mockResolvedValue(null);
       const result = await repo.findOneByIdWithRelations(999);
