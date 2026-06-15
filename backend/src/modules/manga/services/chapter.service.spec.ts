@@ -74,8 +74,6 @@ describe('ChapterService', () => {
   const dto: CreateChapterDto = {
     number: 5,
     title: 'Ch 5',
-    releaseDate: '2024-01-15',
-    note: 'Side story',
     languageId: 1,
     translatorId: 1,
     folderPath: '/chapters/5',
@@ -174,8 +172,6 @@ describe('ChapterService', () => {
         manga,
         number: dto.number,
         title: dto.title,
-        releaseDate: new Date(dto.releaseDate as string),
-        note: dto.note ?? undefined,
       });
       expect(mockTranslationRepo.create).toHaveBeenCalledWith({
         chapter,
@@ -186,20 +182,5 @@ describe('ChapterService', () => {
       expect(result).toEqual(chapter);
     });
 
-    it('should handle undefined releaseDate', async () => {
-      mockMangaRepo.findOneById.mockResolvedValue(manga);
-      mockLanguageService.findOne.mockResolvedValue(language);
-      mockTranslatorService.findOne.mockResolvedValue(translator);
-      mockChapterRepo.findByMangaAndNumber.mockResolvedValue(null);
-      mockChapterRepo.create.mockResolvedValue(chapter);
-      mockTranslationRepo.create.mockResolvedValue(translation);
-
-      const dtoWithoutDate = { ...dto, releaseDate: undefined };
-      await service.create(1, dtoWithoutDate);
-
-      expect(mockChapterRepo.create).toHaveBeenCalledWith(
-        expect.objectContaining({ releaseDate: undefined }),
-      );
-    });
   });
 });

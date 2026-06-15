@@ -78,7 +78,9 @@ export class MangaService {
     return {
       ...base,
       chapters:
-        manga.chapters?.map((ch) => ({
+        (manga.chapters ?? [])
+          .sort((a, b) => a.number - b.number)
+          .map((ch) => ({
           id: ch.id,
           number: ch.number,
           title: ch.title ?? undefined,

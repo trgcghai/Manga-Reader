@@ -1,7 +1,5 @@
 import {
-  IsDateString,
   IsNumber,
-  IsOptional,
   IsString,
   Min,
   MinLength,
@@ -15,14 +13,6 @@ export class CreateChapterDto {
   @IsString()
   @MinLength(1)
   title: string;
-
-  @IsOptional()
-  @IsDateString()
-  releaseDate?: string;
-
-  @IsOptional()
-  @IsString()
-  note?: string;
 
   @IsNumber()
   languageId: number;

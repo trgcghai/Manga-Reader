@@ -5,7 +5,6 @@ import { useLanguageList } from '#/hooks/useLanguages'
 import { useTranslatorList } from '#/hooks/useTranslators'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
-import { Textarea } from '#/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -32,8 +31,6 @@ import { useEffect } from 'react'
 const chapterSchema = z.object({
   number: z.number().min(0, 'Number is required'),
   title: z.string().min(1, 'Title is required'),
-  releaseDate: z.string().optional(),
-  note: z.string().optional(),
   languageId: z.number().refine((n) => n > 0, 'Language is required'),
   translatorId: z.number().refine((n) => n > 0, 'Translator is required'),
   folderPath: z.string().min(1, 'Folder path is required'),
@@ -44,8 +41,6 @@ type FormValues = z.infer<typeof chapterSchema>
 const defaultValues: FormValues = {
   number: 1,
   title: '',
-  releaseDate: '',
-  note: '',
   languageId: 0,
   translatorId: 0,
   folderPath: '',
@@ -137,35 +132,6 @@ export default function AddChapterDialog({
                   {field.state.meta.errors.length > 0 && (
                     <UiFieldError errors={field.state.meta.errors} />
                   )}
-                </UiField>
-              )}
-            </form.Field>
-
-            <form.Field name="releaseDate">
-              {(field) => (
-                <UiField>
-                  <FieldLabel htmlFor="chapter-release-date">Release Date</FieldLabel>
-                  <Input
-                    id="chapter-release-date"
-                    type="date"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={field.state.meta.errors.length > 0 || undefined}
-                  />
-                </UiField>
-              )}
-            </form.Field>
-
-            <form.Field name="note">
-              {(field) => (
-                <UiField>
-                  <FieldLabel htmlFor="chapter-note">Note</FieldLabel>
-                  <Textarea
-                    id="chapter-note"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={field.state.meta.errors.length > 0 || undefined}
-                  />
                 </UiField>
               )}
             </form.Field>
