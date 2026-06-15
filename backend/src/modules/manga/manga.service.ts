@@ -81,30 +81,30 @@ export class MangaService {
         (manga.chapters ?? [])
           .sort((a, b) => a.number - b.number)
           .map((ch) => ({
-          id: ch.id,
-          number: ch.number,
-          title: ch.title ?? undefined,
-          releaseDate: ch.releaseDate
-            ? new Date(ch.releaseDate).toISOString().split('T')[0]
-            : undefined,
-          note: ch.note ?? undefined,
-          translations:
-            ch.translations?.map((tr) => ({
-              id: tr.id,
-              folderPath: tr.folderPath,
-              note: tr.note ?? undefined,
-              createdAt: tr.createdAt.toISOString(),
-              language: {
-                id: tr.language.id,
-                code: tr.language.code,
-                name: tr.language.name,
-              },
-              translator: {
-                id: tr.translator.id,
-                name: tr.translator.name,
-              },
-            })) ?? [],
-        })) ?? [],
+            id: ch.id,
+            number: ch.number,
+            title: ch.title ?? undefined,
+            releaseDate: ch.releaseDate
+              ? new Date(ch.releaseDate).toISOString().split('T')[0]
+              : undefined,
+            note: ch.note ?? undefined,
+            translations:
+              ch.translations?.map((tr) => ({
+                id: tr.id,
+                folderPath: tr.folderPath,
+                note: tr.note ?? undefined,
+                createdAt: tr.createdAt.toISOString(),
+                language: {
+                  id: tr.language.id,
+                  code: tr.language.code,
+                  name: tr.language.name,
+                },
+                translator: {
+                  id: tr.translator.id,
+                  name: tr.translator.name,
+                },
+              })) ?? [],
+          })) ?? [],
     };
   };
 

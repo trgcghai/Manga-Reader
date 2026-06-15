@@ -48,6 +48,7 @@ import {
 import { useState } from 'react'
 import { formatDateTime } from '#/lib/dateTimeFormatter'
 import AddChapterDialog from '#/components/chapter/AddChapterDialog'
+import AddTranslationDialog from '#/components/chapter/AddTranslationDialog'
 
 export const Route = createFileRoute('/admin/mangas/$id/')({
   component: MangaDetailPage,
@@ -232,7 +233,7 @@ function ChapterRow({
   mangaId: string
 }) {
   const [open, setOpen] = useState(false)
-  const navigate = useNavigate()
+  const [translationDialogOpen, setTranslationDialogOpen] = useState(false)
 
   return (
     <Collapsible open={open} onOpenChange={setOpen} asChild>
@@ -257,18 +258,15 @@ function ChapterRow({
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8"
-                onClick={() =>
-                  navigate({
-                    to: '/admin/mangas/$id/edit',
-                    params: { id: mangaId },
-                  })
-                }
+                onClick={() => setTranslationDialogOpen(true)}
+                title="Add translation"
               >
-                <Pencil className="h-3 w-3" />
+                <Plus className="h-3 w-3" />
               </Button>
             </div>
           </TableCell>
         </TableRow>
+
         <CollapsibleContent asChild>
           <TableRow>
             <TableCell colSpan={6} className="bg-muted/30 p-0">
@@ -301,6 +299,14 @@ function ChapterRow({
             </TableCell>
           </TableRow>
         </CollapsibleContent>
+
+        <AddTranslationDialog
+          open={translationDialogOpen}
+          onOpenChange={setTranslationDialogOpen}
+          mangaId={Number(mangaId)}
+          chapterNumber={chapter.number}
+          chapterTitle={chapter.title}
+        />
       </>
     </Collapsible>
   )

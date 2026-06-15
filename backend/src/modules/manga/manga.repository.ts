@@ -22,6 +22,7 @@ export class MangaRepository {
       skip: (page - 1) * limit,
       take: limit,
       relations: ['authors', 'genres'],
+      order: { createdAt: 'DESC' },
     });
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   };
