@@ -60,33 +60,41 @@ describe('TranslationRepository', () => {
       const expected = {
         id: 1,
         chapter: { id: 1, manga: { id: 1 } },
-      } as unknown as Translation
-      mockRepo.findOne.mockResolvedValue(expected)
-      const result = await repo.findById(1)
+      } as unknown as Translation;
+      mockRepo.findOne.mockResolvedValue(expected);
+      const result = await repo.findById(1);
       expect(mockRepo.findOne).toHaveBeenCalledWith({
         where: { id: 1 },
         relations: ['chapter', 'chapter.manga'],
-      })
-      expect(result).toEqual(expected)
-    })
+      });
+      expect(result).toEqual(expected);
+    });
 
     it('should return null when not found', async () => {
-      mockRepo.findOne.mockResolvedValue(null)
-      const result = await repo.findById(999)
-      expect(result).toBeNull()
-    })
-  })
+      mockRepo.findOne.mockResolvedValue(null);
+      const result = await repo.findById(999);
+      expect(result).toBeNull();
+    });
+  });
 
   describe('update', () => {
     it('should update and return the translation', async () => {
-      const id = 1
-      const data = { folderPath: '/new/path' }
-      const updated = { id, folderPath: '/new/path', chapter: { id: 1 } } as Translation
-      mockRepo.update = jest.fn().mockResolvedValue({ affected: 1 })
-      mockRepo.findOne.mockResolvedValue(updated)
-      const result = await repo.update(id, data)
-      expect(mockRepo.update).toHaveBeenCalledWith(id, data)
-      expect(result).toEqual(updated)
-    })
-  })
+      const id = 1;
+      const data = { folderPath: '/new/path' };
+      const updated = { id, folderPath: '/new/path', chapter: { id: 1 } } as Translation;
+      (mockRepo.update as jest.Mock).mockResolvedValue({ affected: 1 });
+      mockRepo.findOne.mockResolvedValue(updated);
+      const result = await repo.update(id, data);
+      expect(mockRepo.update).toHaveBeenCalledWith(id, data);
+      expect(result).toEqual(updated);
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete translation by id', async () => {
+      (mockRepo.delete as jest.Mock).mockResolvedValue({ affected: 1 });
+      await repo.delete(1);
+      expect(mockRepo.delete).toHaveBeenCalledWith(1);
+    });
+  });
 });

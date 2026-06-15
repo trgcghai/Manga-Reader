@@ -30,15 +30,15 @@ export class TranslationRepository {
     return await this.repo.findOne({
       where: { id },
       relations: ['chapter', 'chapter.manga'],
-    })
-  }
+    });
+  };
 
-  update = async (id: number, data: Partial<Translation>): Promise<Translation> => {
-    await this.repo.update(id, data)
-    return await this.repo.findOne({ where: { id } })
-  }
+  update = async (id: number, data: Partial<Translation>): Promise<Translation | null> => {
+    await this.repo.update(id, data);
+    return await this.repo.findOne({ where: { id } });
+  };
 
   delete = async (id: number): Promise<void> => {
-    await this.repo.delete(id)
-  }
+    await this.repo.delete(id);
+  };
 }
