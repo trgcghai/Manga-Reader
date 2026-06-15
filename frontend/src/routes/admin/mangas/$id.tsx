@@ -1,11 +1,29 @@
-import { createFileRoute, Link, useNavigate, useParams } from '@tanstack/react-router'
-import { useManga } from '../../../hooks/useManga'
-import type { MangaDetailResponse, ChapterDetail } from '../../../services/api/mangaApi'
-import { Skeleton } from '../../../components/ui/skeleton'
-import { ErrorDisplay, ErrorTitle, ErrorDescription } from '../../../components/ui/error-display'
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyContent } from '../../../components/ui/empty'
-import { Badge } from '../../../components/ui/badge'
-import { Button } from '../../../components/ui/button'
+import {
+  createFileRoute,
+  Link,
+  useNavigate,
+  useParams,
+} from '@tanstack/react-router'
+import { useManga } from '#/hooks/useManga'
+import type {
+  MangaDetailResponse,
+  ChapterDetail,
+} from '#/services/api/mangaApi'
+import { Skeleton } from '#/components/ui/skeleton'
+import {
+  ErrorDisplay,
+  ErrorTitle,
+  ErrorDescription,
+} from '#/components/ui/error-display'
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyContent,
+} from '#/components/ui/empty'
+import { Badge } from '#/components/ui/badge'
+import { Button } from '#/components/ui/button'
 import {
   Table,
   TableHeader,
@@ -13,12 +31,12 @@ import {
   TableHead,
   TableBody,
   TableCell,
-} from '../../../components/ui/table'
+} from '#/components/ui/table'
 import {
   Collapsible,
   CollapsibleTrigger,
   CollapsibleContent,
-} from '../../../components/ui/collapsible'
+} from '#/components/ui/collapsible'
 import {
   ChevronDown,
   ChevronRight,
@@ -27,6 +45,7 @@ import {
   ArrowLeft,
 } from 'lucide-react'
 import { useState } from 'react'
+import { formatDateTime } from '#/lib/dateTimeFormatter'
 
 export const Route = createFileRoute('/admin/mangas/$id')({
   component: MangaDetailPage,
@@ -80,7 +99,11 @@ function MangaDetailPage() {
           <h1 className="text-2xl font-bold">{manga.title}</h1>
           <Badge variant="outline">{manga.status}</Badge>
         </div>
-        <Button onClick={() => navigate({ to: '/admin/mangas/$id/edit', params: { id } })}>
+        <Button
+          onClick={() =>
+            navigate({ to: '/admin/mangas/$id/edit', params: { id } })
+          }
+        >
           <Pencil className="mr-2 h-4 w-4" />
           Edit Manga
         </Button>
@@ -95,16 +118,18 @@ function MangaDetailPage() {
             </div>
           )}
           <div>
-            <dt className="text-sm text-muted-foreground">Alternative Titles</dt>
+            <dt className="text-sm text-muted-foreground">
+              Alternative Titles
+            </dt>
             <dd className="mt-1">
               {manga.alternativeTitles?.length
                 ? manga.alternativeTitles.join(', ')
-                : '—'}
+                : '-'}
             </dd>
           </div>
           <div>
             <dt className="text-sm text-muted-foreground">Cover Path</dt>
-            <dd className="mt-1 font-mono text-sm">{manga.coverPath || '—'}</dd>
+            <dd className="mt-1 font-mono text-sm">{manga.coverPath || '-'}</dd>
           </div>
           <div>
             <dt className="text-sm text-muted-foreground">Authors</dt>
@@ -128,11 +153,11 @@ function MangaDetailPage() {
           </div>
           <div>
             <dt className="text-sm text-muted-foreground">Created</dt>
-            <dd className="mt-1">{new Date(manga.createdAt).toLocaleDateString()}</dd>
+            <dd className="mt-1">{formatDateTime(manga.createdAt)}</dd>
           </div>
           <div>
             <dt className="text-sm text-muted-foreground">Updated</dt>
-            <dd className="mt-1">{new Date(manga.updatedAt).toLocaleDateString()}</dd>
+            <dd className="mt-1">{formatDateTime(manga.updatedAt)}</dd>
           </div>
         </dl>
       </div>
@@ -148,7 +173,11 @@ function MangaDetailPage() {
             <EmptyTitle>No Chapters Yet</EmptyTitle>
           </EmptyHeader>
           <EmptyContent>
-            <Button onClick={() => navigate({ to: '/admin/mangas/$id/edit', params: { id } })}>
+            <Button
+              onClick={() =>
+                navigate({ to: '/admin/mangas/$id/edit', params: { id } })
+              }
+            >
               Add Chapter
             </Button>
           </EmptyContent>
@@ -176,7 +205,13 @@ function MangaDetailPage() {
   )
 }
 
-function ChapterRow({ chapter, mangaId }: { chapter: ChapterDetail; mangaId: string }) {
+function ChapterRow({
+  chapter,
+  mangaId,
+}: {
+  chapter: ChapterDetail
+  mangaId: string
+}) {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
 
@@ -196,10 +231,10 @@ function ChapterRow({ chapter, mangaId }: { chapter: ChapterDetail; mangaId: str
             </CollapsibleTrigger>
           </TableCell>
           <TableCell className="font-mono">{chapter.number}</TableCell>
-          <TableCell>{chapter.title || '—'}</TableCell>
-          <TableCell>{chapter.releaseDate || '—'}</TableCell>
-          <TableCell className="max-w-[200px] truncate font-mono text-sm">
-            {chapter.note || '—'}
+          <TableCell>{chapter.title || '-'}</TableCell>
+          <TableCell>{chapter.releaseDate || '-'}</TableCell>
+          <TableCell className="max-w-50 truncate font-mono text-sm">
+            {chapter.note || '-'}
           </TableCell>
           <TableCell>
             <div className="flex gap-1">
@@ -207,7 +242,12 @@ function ChapterRow({ chapter, mangaId }: { chapter: ChapterDetail; mangaId: str
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8"
-                onClick={() => navigate({ to: '/admin/mangas/$id/edit', params: { id: mangaId } })}
+                onClick={() =>
+                  navigate({
+                    to: '/admin/mangas/$id/edit',
+                    params: { id: mangaId },
+                  })
+                }
               >
                 <Pencil className="h-3 w-3" />
               </Button>
@@ -234,10 +274,14 @@ function ChapterRow({ chapter, mangaId }: { chapter: ChapterDetail; mangaId: str
                   <TableBody>
                     {chapter.translations.map((tr) => (
                       <TableRow key={tr.id}>
-                        <TableCell className="pl-10">{tr.language.name}</TableCell>
+                        <TableCell className="pl-10">
+                          {tr.language.name}
+                        </TableCell>
                         <TableCell>{tr.translator.name}</TableCell>
-                        <TableCell className="font-mono text-sm">{tr.folderPath}</TableCell>
-                        <TableCell>{tr.note || '—'}</TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {tr.folderPath}
+                        </TableCell>
+                        <TableCell>{tr.note || '-'}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
