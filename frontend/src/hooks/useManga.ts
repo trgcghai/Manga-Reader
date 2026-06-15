@@ -11,6 +11,7 @@ import type {
   CreateMangaPayload,
   ImportResult,
   MangaResponse,
+  MangaDetailResponse,
   PaginatedResponse,
   UpdateMangaPayload,
 } from '#/services/api/mangaApi'
@@ -46,10 +47,15 @@ export function useCreateManga() {
   })
 }
 
-export function useManga(id: number) {
-  return useQuery<MangaResponse>({
-    queryKey: mangaKeys.detail(id),
-    queryFn: () => getManga(id),
+export function useManga(
+  id: number,
+  options?: { include?: string },
+) {
+  return useQuery<MangaResponse | MangaDetailResponse>({
+    queryKey: options?.include
+      ? [...mangaKeys.detail(id), options.include]
+      : mangaKeys.detail(id),
+    queryFn: () => getManga(id, options?.include),
     enabled: !!id,
   })
 }

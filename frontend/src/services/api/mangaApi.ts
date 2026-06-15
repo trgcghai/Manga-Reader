@@ -33,6 +33,27 @@ export interface CreateMangaPayload {
   genres?: string[]
 }
 
+export interface TranslationDetail {
+  id: number
+  folderPath: string
+  note?: string
+  language: { id: number; code: string; name: string }
+  translator: { id: number; name: string }
+}
+
+export interface ChapterDetail {
+  id: number
+  number: number
+  title?: string
+  releaseDate?: string
+  note?: string
+  translations: TranslationDetail[]
+}
+
+export interface MangaDetailResponse extends MangaResponse {
+  chapters: ChapterDetail[]
+}
+
 export interface ImportResult {
   total: number
   created: number
@@ -61,8 +82,14 @@ export async function createManga(
   return res.data
 }
 
-export async function getManga(id: number): Promise<MangaResponse> {
-  const res = await axiosInstance.get<MangaResponse>(`/mangas/${id}`)
+export async function getManga(
+  id: number,
+  include?: string,
+): Promise<MangaResponse | MangaDetailResponse> {
+  const params = include ? `?include=${include}` : ''
+  const res = await axiosInstance.get<MangaResponse | MangaDetailResponse>(
+    `/mangas/${id}${params}`,
+  )
   return res.data
 }
 
