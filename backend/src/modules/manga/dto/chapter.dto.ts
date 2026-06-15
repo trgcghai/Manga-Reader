@@ -1,9 +1,4 @@
-import {
-  IsNumber,
-  IsString,
-  Min,
-  MinLength,
-} from 'class-validator';
+import { IsNumber, IsString, Min, MinLength } from 'class-validator';
 
 export class CreateChapterDto {
   @IsNumber()

@@ -33,7 +33,10 @@ export class TranslationRepository {
     });
   };
 
-  update = async (id: number, data: Partial<Translation>): Promise<Translation | null> => {
+  update = async (
+    id: number,
+    data: Partial<Translation>,
+  ): Promise<Translation | null> => {
     await this.repo.update(id, data);
     return await this.repo.findOne({ where: { id } });
   };

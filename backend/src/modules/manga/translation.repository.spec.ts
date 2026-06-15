@@ -81,7 +81,11 @@ describe('TranslationRepository', () => {
     it('should update and return the translation', async () => {
       const id = 1;
       const data = { folderPath: '/new/path' };
-      const updated = { id, folderPath: '/new/path', chapter: { id: 1 } } as Translation;
+      const updated = {
+        id,
+        folderPath: '/new/path',
+        chapter: { id: 1 },
+      } as Translation;
       (mockRepo.update as jest.Mock).mockResolvedValue({ affected: 1 });
       mockRepo.findOne.mockResolvedValue(updated);
       const result = await repo.update(id, data);

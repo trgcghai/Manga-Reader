@@ -12,7 +12,9 @@ describe('TranslatorRepository', () => {
   };
 
   beforeEach(() => {
-    repo = new TranslatorRepository(mockRepo as unknown as Repository<Translator>);
+    repo = new TranslatorRepository(
+      mockRepo as unknown as Repository<Translator>,
+    );
     jest.clearAllMocks();
   });
 
@@ -89,9 +91,12 @@ describe('TranslatorRepository', () => {
 
       await repo.findAll('test');
 
-      expect(mockQb.where).toHaveBeenCalledWith('translator.name ILIKE :search', {
-        search: '%test%',
-      });
+      expect(mockQb.where).toHaveBeenCalledWith(
+        'translator.name ILIKE :search',
+        {
+          search: '%test%',
+        },
+      );
     });
 
     it('should calculate correct totalPages', async () => {
@@ -138,12 +143,19 @@ describe('TranslatorRepository', () => {
 
   describe('update', () => {
     it('should update translator name and note', async () => {
-      const existing = { id: 1, name: 'Old Name', note: 'Old note' } as Translator;
+      const existing = {
+        id: 1,
+        name: 'Old Name',
+        note: 'Old note',
+      } as Translator;
       const saved = { id: 1, name: 'New Name', note: 'New note' } as Translator;
       mockRepo.findOne.mockResolvedValue(existing);
       mockRepo.save.mockResolvedValue(saved);
 
-      const result = await repo.update(1, { name: 'New Name', note: 'New note' });
+      const result = await repo.update(1, {
+        name: 'New Name',
+        note: 'New note',
+      });
 
       expect(mockRepo.findOne).toHaveBeenCalledWith({ where: { id: 1 } });
       expect(existing.name).toBe('New Name');
@@ -194,7 +206,11 @@ describe('TranslatorRepository', () => {
   describe('create', () => {
     it('should save and return new translator', async () => {
       const translatorData = { name: 'New Translator', note: 'Note' };
-      const saved = { id: 1, name: 'New Translator', note: 'Note' } as Translator;
+      const saved = {
+        id: 1,
+        name: 'New Translator',
+        note: 'Note',
+      } as Translator;
       mockRepo.save.mockResolvedValue(saved);
 
       const result = await repo.create(translatorData);

@@ -181,6 +181,5 @@ describe('ChapterService', () => {
       });
       expect(result).toEqual(chapter);
     });
-
   });
 });

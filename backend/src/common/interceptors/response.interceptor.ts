@@ -8,9 +8,10 @@ import {
 import { Observable, map } from 'rxjs';
 
 @Injectable()
-export class ResponseInterceptor<T>
-  implements NestInterceptor<T, Record<string, unknown> | T>
-{
+export class ResponseInterceptor<T> implements NestInterceptor<
+  T,
+  Record<string, unknown> | T
+> {
   intercept(
     context: ExecutionContext,
     next: CallHandler,

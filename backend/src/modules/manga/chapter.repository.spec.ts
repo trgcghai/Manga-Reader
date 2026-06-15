@@ -21,7 +21,11 @@ describe('ChapterRepository', () => {
       const result = await repo.findByMangaAndNumber(1, 5);
       expect(mockRepo.findOne).toHaveBeenCalledWith({
         where: { manga: { id: 1 }, number: 5 },
-        relations: ['translations', 'translations.language', 'translations.translator'],
+        relations: [
+          'translations',
+          'translations.language',
+          'translations.translator',
+        ],
       });
       expect(result).toEqual(expected);
     });

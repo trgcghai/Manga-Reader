@@ -1,8 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  BadRequestException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
 import { HttpExceptionFilter } from './http-exception.filter';
 import { ArgumentsHost } from '@nestjs/common';
 
