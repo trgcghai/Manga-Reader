@@ -6,6 +6,7 @@ import {
   deleteManga,
   importMangas,
   getTemplateImport,
+  createChapter,
 } from '#/services/api/mangaApi'
 import type {
   CreateMangaPayload,
@@ -14,6 +15,7 @@ import type {
   MangaDetailResponse,
   PaginatedResponse,
   UpdateMangaPayload,
+  CreateChapterPayload,
 } from '#/services/api/mangaApi'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -47,10 +49,7 @@ export function useCreateManga() {
   })
 }
 
-export function useManga(
-  id: number,
-  options?: { include?: string },
-) {
+export function useManga(id: number, options?: { include?: string }) {
   return useQuery<MangaResponse | MangaDetailResponse>({
     queryKey: options?.include
       ? [...mangaKeys.detail(id), options.include]
@@ -81,7 +80,7 @@ export function useDeleteManga() {
 
   return useMutation({
     mutationFn: (id: number) => deleteManga(id),
-    onSuccess: (_data, id) => {
+    onSuccess: (_data) => {
       queryClient.invalidateQueries({ queryKey: mangaKeys.all })
       toast.success(`Manga deleted`)
     },
@@ -110,11 +109,30 @@ export function useImportMangas() {
           `Imported ${data.created}/${data.total} mangas with ${data.errors.length} error${data.errors.length > 1 ? 's' : ''}`,
         )
       } else {
-        toast.success(`${data.created} manga${data.created !== 1 ? 's' : ''} imported successfully`)
+        toast.success(
+          `${data.created} manga${data.created !== 1 ? 's' : ''} imported successfully`,
+        )
       }
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : 'Import failed')
+    },
+  })
+}
+
+export function useCreateChapterForManga(mangaId: number) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: CreateChapterPayload) => createChapter(mangaId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mangas', 'detail', mangaId] })
+      toast.success('Chapter created')
+    },
+    onError: (err) => {
+      toast.error(
+        err instanceof Error ? err.message : 'Failed to create chapter',
+      )
     },
   })
 }

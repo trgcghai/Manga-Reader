@@ -61,6 +61,14 @@ export interface ImportResult {
   errors: Array<{ row: number; message: string }>
 }
 
+export interface CreateChapterPayload {
+  number: number
+  title: string
+  languageId: number
+  translatorId: number
+  folderPath: string
+}
+
 export async function getAllMangas(
   page: number,
   limit: number,
@@ -124,4 +132,11 @@ export async function importMangas(file: File): Promise<ImportResult> {
     },
   )
   return res.data
+}
+
+export async function createChapter(
+  mangaId: number,
+  data: CreateChapterPayload,
+): Promise<void> {
+  await axiosInstance.post(`/mangas/${mangaId}/chapter`, data)
 }

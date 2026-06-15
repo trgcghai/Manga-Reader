@@ -1,6 +1,5 @@
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
-import { useCreateChapter } from '#/hooks/useChapters'
 import { useLanguageList } from '#/hooks/useLanguages'
 import { useTranslatorList } from '#/hooks/useTranslators'
 import { Button } from '#/components/ui/button'
@@ -27,6 +26,7 @@ import {
 } from '#/components/ui/field'
 import { Loader2 } from 'lucide-react'
 import { useEffect } from 'react'
+import { useCreateChapterForManga } from '#/hooks/useManga'
 
 const translationSchema = z.object({
   languageId: z.number().refine((n) => n > 0, 'Language is required'),
@@ -57,7 +57,7 @@ export default function AddTranslationDialog({
   chapterNumber,
   chapterTitle,
 }: AddTranslationDialogProps) {
-  const createMutation = useCreateChapter(mangaId)
+  const createMutation = useCreateChapterForManga(mangaId)
   const { data: languages, isLoading: languagesLoading } = useLanguageList()
   const { data: translatorsData, isLoading: translatorsLoading } =
     useTranslatorList(1, 100)
@@ -112,14 +112,18 @@ export default function AddTranslationDialog({
             <form.Field name="languageId">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="translation-language" required>Language</FieldLabel>
+                  <FieldLabel htmlFor="translation-language" required>
+                    Language
+                  </FieldLabel>
                   <Select
                     value={String(field.state.value || '')}
                     onValueChange={(v) => field.handleChange(Number(v))}
                   >
                     <SelectTrigger
                       id="translation-language"
-                      aria-invalid={field.state.meta.errors.length > 0 || undefined}
+                      aria-invalid={
+                        field.state.meta.errors.length > 0 || undefined
+                      }
                     >
                       <SelectValue
                         placeholder={
@@ -145,18 +149,24 @@ export default function AddTranslationDialog({
             <form.Field name="translatorId">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="translation-translator" required>Translator</FieldLabel>
+                  <FieldLabel htmlFor="translation-translator" required>
+                    Translator
+                  </FieldLabel>
                   <Select
                     value={String(field.state.value || '')}
                     onValueChange={(v) => field.handleChange(Number(v))}
                   >
                     <SelectTrigger
                       id="translation-translator"
-                      aria-invalid={field.state.meta.errors.length > 0 || undefined}
+                      aria-invalid={
+                        field.state.meta.errors.length > 0 || undefined
+                      }
                     >
                       <SelectValue
                         placeholder={
-                          translatorsLoading ? 'Loading...' : 'Select translator'
+                          translatorsLoading
+                            ? 'Loading...'
+                            : 'Select translator'
                         }
                       />
                     </SelectTrigger>
@@ -178,13 +188,17 @@ export default function AddTranslationDialog({
             <form.Field name="folderPath">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="translation-folder-path" required>Folder Path</FieldLabel>
+                  <FieldLabel htmlFor="translation-folder-path" required>
+                    Folder Path
+                  </FieldLabel>
                   <Input
                     id="translation-folder-path"
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
                     placeholder="/chapters/volume-1/chapter-1"
-                    aria-invalid={field.state.meta.errors.length > 0 || undefined}
+                    aria-invalid={
+                      field.state.meta.errors.length > 0 || undefined
+                    }
                   />
                   {field.state.meta.errors.length > 0 && (
                     <UiFieldError errors={field.state.meta.errors} />

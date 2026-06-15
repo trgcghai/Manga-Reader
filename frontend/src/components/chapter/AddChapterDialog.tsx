@@ -1,6 +1,5 @@
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
-import { useCreateChapter } from '#/hooks/useChapters'
 import { useLanguageList } from '#/hooks/useLanguages'
 import { useTranslatorList } from '#/hooks/useTranslators'
 import { Button } from '#/components/ui/button'
@@ -27,6 +26,7 @@ import {
 } from '#/components/ui/field'
 import { Loader2 } from 'lucide-react'
 import { useEffect } from 'react'
+import { useCreateChapterForManga } from '#/hooks/useManga'
 
 const chapterSchema = z.object({
   number: z.number().min(0, 'Number is required'),
@@ -57,7 +57,7 @@ export default function AddChapterDialog({
   onOpenChange,
   mangaId,
 }: AddChapterDialogProps) {
-  const createMutation = useCreateChapter(mangaId)
+  const createMutation = useCreateChapterForManga(mangaId)
   const { data: languages, isLoading: languagesLoading } = useLanguageList()
   const { data: translatorsData, isLoading: translatorsLoading } =
     useTranslatorList(1, 100)
