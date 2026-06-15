@@ -1,9 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  ConflictException,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { ChapterService } from './chapter.service';
 import { MangaRepository } from 'src/modules/manga/manga.repository';
 import { LanguageService } from 'src/modules/language/language.service';
@@ -116,19 +112,19 @@ describe('ChapterService', () => {
       expect(mockTranslationRepo.create).not.toHaveBeenCalled();
     });
 
-    it('should throw BadRequestException when language does not exist', async () => {
+    it('should throw NotFoundException when language does not exist', async () => {
       mockMangaRepo.findOneById.mockResolvedValue(manga);
       mockLanguageService.findOne.mockRejectedValue(new NotFoundException());
-      await expect(service.create(1, dto)).rejects.toThrow(BadRequestException);
+      await expect(service.create(1, dto)).rejects.toThrow(NotFoundException);
       expect(mockChapterRepo.create).not.toHaveBeenCalled();
       expect(mockTranslationRepo.create).not.toHaveBeenCalled();
     });
 
-    it('should throw BadRequestException when translator does not exist', async () => {
+    it('should throw NotFoundException when translator does not exist', async () => {
       mockMangaRepo.findOneById.mockResolvedValue(manga);
       mockLanguageService.findOne.mockResolvedValue(language);
       mockTranslatorService.findOne.mockRejectedValue(new NotFoundException());
-      await expect(service.create(1, dto)).rejects.toThrow(BadRequestException);
+      await expect(service.create(1, dto)).rejects.toThrow(NotFoundException);
       expect(mockChapterRepo.create).not.toHaveBeenCalled();
       expect(mockTranslationRepo.create).not.toHaveBeenCalled();
     });

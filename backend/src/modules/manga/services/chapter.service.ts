@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -27,29 +26,9 @@ export class ChapterService {
       throw new NotFoundException('Manga #' + mangaId + ' not found');
     }
 
-    let language: any;
-    try {
-      language = await this.languageService.findOne(dto.languageId);
-    } catch (err) {
-      if (err instanceof NotFoundException) {
-        throw new BadRequestException(
-          'Language #' + dto.languageId + ' not found',
-        );
-      }
-      throw err;
-    }
+    const language = await this.languageService.findOne(dto.languageId);
 
-    let translator: any;
-    try {
-      translator = await this.translatorService.findOne(dto.translatorId);
-    } catch (err) {
-      if (err instanceof NotFoundException) {
-        throw new BadRequestException(
-          'Translator #' + dto.translatorId + ' not found',
-        );
-      }
-      throw err;
-    }
+    const translator = await this.translatorService.findOne(dto.translatorId);
 
     const existingChapter = await this.chapterRepo.findByMangaAndNumber(
       mangaId,
