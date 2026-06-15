@@ -9,6 +9,10 @@ import {
   CreateMangaDto,
   UpdateMangaDto,
 } from 'src/modules/manga/dto/manga.dto';
+import {
+  MangaResponse,
+  MangaDetailResponse,
+} from 'src/modules/manga/dto/manga-response.dto';
 import { AuthorService } from 'src/modules/author/author.service';
 import { GenreService } from 'src/modules/genre/genre.service';
 import { Author } from 'src/modules/author/entities/author.entity';
@@ -35,12 +39,68 @@ export class MangaService {
     return await this.mangaRepository.findAll(page, limit);
   };
 
-  findOne = async (id: number): Promise<Manga> => {
-    const result = await this.mangaRepository.findOneByIdWithRelations(id);
-    if (!result) {
+  findOne = async (
+    id: number,
+    include?: string,
+  ): Promise<MangaResponse | MangaDetailResponse> => {
+    const includeDetail = include === 'chapters,translations';
+    const manga = await this.mangaRepository.findOneByIdWithRelations(
+      id,
+      includeDetail,
+    );
+
+    if (!manga) {
+      if (includeDetail) {
+        return null as unknown as MangaDetailResponse;
+      }
       throw new NotFoundException(`Manga with ID ${id} not found`);
     }
-    return result;
+
+    const base: MangaResponse = {
+      id: manga.id,
+      title: manga.title,
+      alternativeTitles: manga.alternativeTitles ?? undefined,
+      description: manga.description ?? undefined,
+      coverPath: manga.coverPath ?? undefined,
+      status: manga.status,
+      authors: manga.authors.map((a) => ({ id: a.id, name: a.name })),
+      genres: manga.genres.map((g) => ({ id: g.id, name: g.name })),
+      createdAt: manga.createdAt.toISOString(),
+      updatedAt: manga.updatedAt.toISOString(),
+    };
+
+    if (!includeDetail) {
+      return base;
+    }
+
+    return {
+      ...base,
+      chapters:
+        manga.chapters?.map((ch) => ({
+          id: ch.id,
+          number: ch.number,
+          title: ch.title ?? undefined,
+          releaseDate: ch.releaseDate
+            ? new Date(ch.releaseDate).toISOString().split('T')[0]
+            : undefined,
+          note: ch.note ?? undefined,
+          translations:
+            ch.translations?.map((tr) => ({
+              id: tr.id,
+              folderPath: tr.folderPath,
+              note: tr.note ?? undefined,
+              language: {
+                id: tr.language.id,
+                code: tr.language.code,
+                name: tr.language.name,
+              },
+              translator: {
+                id: tr.translator.id,
+                name: tr.translator.name,
+              },
+            })) ?? [],
+        })) ?? [],
+    };
   };
 
   create = async (dto: CreateMangaDto): Promise<Manga> => {
