@@ -53,6 +53,7 @@ import AddTranslationDialog from '#/components/chapter/AddTranslationDialog'
 import EditTranslationDialog from '#/components/chapter/EditTranslationDialog'
 import { DeleteConfirmDialog } from '#/components/common/DeleteConfirmDialog'
 import { useDeleteTranslation, useManga } from '#/hooks/useManga'
+import { getStatusVariant } from '#/lib/mangaUtils'
 
 export const Route = createFileRoute('/admin/mangas/$id/')({
   component: MangaDetailPage,
@@ -68,12 +69,7 @@ function MangaDetailPage() {
   })
   const manga = data as MangaDetailResponse | undefined
 
-  const badgeVariant =
-    manga?.status === 'completed'
-      ? 'default'
-      : manga?.status === 'ongoing'
-        ? 'outline'
-        : 'destructive'
+  const variant = getStatusVariant(manga?.status)
 
   if (isLoading) {
     return (
@@ -112,7 +108,7 @@ function MangaDetailPage() {
             </Link>
           </Button>
           <h1 className="text-2xl font-bold">{manga.title}</h1>
-          <Badge variant={badgeVariant} className="capitalize">
+          <Badge variant={variant} className="capitalize">
             {manga.status}
           </Badge>
         </div>

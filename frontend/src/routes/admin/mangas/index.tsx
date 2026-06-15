@@ -37,6 +37,7 @@ import {
 } from '#/components/ui/empty'
 import { formatDateTime } from '#/lib/dateTimeFormatter'
 import ActionsCell from '#/components/manga/ActionCell'
+import { getStatusVariant } from '#/lib/mangaUtils'
 
 const columnHelper = createColumnHelper<MangaResponse>()
 
@@ -48,12 +49,7 @@ const columns = [
   columnHelper.accessor('status', {
     header: 'Status',
     cell: (info) => {
-      const variant =
-        info.getValue() === 'completed'
-          ? 'default'
-          : info.getValue() === 'ongoing'
-            ? 'outline'
-            : 'destructive'
+      const variant = getStatusVariant(info.getValue())
       return (
         <Badge variant={variant} className="capitalize">
           {info.getValue()}

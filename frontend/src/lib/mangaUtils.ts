@@ -13,4 +13,18 @@ const addTag = (
   setInput('')
 }
 
-export { addTag }
+const getStatusVariant = (status: string | undefined) => {
+
+  switch (status) {
+    case 'completed':
+      return 'default'
+    case 'ongoing':
+      return 'secondary'
+    case 'paused':
+      return 'destructive'
+    default:
+      return 'outline'
+  }
+}
+
+export { addTag, getStatusVariant }
