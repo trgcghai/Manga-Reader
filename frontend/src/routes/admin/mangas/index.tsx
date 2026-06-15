@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useMangaList } from '#/hooks/useManga'
 import type { MangaResponse } from '#/services/api/mangaApi'
 import {
@@ -18,8 +18,15 @@ import {
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Skeleton } from '#/components/ui/skeleton'
-import { Card, CardContent } from '#/components/ui/card'
-import { BookOpenText, Plus } from 'lucide-react'
+import {
+  ErrorDisplay,
+  ErrorTitle,
+  ErrorDescription,
+} from '#/components/ui/error-display'
+import { useState } from 'react'
+import { BookOpenText, Plus, Upload } from 'lucide-react'
+import { ImportDialog } from '#/components/manga/ImportDialog'
+import { Pagination } from '#/components/ui/pagination'
 import {
   Empty,
   EmptyContent,
@@ -40,11 +47,19 @@ const columns = [
   }),
   columnHelper.accessor('status', {
     header: 'Status',
-    cell: (info) => (
-      <Badge variant="secondary" className="capitalize">
-        {info.getValue()}
-      </Badge>
-    ),
+    cell: (info) => {
+      const variant =
+        info.getValue() === 'completed'
+          ? 'default'
+          : info.getValue() === 'ongoing'
+            ? 'outline'
+            : 'destructive'
+      return (
+        <Badge variant={variant} className="capitalize">
+          {info.getValue()}
+        </Badge>
+      )
+    },
   }),
   columnHelper.accessor('authors', {
     header: 'Authors',
@@ -98,7 +113,11 @@ export const Route = createFileRoute('/admin/mangas/')({
 })
 
 function MangaListPage() {
-  const { data, isLoading, isError } = useMangaList(1, 20)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+  const [importOpen, setImportOpen] = useState(false)
+  const navigate = useNavigate()
+  const { data, isLoading, isError } = useMangaList(page, pageSize)
 
   const table = useReactTable({
     data: data?.data ?? [],
@@ -121,11 +140,10 @@ function MangaListPage() {
 
   if (isError) {
     return (
-      <Card className="border-red-300 bg-red-50">
-        <CardContent className="p-6 text-red-700">
-          Failed to load mangas. Make sure the backend is running.
-        </CardContent>
-      </Card>
+      <ErrorDisplay className="mt-6">
+        <ErrorTitle>Failed to Load Mangas</ErrorTitle>
+        <ErrorDescription>Make sure the backend is running.</ErrorDescription>
+      </ErrorDisplay>
     )
   }
 
@@ -133,12 +151,18 @@ function MangaListPage() {
     <div>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Mangas</h1>
-        <Button asChild>
-          <Link to="/admin/mangas/new" className="no-underline">
-            <Plus className="h-4 w-4" />
-            Create New
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <Upload className="h-4 w-4" />
+            Import Excel
+          </Button>
+          <Button asChild>
+            <Link to="/admin/mangas/new" className="no-underline">
+              <Plus className="h-4 w-4" />
+              Create New
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {!data?.data.length && (
@@ -185,7 +209,16 @@ function MangaListPage() {
             </TableHeader>
             <TableBody>
               {table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow
+                  key={row.id}
+                  className="cursor-pointer"
+                  onClick={() =>
+                    navigate({
+                      to: '/admin/mangas/$id',
+                      params: { id: String(row.original.id) },
+                    })
+                  }
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
@@ -198,8 +231,18 @@ function MangaListPage() {
               ))}
             </TableBody>
           </Table>
+          <Pagination
+            page={page}
+            totalPages={data.totalPages}
+            totalItems={data.total}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
         </div>
       )}
+
+      <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
     </div>
   )
 }

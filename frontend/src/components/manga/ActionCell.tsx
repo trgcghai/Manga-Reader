@@ -2,7 +2,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useDeleteManga } from '#/hooks/useManga'
 import type { MangaResponse } from '#/services/api/mangaApi'
 import { Button } from '#/components/ui/button'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, Eye } from 'lucide-react'
 import { useState } from 'react'
 import { DeleteConfirmDialog } from '#/components/common/DeleteConfirmDialog'
 
@@ -16,12 +16,26 @@ const ActionsCell = ({ manga }: { manga: MangaResponse }) => {
       <Button
         variant="ghost"
         size="xs"
-        onClick={() =>
+        onClick={(e) => {
+          e.stopPropagation()
+          navigate({
+            to: '/admin/mangas/$id',
+            params: { id: String(manga.id) },
+          })
+        }}
+      >
+        <Eye className="size-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="xs"
+        onClick={(e) => {
+          e.stopPropagation()
           navigate({
             to: '/admin/mangas/$id/edit',
             params: { id: String(manga.id) },
           })
-        }
+        }}
       >
         <Pencil className="size-4" />
       </Button>

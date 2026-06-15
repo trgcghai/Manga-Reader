@@ -53,10 +53,7 @@ export class GenreRepository {
     return await this.repo.findOne({ where: { id } });
   };
 
-  update = async (
-    id: number,
-    data: Partial<Genre>,
-  ): Promise<Genre | null> => {
+  update = async (id: number, data: Partial<Genre>): Promise<Genre | null> => {
     const genre = await this.repo.findOne({ where: { id } });
     if (!genre) return null;
 

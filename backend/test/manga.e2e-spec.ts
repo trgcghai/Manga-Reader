@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { INestApplication } from '@nestjs/common';
@@ -10,10 +12,10 @@ import { MangaModule } from '../src/modules/manga/manga.module';
 import { Manga } from '../src/modules/manga/entities/manga.entity';
 import { Author } from '../src/modules/author/entities/author.entity';
 import { Genre } from '../src/modules/genre/entities/genre.entity';
-import { Chapter } from '../src/modules/chapter/entities/chapter.entity';
-import { Translation } from '../src/modules/chapter/entities/translation.entity';
 import { Translator } from '../src/modules/translator/entities/translator.entity';
-import { Language } from '../src/modules/translator/entities/language.entity';
+import { Language } from 'src/modules/language/entities/language.entity';
+import { Chapter } from 'src/modules/manga/entities/chapter.entity';
+import { Translation } from 'src/modules/manga/entities/translation.entity';
 
 describe('Manga CRUD (e2e)', () => {
   let app: INestApplication<App>;
@@ -21,7 +23,6 @@ describe('Manga CRUD (e2e)', () => {
   let mangaRepo: Repository<Manga>;
   let authorRepo: Repository<Author>;
   let genreRepo: Repository<Genre>;
-
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
@@ -57,7 +58,7 @@ describe('Manga CRUD (e2e)', () => {
 
   beforeEach(async () => {
     await dataSource.query(
-      'TRUNCATE manga_authors, manga_genres, manga, author, genre CASCADE',
+      'TRUNCATE manga_authors, manga_genres, manga, author, genre, language CASCADE',
     );
   });
 
@@ -322,6 +323,73 @@ describe('Manga CRUD (e2e)', () => {
 
     it('should return 404 for non-existent manga', async () => {
       await request(app.getHttpServer()).delete('/mangas/99999').expect(404);
+    });
+  });
+
+  describe('POST /mangas/import', () => {
+    it('should import mangas from xlsx file', async () => {
+      const XLSX = require('xlsx');
+      const workbook = XLSX.utils.book_new();
+      const data = [
+        {
+          Title: 'Imported Manga 1',
+          Status: 'ongoing',
+          Authors: 'Author A',
+          Genres: 'Fantasy',
+        },
+        {
+          Title: 'Imported Manga 2',
+          Status: 'completed',
+          Authors: 'Author B',
+          Genres: 'Action',
+        },
+      ];
+      const sheet = XLSX.utils.json_to_sheet(data);
+      XLSX.utils.book_append_sheet(workbook, sheet, 'Sheet1');
+      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+      const res = await request(app.getHttpServer())
+        .post('/mangas/import')
+        .attach('file', buffer, 'test.xlsx')
+        .expect(201);
+
+      expect(res.body.total).toBe(2);
+      expect(res.body.created).toBe(2);
+      expect(res.body.errors).toEqual([]);
+
+      const listRes = await request(app.getHttpServer())
+        .get('/mangas')
+        .expect(200);
+      const titles = listRes.body.data.map((m: { title: string }) => m.title);
+      expect(titles).toContain('Imported Manga 1');
+      expect(titles).toContain('Imported Manga 2');
+    });
+
+    it('should return partial success with errors', async () => {
+      const XLSX = require('xlsx');
+      const workbook = XLSX.utils.book_new();
+      const data = [
+        { Title: 'Valid Manga', Status: 'ongoing' },
+        { Title: '', Status: 'ongoing' },
+        { Title: 'Another Valid', Status: 'completed' },
+      ];
+      const sheet = XLSX.utils.json_to_sheet(data);
+      XLSX.utils.book_append_sheet(workbook, sheet, 'Sheet1');
+      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+      const res = await request(app.getHttpServer())
+        .post('/mangas/import')
+        .attach('file', buffer, 'test.xlsx')
+        .expect(201);
+
+      expect(res.body.total).toBe(3);
+      expect(res.body.created).toBe(2);
+      expect(res.body.errors).toHaveLength(1);
+      expect(res.body.errors[0].row).toBe(2);
+    });
+
+    it('should return 400 when no file provided', async () => {
+      await request(app.getHttpServer()).post('/mangas/import').expect(400);
     });
   });
 });

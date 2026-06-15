@@ -23,10 +23,11 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '#/components/ui/empty'
-import { Card, CardContent } from '#/components/ui/card'
+import { ErrorDisplay, ErrorTitle, ErrorDescription } from '#/components/ui/error-display'
 import { Pencil, Plus, Trash2, Layers } from 'lucide-react'
 import AddGenreDialog from '#/components/genre/AddGenreDialog'
 import EditGenreDialog from '#/components/genre/EditGenreDialog'
+import { Pagination } from '#/components/ui/pagination'
 
 export const Route = createFileRoute('/admin/genres')({
   component: AdminGenresPage,
@@ -35,6 +36,7 @@ export const Route = createFileRoute('/admin/genres')({
 function AdminGenresPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const [addOpen, setAddOpen] = useState(false)
   const [editGenre, setEditGenre] = useState<GenreResponse | null>(null)
   const [deleteGenre, setDeleteGenre] = useState<GenreResponse | null>(null)
@@ -44,13 +46,17 @@ function AdminGenresPage() {
 
   const { data, isLoading, isError } = useGenreList(
     page,
-    20,
+    pageSize,
     debouncedSearch || undefined,
   )
 
   useEffect(() => {
     setPage(1)
   }, [debouncedSearch])
+
+  useEffect(() => {
+    setPage(1)
+  }, [pageSize])
 
   const totalPages = data?.totalPages ?? 1
 
@@ -82,11 +88,12 @@ function AdminGenresPage() {
       )}
 
       {isError && (
-        <Card className="mt-6 border-red-300 bg-red-50">
-          <CardContent className="p-6 text-red-700">
-            Failed to load genres. Make sure the backend is running.
-          </CardContent>
-        </Card>
+        <ErrorDisplay className="mt-6">
+          <ErrorTitle>Failed to Load Genres</ErrorTitle>
+          <ErrorDescription>
+            Make sure the backend is running.
+          </ErrorDescription>
+        </ErrorDisplay>
       )}
 
       {data && data.data.length === 0 && (
@@ -156,27 +163,14 @@ function AdminGenresPage() {
             </TableBody>
           </Table>
 
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-center gap-4">
-              <Button
-                variant="outline"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                Page {page} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          )}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            totalItems={data.total}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
         </div>
       )}
 

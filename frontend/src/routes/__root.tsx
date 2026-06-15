@@ -5,6 +5,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import appCss from '../styles.css?url'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { TooltipProvider } from '#/components/ui/tooltip'
+import { Toaster } from '#/components/ui/sonner'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -41,6 +42,7 @@ function RootLayout({ children }: { children: React.ReactNode }) {
       <body>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>{children}</TooltipProvider>
+          <Toaster position='top-center' />
         </QueryClientProvider>
         <TanStackDevtools
           config={{

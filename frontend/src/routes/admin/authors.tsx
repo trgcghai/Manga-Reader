@@ -23,10 +23,11 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '#/components/ui/empty'
-import { Card, CardContent } from '#/components/ui/card'
+import { ErrorDisplay, ErrorTitle, ErrorDescription } from '#/components/ui/error-display'
 import { Pencil, Plus, Trash2, Users } from 'lucide-react'
 import AddAuthorDialog from '#/components/author/AddAuthorDialog'
 import EditAuthorDialog from '#/components/author/EditAuthorDialog'
+import { Pagination } from '#/components/ui/pagination'
 
 export const Route = createFileRoute('/admin/authors')({
   component: AdminAuthorsPage,
@@ -35,6 +36,7 @@ export const Route = createFileRoute('/admin/authors')({
 function AdminAuthorsPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const [addOpen, setAddOpen] = useState(false)
   const [editAuthor, setEditAuthor] = useState<AuthorResponse | null>(null)
   const [deleteAuthor, setDeleteAuthor] = useState<AuthorResponse | null>(null)
@@ -44,13 +46,17 @@ function AdminAuthorsPage() {
 
   const { data, isLoading, isError } = useAuthorList(
     page,
-    20,
+    pageSize,
     debouncedSearch || undefined,
   )
 
   useEffect(() => {
     setPage(1)
   }, [debouncedSearch])
+
+  useEffect(() => {
+    setPage(1)
+  }, [pageSize])
 
   const totalPages = data?.totalPages ?? 1
 
@@ -82,11 +88,12 @@ function AdminAuthorsPage() {
       )}
 
       {isError && (
-        <Card className="mt-6 border-red-300 bg-red-50">
-          <CardContent className="p-6 text-red-700">
-            Failed to load authors. Make sure the backend is running.
-          </CardContent>
-        </Card>
+        <ErrorDisplay className="mt-6">
+          <ErrorTitle>Failed to Load Authors</ErrorTitle>
+          <ErrorDescription>
+            Make sure the backend is running.
+          </ErrorDescription>
+        </ErrorDisplay>
       )}
 
       {data && data.data.length === 0 && (
@@ -156,27 +163,14 @@ function AdminAuthorsPage() {
             </TableBody>
           </Table>
 
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-center gap-4">
-              <Button
-                variant="outline"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                Page {page} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          )}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            totalItems={data.total}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
         </div>
       )}
 

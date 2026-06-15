@@ -11,6 +11,7 @@ import type {
   CreateGenrePayload,
   UpdateGenrePayload,
 } from '#/services/api/genreApi'
+import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 const genreKeys = {
@@ -32,8 +33,12 @@ export function useCreateGenre() {
 
   return useMutation({
     mutationFn: (data: CreateGenrePayload) => createGenre(data),
-    onSuccess: () => {
+    onSuccess: (genre) => {
       queryClient.invalidateQueries({ queryKey: genreKeys.all })
+      toast.success(`Genre "${genre.name}" created`)
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Failed to create genre')
     },
   })
 }
@@ -52,8 +57,12 @@ export function useUpdateGenre() {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateGenrePayload }) =>
       updateGenre(id, data),
-    onSuccess: () => {
+    onSuccess: (genre) => {
       queryClient.invalidateQueries({ queryKey: genreKeys.all })
+      toast.success(`Genre "${genre.name}" updated`)
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Failed to update genre')
     },
   })
 }
@@ -65,6 +74,10 @@ export function useDeleteGenre() {
     mutationFn: (id: number) => deleteGenre(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: genreKeys.all })
+      toast.success(`Genre deleted`)
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete genre')
     },
   })
 }
