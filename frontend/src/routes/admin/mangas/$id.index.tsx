@@ -19,7 +19,7 @@ import {
   CollapsibleTrigger,
   CollapsibleContent,
 } from '#/components/ui/collapsible'
-import { ChevronDown, ChevronRight, BookOpen, Pencil, ArrowLeft } from 'lucide-react'
+import { ChevronDown, ChevronRight, BookOpen, Pencil, ArrowLeft, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { formatDateTime } from '#/lib/dateTimeFormatter'
 
@@ -35,6 +35,13 @@ function MangaDetailPage() {
     include: 'chapters,translations',
   })
   const manga = data as MangaDetailResponse | undefined
+
+  const badgeVariant =
+        manga?.status === 'completed'
+          ? 'default'
+          : manga?.status === 'ongoing'
+            ? 'outline'
+            : 'destructive'
 
   if (isLoading) {
     return (
@@ -73,7 +80,9 @@ function MangaDetailPage() {
             </Link>
           </Button>
           <h1 className="text-2xl font-bold">{manga.title}</h1>
-          <Badge variant="outline">{manga.status}</Badge>
+          <Badge variant={badgeVariant} className="capitalize">
+            {manga.status}
+          </Badge>
         </div>
         <Button
           onClick={() =>
@@ -98,12 +107,12 @@ function MangaDetailPage() {
             <dd className="mt-1">
               {manga.alternativeTitles?.length
                 ? manga.alternativeTitles.join(', ')
-                : '—'}
+                : '-'}
             </dd>
           </div>
           <div>
             <dt className="text-sm text-muted-foreground">Cover Path</dt>
-            <dd className="mt-1 font-mono text-sm">{manga.coverPath || '—'}</dd>
+            <dd className="mt-1 font-mono text-sm">{manga.coverPath || '-'}</dd>
           </div>
           <div>
             <dt className="text-sm text-muted-foreground">Authors</dt>
@@ -152,6 +161,7 @@ function MangaDetailPage() {
                 navigate({ to: '/admin/mangas/$id/edit', params: { id } })
               }
             >
+              <Plus className="mr-2 h-4 w-4" />
               Add Chapter
             </Button>
           </EmptyContent>
@@ -205,10 +215,10 @@ function ChapterRow({
             </CollapsibleTrigger>
           </TableCell>
           <TableCell className="font-mono">{chapter.number}</TableCell>
-          <TableCell>{chapter.title || '—'}</TableCell>
-          <TableCell>{chapter.releaseDate || '—'}</TableCell>
+          <TableCell>{chapter.title || '-'}</TableCell>
+          <TableCell>{chapter.releaseDate || '-'}</TableCell>
           <TableCell className="max-w-50 truncate font-mono text-sm">
-            {chapter.note || '—'}
+            {chapter.note || '-'}
           </TableCell>
           <TableCell>
             <div className="flex gap-1">
@@ -255,7 +265,7 @@ function ChapterRow({
                         <TableCell className="font-mono text-sm">
                           {tr.folderPath}
                         </TableCell>
-                        <TableCell>{tr.note || '—'}</TableCell>
+                        <TableCell>{tr.note || '-'}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
