@@ -10,7 +10,9 @@ describe('TranslationRepository', () => {
   };
 
   beforeEach(() => {
-    repo = new TranslationRepository(mockRepo as unknown as Repository<Translation>);
+    repo = new TranslationRepository(
+      mockRepo as unknown as Repository<Translation>,
+    );
     jest.clearAllMocks();
   });
 
@@ -31,7 +33,11 @@ describe('TranslationRepository', () => {
 
     it('should return null when not found', async () => {
       mockRepo.findOne.mockResolvedValue(null);
-      const result = await repo.findByChapterAndLanguageAndTranslator(999, 999, 999);
+      const result = await repo.findByChapterAndLanguageAndTranslator(
+        999,
+        999,
+        999,
+      );
       expect(result).toBeNull();
     });
   });

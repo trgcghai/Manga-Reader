@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Test, TestingModule } from '@nestjs/testing';
 import { MangaController } from './manga.controller';
 import { MangaService } from './manga.service';
@@ -9,8 +10,10 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateMangaDto } from 'src/modules/manga/dto/manga.dto';
-import { UpdateMangaDto } from 'src/modules/manga/dto/update-manga.dto';
+import {
+  CreateMangaDto,
+  UpdateMangaDto,
+} from 'src/modules/manga/dto/manga.dto';
 import { MangaStatus } from 'src/common/constants/manga.constant';
 
 describe('MangaController', () => {
@@ -225,6 +228,7 @@ describe('MangaController', () => {
 
       const result = await controller.import(mockFile);
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(importService.import).toHaveBeenCalledWith(mockFile);
       expect(result).toEqual(importResult);
     });
@@ -249,7 +253,7 @@ describe('MangaController', () => {
       const expected = { id: 1, ...chapterDto };
       chapterService.create.mockResolvedValue(expected as any);
 
-      const result = await controller.createChapter(1, chapterDto as any);
+      const result = await controller.createChapter(1, chapterDto);
 
       expect(chapterService.create).toHaveBeenCalledWith(1, chapterDto);
       expect(result).toEqual(expected);
@@ -260,19 +264,21 @@ describe('MangaController', () => {
         new NotFoundException('Manga #999 not found'),
       );
 
-      await expect(controller.createChapter(999, chapterDto as any)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        controller.createChapter(999, chapterDto as any),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should propagate ConflictException from ChapterService', async () => {
       chapterService.create.mockRejectedValue(
-        new ConflictException('A translation for chapter #1 with this language and translator already exists'),
+        new ConflictException(
+          'A translation for chapter #1 with this language and translator already exists',
+        ),
       );
 
-      await expect(controller.createChapter(1, chapterDto as any)).rejects.toThrow(
-        ConflictException,
-      );
+      await expect(
+        controller.createChapter(1, chapterDto as any),
+      ).rejects.toThrow(ConflictException);
     });
   });
 });

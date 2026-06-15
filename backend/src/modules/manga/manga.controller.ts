@@ -86,7 +86,9 @@ export class MangaController {
     ];
     const sheet = XLSX.utils.json_to_sheet(headerRow);
     XLSX.utils.book_append_sheet(workbook, sheet, 'Template');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return new StreamableFile(buffer);
   }
 

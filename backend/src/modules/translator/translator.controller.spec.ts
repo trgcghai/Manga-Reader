@@ -78,7 +78,11 @@ describe('TranslatorController', () => {
   describe('create', () => {
     it('should create a new translator', async () => {
       const dto: CreateTranslatorDto = { name: 'New Translator', note: 'Note' };
-      const created = { id: 1, name: 'New Translator', note: 'Note' } as unknown as Translator;
+      const created = {
+        id: 1,
+        name: 'New Translator',
+        note: 'Note',
+      } as unknown as Translator;
       service.create.mockResolvedValue(created);
 
       const result = await controller.create(dto);
@@ -98,8 +102,15 @@ describe('TranslatorController', () => {
 
   describe('update', () => {
     it('should update and return the translator', async () => {
-      const dto: UpdateTranslatorDto = { name: 'Updated', note: 'Updated note' };
-      const updated = { id: 1, name: 'Updated', note: 'Updated note' } as unknown as Translator;
+      const dto: UpdateTranslatorDto = {
+        name: 'Updated',
+        note: 'Updated note',
+      };
+      const updated = {
+        id: 1,
+        name: 'Updated',
+        note: 'Updated note',
+      } as unknown as Translator;
       service.update.mockResolvedValue(updated);
 
       const result = await controller.update('1', dto);
