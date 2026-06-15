@@ -91,6 +91,7 @@ export class MangaService {
               id: tr.id,
               folderPath: tr.folderPath,
               note: tr.note ?? undefined,
+              createdAt: tr.createdAt.toISOString(),
               language: {
                 id: tr.language.id,
                 code: tr.language.code,

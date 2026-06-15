@@ -1,9 +1,27 @@
-import { createFileRoute, Link, useNavigate, useParams } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  Link,
+  useNavigate,
+  useParams,
+} from '@tanstack/react-router'
 import { useManga } from '#/hooks/useManga'
-import type { MangaDetailResponse, ChapterDetail } from '#/services/api/mangaApi'
+import type {
+  MangaDetailResponse,
+  ChapterDetail,
+} from '#/services/api/mangaApi'
 import { Skeleton } from '#/components/ui/skeleton'
-import { ErrorDisplay, ErrorTitle, ErrorDescription } from '#/components/ui/error-display'
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyContent } from '#/components/ui/empty'
+import {
+  ErrorDisplay,
+  ErrorTitle,
+  ErrorDescription,
+} from '#/components/ui/error-display'
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyContent,
+} from '#/components/ui/empty'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import {
@@ -19,7 +37,14 @@ import {
   CollapsibleTrigger,
   CollapsibleContent,
 } from '#/components/ui/collapsible'
-import { ChevronDown, ChevronRight, BookOpen, Pencil, ArrowLeft, Plus } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronRight,
+  BookOpen,
+  Pencil,
+  ArrowLeft,
+  Plus,
+} from 'lucide-react'
 import { useState } from 'react'
 import { formatDateTime } from '#/lib/dateTimeFormatter'
 import AddChapterDialog from '#/components/chapter/AddChapterDialog'
@@ -39,11 +64,11 @@ function MangaDetailPage() {
   const manga = data as MangaDetailResponse | undefined
 
   const badgeVariant =
-        manga?.status === 'completed'
-          ? 'default'
-          : manga?.status === 'ongoing'
-            ? 'outline'
-            : 'destructive'
+    manga?.status === 'completed'
+      ? 'default'
+      : manga?.status === 'ongoing'
+        ? 'outline'
+        : 'destructive'
 
   if (isLoading) {
     return (
@@ -105,9 +130,11 @@ function MangaDetailPage() {
             </div>
           )}
           <div>
-            <dt className="text-sm text-muted-foreground">Alternative Titles</dt>
+            <dt className="text-sm text-muted-foreground">
+              Alternative Titles
+            </dt>
             <dd className="mt-1">
-              {manga.alternativeTitles?.length
+              {manga.alternativeTitles.length
                 ? manga.alternativeTitles.join(', ')
                 : '-'}
             </dd>
@@ -165,6 +192,7 @@ function MangaDetailPage() {
           </EmptyHeader>
           <EmptyContent>
             <Button onClick={() => setChapterDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
               Add Chapter
             </Button>
           </EmptyContent>
@@ -174,10 +202,8 @@ function MangaDetailPage() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-10" />
-              <TableHead>#</TableHead>
+              <TableHead className="w-10">#</TableHead>
               <TableHead>Title</TableHead>
-              <TableHead>Release Date</TableHead>
-              <TableHead>Note</TableHead>
               <TableHead className="w-20">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -224,11 +250,7 @@ function ChapterRow({
             </CollapsibleTrigger>
           </TableCell>
           <TableCell className="font-mono">{chapter.number}</TableCell>
-          <TableCell>{chapter.title || '-'}</TableCell>
-          <TableCell>{chapter.releaseDate || '-'}</TableCell>
-          <TableCell className="max-w-50 truncate font-mono text-sm">
-            {chapter.note || '-'}
-          </TableCell>
+          <TableCell>{chapter.title}</TableCell>
           <TableCell>
             <div className="flex gap-1">
               <Button
@@ -256,25 +278,21 @@ function ChapterRow({
                 </div>
               ) : (
                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="pl-10">Language</TableHead>
-                      <TableHead>Translator</TableHead>
-                      <TableHead>Folder Path</TableHead>
-                      <TableHead>Note</TableHead>
-                    </TableRow>
-                  </TableHeader>
                   <TableBody>
                     {chapter.translations.map((tr) => (
-                      <TableRow key={tr.id}>
-                        <TableCell className="pl-10">
+                      <TableRow key={tr.id} className="text-muted-foreground">
+                        <TableCell className="pl-10 w-1/10">
                           {tr.language.name}
                         </TableCell>
-                        <TableCell>{tr.translator.name}</TableCell>
-                        <TableCell className="font-mono text-sm">
+                        <TableCell className="w-1/5 truncate">
+                          {tr.translator.name}
+                        </TableCell>
+                        <TableCell className="w-1/5">
+                          {formatDateTime(tr.createdAt)}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm w-1/2 truncate">
                           {tr.folderPath}
                         </TableCell>
-                        <TableCell>{tr.note || '-'}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

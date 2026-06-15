@@ -1,4 +1,3 @@
-// frontend/src/hooks/useChapters.ts
 import { createChapter } from '#/services/api/chapterApi'
 import type { CreateChapterPayload } from '#/services/api/chapterApi'
 import { toast } from 'sonner'

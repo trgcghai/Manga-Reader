@@ -1,4 +1,3 @@
-// frontend/src/services/api/chapterApi.ts
 import axiosInstance from '#/services/api/api'
 
 export interface CreateChapterPayload {

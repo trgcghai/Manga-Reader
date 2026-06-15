@@ -86,7 +86,7 @@ describe('MangaService', () => {
 
       const result = await service.findOne(1);
 
-      expect(result.id).toBe(1);
+      expect(result?.id).toBe(1);
     });
 
     it('should throw NotFoundException when manga not found', async () => {
@@ -119,6 +119,7 @@ describe('MangaService', () => {
                 id: 1,
                 folderPath: '/path',
                 note: null,
+                createdAt: new Date('2024-01-01'),
                 language: { id: 1, code: 'en', name: 'English' },
                 translator: { id: 1, name: 'T1' },
               },

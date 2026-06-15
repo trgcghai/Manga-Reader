@@ -37,6 +37,7 @@ export interface TranslationDetail {
   id: number
   folderPath: string
   note?: string
+  createdAt: string
   language: { id: number; code: string; name: string }
   translator: { id: number; name: string }
 }

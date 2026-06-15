@@ -27,14 +27,15 @@ import {
   FieldError as UiFieldError,
 } from '#/components/ui/field'
 import { Loader2 } from 'lucide-react'
+import { useEffect } from 'react'
 
 const chapterSchema = z.object({
-  number: z.coerce.number().min(0, 'Number is required'),
+  number: z.number().min(0, 'Number is required'),
   title: z.string().min(1, 'Title is required'),
   releaseDate: z.string().optional(),
   note: z.string().optional(),
-  languageId: z.coerce.number().refine((n) => n > 0, 'Language is required'),
-  translatorId: z.coerce.number().refine((n) => n > 0, 'Translator is required'),
+  languageId: z.number().refine((n) => n > 0, 'Language is required'),
+  translatorId: z.number().refine((n) => n > 0, 'Translator is required'),
   folderPath: z.string().min(1, 'Folder path is required'),
 })
 
@@ -65,6 +66,12 @@ export default function AddChapterDialog({
   const { data: languages, isLoading: languagesLoading } = useLanguageList()
   const { data: translatorsData, isLoading: translatorsLoading } =
     useTranslatorList(1, 100)
+
+  useEffect(() => {
+    if (!open) {
+      form.reset()
+    }
+  }, [open])
 
   const form = useForm({
     validators: { onSubmit: chapterSchema },
@@ -100,11 +107,12 @@ export default function AddChapterDialog({
             <form.Field name="number">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="chapter-number">Chapter Number</FieldLabel>
+                  <FieldLabel htmlFor="chapter-number" required>Chapter Number</FieldLabel>
                   <Input
                     id="chapter-number"
                     type="number"
                     min={0}
+                    step={0.1}
                     value={field.state.value}
                     onChange={(e) => field.handleChange(Number(e.target.value))}
                     aria-invalid={field.state.meta.errors.length > 0 || undefined}
@@ -119,7 +127,7 @@ export default function AddChapterDialog({
             <form.Field name="title">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="chapter-title">Title</FieldLabel>
+                  <FieldLabel htmlFor="chapter-title" required>Title</FieldLabel>
                   <Input
                     id="chapter-title"
                     value={field.state.value}
@@ -165,7 +173,7 @@ export default function AddChapterDialog({
             <form.Field name="languageId">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="chapter-language">Language</FieldLabel>
+                  <FieldLabel htmlFor="chapter-language" required>Language</FieldLabel>
                   <Select
                     value={String(field.state.value || '')}
                     onValueChange={(v) => field.handleChange(Number(v))}
@@ -198,7 +206,7 @@ export default function AddChapterDialog({
             <form.Field name="translatorId">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="chapter-translator">Translator</FieldLabel>
+                  <FieldLabel htmlFor="chapter-translator" required>Translator</FieldLabel>
                   <Select
                     value={String(field.state.value || '')}
                     onValueChange={(v) => field.handleChange(Number(v))}
@@ -231,7 +239,7 @@ export default function AddChapterDialog({
             <form.Field name="folderPath">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="chapter-folder-path">Folder Path</FieldLabel>
+                  <FieldLabel htmlFor="chapter-folder-path" required>Folder Path</FieldLabel>
                   <Input
                     id="chapter-folder-path"
                     value={field.state.value}
