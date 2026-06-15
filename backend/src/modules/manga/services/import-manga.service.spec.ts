@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ImportMangaService } from './import-manga.service';
-import { MangaService } from '../manga.service';
+import { MangaService } from './manga.service';
 import * as XLSX from 'xlsx';
 
 function createExcelBuffer(data: Record<string, unknown>[]): Buffer {

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MangaService } from './manga.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { MangaRepository } from 'src/modules/manga/manga.repository';
+import { MangaRepository } from 'src/modules/manga/repositories/manga.repository';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
 import { Author } from 'src/modules/author/entities/author.entity';
 import { Genre } from 'src/modules/genre/entities/genre.entity';

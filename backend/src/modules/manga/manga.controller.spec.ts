@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Test, TestingModule } from '@nestjs/testing';
 import { MangaController } from './manga.controller';
-import { MangaService } from './manga.service';
+import { MangaService } from './services/manga.service';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
 import { ImportMangaService } from './services/import-manga.service';
 import { ChapterService } from './services/chapter.service';

@@ -3,11 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { MangaRepository } from 'src/modules/manga/manga.repository';
+import { MangaRepository } from 'src/modules/manga/repositories/manga.repository';
 import { LanguageService } from 'src/modules/language/language.service';
 import { TranslatorService } from 'src/modules/translator/translator.service';
-import { ChapterRepository } from 'src/modules/manga/chapter.repository';
-import { TranslationRepository } from 'src/modules/manga/translation.repository';
+import { ChapterRepository } from 'src/modules/manga/repositories/chapter.repository';
+import { TranslationRepository } from 'src/modules/manga/repositories/translation.repository';
 import { CreateChapterDto } from 'src/modules/manga/dto/chapter.dto';
 
 @Injectable()

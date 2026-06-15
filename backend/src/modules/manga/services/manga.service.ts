@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
-import { MangaRepository } from 'src/modules/manga/manga.repository';
+import { MangaRepository } from 'src/modules/manga/repositories/manga.repository';
 import {
   CreateMangaDto,
   UpdateMangaDto,

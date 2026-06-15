@@ -18,7 +18,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as XLSX from 'xlsx';
-import { MangaService } from './manga.service';
+import { MangaService } from './services/manga.service';
 import {
   ImportMangaService,
   ImportResult,

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { MangaService } from '../manga.service';
+import { MangaService } from './manga.service';
 import { MangaStatus } from 'src/common/constants/manga.constant';
 import * as XLSX from 'xlsx';
 

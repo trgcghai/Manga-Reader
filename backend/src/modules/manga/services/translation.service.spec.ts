@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 import { TranslationService } from './translation.service';
-import { TranslationRepository } from 'src/modules/manga/translation.repository';
+import { TranslationRepository } from 'src/modules/manga/repositories/translation.repository';
 import { LanguageService } from 'src/modules/language/language.service';
 import { TranslatorService } from 'src/modules/translator/translator.service';
 import { Translation } from 'src/modules/manga/entities/translation.entity';

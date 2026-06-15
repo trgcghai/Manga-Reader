@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { ChapterService } from './chapter.service';
-import { MangaRepository } from 'src/modules/manga/manga.repository';
+import { MangaRepository } from 'src/modules/manga/repositories/manga.repository';
 import { LanguageService } from 'src/modules/language/language.service';
 import { TranslatorService } from 'src/modules/translator/translator.service';
-import { ChapterRepository } from 'src/modules/manga/chapter.repository';
-import { TranslationRepository } from 'src/modules/manga/translation.repository';
+import { ChapterRepository } from 'src/modules/manga/repositories/chapter.repository';
+import { TranslationRepository } from 'src/modules/manga/repositories/translation.repository';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
 import { Chapter } from 'src/modules/manga/entities/chapter.entity';
 import { Translation } from 'src/modules/manga/entities/translation.entity';
