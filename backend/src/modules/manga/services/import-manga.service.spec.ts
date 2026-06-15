@@ -1,10 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ImportMangaService } from './import-manga.service';
 import { MangaService } from '../manga.service';
+import * as XLSX from 'xlsx';
+
+function createExcelBuffer(data: Record<string, unknown>[]): Buffer {
+  const workbook = XLSX.utils.book_new();
+  const sheet = XLSX.utils.json_to_sheet(data);
+  XLSX.utils.book_append_sheet(workbook, sheet, 'Sheet1');
+  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
+}
 
 describe('ImportMangaService', () => {
   let service: ImportMangaService;
-  let mangaService: jest.Mocked<MangaService>;
 
   const mockMangaService = {
     create: jest.fn(),
@@ -19,7 +26,6 @@ describe('ImportMangaService', () => {
     }).compile();
 
     service = module.get(ImportMangaService);
-    mangaService = module.get(MangaService);
   });
 
   afterEach(() => {
@@ -64,9 +70,7 @@ describe('ImportMangaService', () => {
 
   describe('import', () => {
     it('should parse Excel buffer and create mangas', async () => {
-      const XLSX = require('xlsx');
-      const workbook = XLSX.utils.book_new();
-      const data = [
+      const buffer = createExcelBuffer([
         {
           Title: 'Manga A',
           Status: 'ongoing',
@@ -79,12 +83,9 @@ describe('ImportMangaService', () => {
           Authors: 'Author2',
           Genres: 'Action',
         },
-      ];
-      const sheet = XLSX.utils.json_to_sheet(data);
-      XLSX.utils.book_append_sheet(workbook, sheet, 'Sheet1');
-      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      ]);
 
-      mockMangaService.create.mockResolvedValue({ id: 1 } as any);
+      mockMangaService.create.mockResolvedValue({ id: 1 });
 
       const file = {
         buffer,
@@ -100,21 +101,16 @@ describe('ImportMangaService', () => {
     });
 
     it('should report per-row errors and continue processing', async () => {
-      const XLSX = require('xlsx');
-      const workbook = XLSX.utils.book_new();
-      const data = [
+      const buffer = createExcelBuffer([
         { Title: 'Manga A', Status: 'ongoing' },
         { Title: 'Manga B', Status: 'ongoing' },
         { Title: 'Manga C', Status: 'ongoing' },
-      ];
-      const sheet = XLSX.utils.json_to_sheet(data);
-      XLSX.utils.book_append_sheet(workbook, sheet, 'Sheet1');
-      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      ]);
 
       mockMangaService.create
-        .mockResolvedValueOnce({ id: 1 } as any)
+        .mockResolvedValueOnce({ id: 1 })
         .mockRejectedValueOnce(new Error('Database error'))
-        .mockResolvedValueOnce({ id: 3 } as any);
+        .mockResolvedValueOnce({ id: 3 });
 
       const file = { buffer } as Express.Multer.File;
       const result = await service.import(file);
@@ -126,11 +122,7 @@ describe('ImportMangaService', () => {
     });
 
     it('should handle empty Excel file', async () => {
-      const XLSX = require('xlsx');
-      const workbook = XLSX.utils.book_new();
-      const sheet = XLSX.utils.json_to_sheet([]);
-      XLSX.utils.book_append_sheet(workbook, sheet, 'Sheet1');
-      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      const buffer = createExcelBuffer([]);
 
       const file = { buffer } as Express.Multer.File;
       const result = await service.import(file);
@@ -141,15 +133,10 @@ describe('ImportMangaService', () => {
     });
 
     it('should handle all rows failing', async () => {
-      const XLSX = require('xlsx');
-      const workbook = XLSX.utils.book_new();
-      const data = [
+      const buffer = createExcelBuffer([
         { Title: 'Valid Manga 1', Status: 'ongoing' },
         { Title: 'Valid Manga 2', Status: 'ongoing' },
-      ];
-      const sheet = XLSX.utils.json_to_sheet(data);
-      XLSX.utils.book_append_sheet(workbook, sheet, 'Sheet1');
-      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      ]);
 
       mockMangaService.create.mockRejectedValue(new Error('Database error'));
 
@@ -162,23 +149,20 @@ describe('ImportMangaService', () => {
     });
 
     it('should handle CSV-quoted multi-value cells', async () => {
-      const XLSX = require('xlsx');
-      const workbook = XLSX.utils.book_new();
-      const data = [
+      const buffer = createExcelBuffer([
         {
           Title: 'Manga',
           Status: 'ongoing',
           Genres: '"Action, Adventure", Fantasy',
         },
-      ];
-      const sheet = XLSX.utils.json_to_sheet(data);
-      XLSX.utils.book_append_sheet(workbook, sheet, 'Sheet1');
-      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      ]);
 
-      mockMangaService.create.mockImplementation(async (dto) => {
-        expect(dto.genres).toEqual(['Action, Adventure', 'Fantasy']);
-        return { id: 1 } as any;
-      });
+      mockMangaService.create.mockImplementation(
+        (dto: { genres: string[] }) => {
+          expect(dto.genres).toEqual(['Action, Adventure', 'Fantasy']);
+          return { id: 1 };
+        },
+      );
 
       const file = { buffer } as Express.Multer.File;
       const result = await service.import(file);
