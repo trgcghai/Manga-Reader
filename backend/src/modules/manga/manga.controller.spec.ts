@@ -106,7 +106,7 @@ describe('MangaController', () => {
 
       const result = await controller.findOne('1');
 
-      expect(service.findOne).toHaveBeenCalledWith(1);
+      expect(service.findOne).toHaveBeenCalledWith(1, undefined);
       expect(result).toEqual(mockMangaList[0]);
     });
 
@@ -118,6 +118,26 @@ describe('MangaController', () => {
       await expect(controller.findOne('999')).rejects.toThrow(
         NotFoundException,
       );
+    });
+
+    it('should pass include query param to service', async () => {
+      const mockResponse = { id: 1, title: 'Test', chapters: [] };
+      service.findOne.mockResolvedValue(mockResponse as any);
+
+      const result = await controller.findOne('1', 'chapters,translations');
+
+      expect(service.findOne).toHaveBeenCalledWith(1, 'chapters,translations');
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should call findOne without include when no query param', async () => {
+      const mockResponse = { id: 1, title: 'Test' };
+      service.findOne.mockResolvedValue(mockResponse as any);
+
+      const result = await controller.findOne('1');
+
+      expect(service.findOne).toHaveBeenCalledWith(1, undefined);
+      expect(result).toEqual(mockResponse);
     });
   });
 
