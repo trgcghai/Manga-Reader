@@ -18,19 +18,10 @@ import {
 } from '#/components/ui/empty'
 import { BookOpen } from 'lucide-react'
 import { Button } from '#/components/ui/button'
-import { AppLayout } from './app'
 
-export const Route = createFileRoute('/')({
-  component: RouteComponent,
+export const Route = createFileRoute('/_app/')({
+  component: LibraryPage,
 })
-
-function RouteComponent() {
-  return (
-    <AppLayout>
-      <LibraryPage />
-    </AppLayout>
-  )
-}
 
 function LibraryPage() {
   const [page, setPage] = useState(1)
