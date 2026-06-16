@@ -29,7 +29,7 @@ export class MangaRepository {
       query.andWhere(
         `(LOWER(manga.title) LIKE LOWER(:search)
           OR LOWER(manga.description) LIKE LOWER(:search)
-          OR LOWER(ARRAY_TO_STRING(manga.alternativeTitles, ' ')) LIKE LOWER(:search)
+          OR LOWER(COALESCE(ARRAY_TO_STRING(manga.alternativeTitles, ' '), '')) LIKE LOWER(:search)
           OR LOWER(author.name) LIKE LOWER(:search)
           OR LOWER(genre.name) LIKE LOWER(:search))`,
         { search: `%${search}%` },

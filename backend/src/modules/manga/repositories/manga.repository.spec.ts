@@ -275,7 +275,16 @@ describe('MangaRepository', () => {
 
       expect(repoWithQB.createQueryBuilder).toHaveBeenCalledWith('manga')
       expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledTimes(2)
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalled()
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('LOWER(manga.title) LIKE LOWER(:search)'),
+        { search: '%naruto%' },
+      )
+      const whereSql = mockQueryBuilder.andWhere.mock.calls[0][0]
+      expect(whereSql).toContain('LOWER(manga.title)')
+      expect(whereSql).toContain('LOWER(manga.description)')
+      expect(whereSql).toContain('ARRAY_TO_STRING(manga.alternativeTitles')
+      expect(whereSql).toContain('LOWER(author.name)')
+      expect(whereSql).toContain('LOWER(genre.name)')
       expect(mockQueryBuilder.getManyAndCount).toHaveBeenCalled()
       expect(result.data).toEqual(mockData)
       expect(result.total).toBe(1)
