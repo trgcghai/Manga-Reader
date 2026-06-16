@@ -11,6 +11,8 @@ export class MangaRepository {
   findAll = async (
     page: number,
     limit: number,
+    search?: string,
+    status?: string,
   ): Promise<{
     data: Manga[];
     total: number;
@@ -18,12 +20,33 @@ export class MangaRepository {
     limit: number;
     totalPages: number;
   }> => {
-    const [data, total] = await this.repo.findAndCount({
-      skip: (page - 1) * limit,
-      take: limit,
-      relations: ['authors', 'genres'],
-      order: { createdAt: 'DESC' },
-    });
+    const query = this.repo
+      .createQueryBuilder('manga')
+      .leftJoinAndSelect('manga.authors', 'author')
+      .leftJoinAndSelect('manga.genres', 'genre');
+
+    if (search) {
+      query.andWhere(
+        `(LOWER(manga.title) LIKE LOWER(:search)
+          OR LOWER(manga.description) LIKE LOWER(:search)
+          OR LOWER(ARRAY_TO_STRING(manga.alternativeTitles, ' ')) LIKE LOWER(:search)
+          OR LOWER(author.name) LIKE LOWER(:search)
+          OR LOWER(genre.name) LIKE LOWER(:search))`,
+        { search: `%${search}%` },
+      );
+    }
+
+    if (status) {
+      query.andWhere('manga.status = :status', { status });
+    }
+
+    query
+      .orderBy('manga.createdAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    const [data, total] = await query.getManyAndCount();
+
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   };
 
