@@ -1,4 +1,4 @@
-import { Global, Module, OnModuleInit, Inject } from '@nestjs/common';
+import { Global, Module, OnModuleInit, Inject, Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
 
@@ -27,6 +27,8 @@ export const MINIO_CLIENT = 'MINIO_CLIENT';
   exports: [MINIO_CLIENT],
 })
 export class FileModule implements OnModuleInit {
+  private readonly logger = new Logger(FileModule.name);
+
   constructor(
     @Inject(MINIO_CLIENT) private readonly minioClient: Minio.Client,
     private readonly configService: ConfigService,
@@ -35,8 +37,11 @@ export class FileModule implements OnModuleInit {
   async onModuleInit() {
     const bucket = this.configService.get<string>('MINIO_BUCKET')!;
     const exists = await this.minioClient.bucketExists(bucket);
-    if (!exists) {
+    if (exists) {
+      this.logger.log(`Minio bucket "${bucket}" found`);
+    } else {
       await this.minioClient.makeBucket(bucket, 'us-east-1');
+      this.logger.log(`Minio bucket "${bucket}" created`);
     }
   }
 }
