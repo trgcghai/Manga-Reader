@@ -27,7 +27,7 @@ export const Route = createFileRoute('/_app/')({
 function LibraryPage() {
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [status, setStatus] = useState('')
+  const [status, setStatus] = useState('all')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
 
@@ -44,7 +44,7 @@ function LibraryPage() {
     page,
     limit: pageSize,
     search: debouncedSearch || undefined,
-    status: status || undefined,
+    status: status !== 'all' ? status : undefined,
   })
 
   if (isLoading) {
@@ -96,7 +96,7 @@ function LibraryPage() {
     )
   }
 
-  const hasFilters = !!debouncedSearch || !!status
+  const hasFilters = !!debouncedSearch || (!!status && status !== 'all')
   const isEmpty = !data || data.data.length === 0
 
   if (isEmpty && !hasFilters) {

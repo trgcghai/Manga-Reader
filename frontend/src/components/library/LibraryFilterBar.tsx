@@ -17,7 +17,7 @@ interface LibraryFilterBarProps {
 }
 
 const statusOptions = [
-  { value: '', label: 'All' },
+  { value: 'all', label: 'All' },
   { value: 'ongoing', label: 'Ongoing' },
   { value: 'completed', label: 'Completed' },
   { value: 'paused', label: 'Paused' },
@@ -55,13 +55,13 @@ export function LibraryFilterBar({
         </Select>
       </div>
 
-      {status && (
+      {status && status !== 'all' && (
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary" className="gap-1 capitalize">
             {statusOptions.find((o) => o.value === status)?.label ?? status}
             <button
               type="button"
-              onClick={() => onStatusChange('')}
+              onClick={() => onStatusChange('all')}
               className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
             >
               <X className="size-3" />
