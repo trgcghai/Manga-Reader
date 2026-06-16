@@ -25,15 +25,20 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 const mangaKeys = {
   all: ['mangas'] as const,
-  list: (page: number, limit: number) =>
-    [...mangaKeys.all, 'list', page, limit] as const,
+  list: (params: { page: number; limit: number; search?: string; status?: string }) =>
+    [...mangaKeys.all, 'list', params.page, params.limit, params.search, params.status] as const,
   detail: (id: number) => [...mangaKeys.all, 'detail', id] as const,
 }
 
-export function useMangaList(page: number, limit: number) {
+export function useMangaList(params: {
+  page: number
+  limit: number
+  search?: string
+  status?: string
+}) {
   return useQuery<PaginatedResponse<MangaResponse>>({
-    queryKey: mangaKeys.list(page, limit),
-    queryFn: () => getAllMangas(page, limit),
+    queryKey: mangaKeys.list(params),
+    queryFn: () => getAllMangas(params),
   })
 }
 
