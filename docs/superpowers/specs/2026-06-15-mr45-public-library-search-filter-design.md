@@ -26,9 +26,10 @@ findAll(
 ): Promise<PaginatedResult<Manga>>
 ```
 
-- If `search` is provided, add `WHERE manga.title ILIKE :search` (use `LIKE` for SQLite-compatible default)
+- If `search` is provided, match against `manga.title`, `manga.alternativeTitles`, `manga.description`, `authors.name`, and `genres.name` using LIKE/ILIKE
 - If `status` is provided, add `WHERE manga.status = :status`
 - Both can be combined
+- For relation fields (authors, genres), use a TypeORM `LEFT JOIN` and search with `LIKE` on the related table columns
 - Keep existing `relations: ['authors', 'genres']` and `order: { createdAt: 'DESC' }`
 
 ---
