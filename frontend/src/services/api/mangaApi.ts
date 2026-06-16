@@ -69,17 +69,23 @@ export interface CreateChapterPayload {
   folderPath: string
 }
 
-export async function getAllMangas(
-  page: number,
-  limit: number,
-): Promise<PaginatedResponse<MangaResponse>> {
+export async function getAllMangas(params: {
+  page: number
+  limit: number
+  search?: string
+  status?: string
+}): Promise<PaginatedResponse<MangaResponse>> {
+  const queryParams: Record<string, string | number> = {
+    page: params.page,
+    limit: params.limit,
+  }
+  if (params.search) queryParams.search = params.search
+  if (params.status) queryParams.status = params.status
+
   const res = await axiosInstance.get<PaginatedResponse<MangaResponse>>(
     '/mangas',
-    {
-      params: { page, limit },
-    },
+    { params: queryParams },
   )
-
   return res.data
 }
 
