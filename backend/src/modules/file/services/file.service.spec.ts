@@ -66,6 +66,50 @@ describe('FileService', () => {
     });
   });
 
+  describe('delete', () => {
+    it('removes object from Minio', async () => {
+      await service.delete('covers/test.jpg');
+
+      expect(mockMinioClient.removeObject).toHaveBeenCalledWith(expect.any(String), 'covers/test.jpg');
+    });
+
+    it('throws InternalServerErrorException on Minio error', async () => {
+      mockMinioClient.removeObject.mockRejectedValue(new Error('remove failed'));
+
+      await expect(service.delete('covers/test.jpg')).rejects.toThrow(InternalServerErrorException);
+    });
+  });
+
+  describe('list', () => {
+    it('returns all keys with no prefix', async () => {
+      const mockStream = Readable.from([{ name: 'a.jpg' }, { name: 'b.jpg' }, { name: 'c.jpg' }]);
+      mockMinioClient.listObjects.mockReturnValue(mockStream);
+
+      const result = await service.list();
+
+      expect(result).toEqual(['a.jpg', 'b.jpg', 'c.jpg']);
+      expect(mockMinioClient.listObjects).toHaveBeenCalledWith(expect.any(String), '', true);
+    });
+
+    it('returns filtered keys with prefix', async () => {
+      const mockStream = Readable.from([{ name: 'covers/x.jpg' }, { name: 'covers/y.jpg' }]);
+      mockMinioClient.listObjects.mockReturnValue(mockStream);
+
+      const result = await service.list('covers');
+
+      expect(result).toEqual(['covers/x.jpg', 'covers/y.jpg']);
+      expect(mockMinioClient.listObjects).toHaveBeenCalledWith(expect.any(String), 'covers', true);
+    });
+
+    it('throws InternalServerErrorException on stream error', async () => {
+      const mockStream = new Readable({ objectMode: true, read() {} });
+      mockMinioClient.listObjects.mockReturnValue(mockStream);
+      mockStream.destroy(new Error('stream failed'));
+
+      await expect(service.list()).rejects.toThrow(InternalServerErrorException);
+    });
+  });
+
   describe('upload', () => {
     const prefix = 'covers';
     const buffer = Buffer.from('test-image-data');

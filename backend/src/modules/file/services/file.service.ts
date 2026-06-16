@@ -54,4 +54,27 @@ export class FileService {
       throw new InternalServerErrorException('File download failed');
     }
   }
+
+  async delete(key: string): Promise<void> {
+    try {
+      await this.minioClient.removeObject(this.bucket, key);
+    } catch (error) {
+      this.logger.error(`Delete failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new InternalServerErrorException('File delete failed');
+    }
+  }
+
+  async list(prefix?: string): Promise<string[]> {
+    try {
+      const stream = this.minioClient.listObjects(this.bucket, prefix || '', true);
+      const keys: string[] = [];
+      for await (const obj of stream) {
+        keys.push(obj.name);
+      }
+      return keys;
+    } catch (error) {
+      this.logger.error(`List failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new InternalServerErrorException('File list failed');
+    }
+  }
 }
