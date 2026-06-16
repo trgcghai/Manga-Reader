@@ -2,8 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FileService } from './file.service';
 import { MINIO_CLIENT } from '../file.module';
 import { ConfigService } from '@nestjs/config';
-import { InternalServerErrorException } from '@nestjs/common';
+import { InternalServerErrorException, NotFoundException, StreamableFile } from '@nestjs/common';
 import * as Minio from 'minio';
+import { Readable } from 'node:stream';
 
 describe('FileService', () => {
   let service: FileService;
@@ -37,6 +38,32 @@ describe('FileService', () => {
     }).compile();
 
     service = module.get<FileService>(FileService);
+  });
+
+  describe('download', () => {
+    it('returns StreamableFile for existing key', async () => {
+      const stream = Readable.from(['test-data']);
+      mockMinioClient.getObject.mockResolvedValue(stream);
+
+      const result = await service.download('covers/test.jpg');
+
+      expect(result).toBeInstanceOf(StreamableFile);
+      expect(mockMinioClient.getObject).toHaveBeenCalledWith(expect.any(String), 'covers/test.jpg');
+    });
+
+    it('throws NotFoundException for NoSuchKey error', async () => {
+      const err = new Error('Not found');
+      (err as any).code = 'NoSuchKey';
+      mockMinioClient.getObject.mockRejectedValue(err);
+
+      await expect(service.download('covers/missing.jpg')).rejects.toThrow(NotFoundException);
+    });
+
+    it('throws InternalServerErrorException for other Minio errors', async () => {
+      mockMinioClient.getObject.mockRejectedValue(new Error('timeout'));
+
+      await expect(service.download('covers/test.jpg')).rejects.toThrow(InternalServerErrorException);
+    });
   });
 
   describe('upload', () => {

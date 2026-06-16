@@ -1,8 +1,10 @@
-import { Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, Logger, NotFoundException, StreamableFile } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
 import { MINIO_CLIENT } from '../file.module';
 import { randomUUID } from 'node:crypto';
+import { Readable } from 'node:stream';
+import { getContentType } from './file-mime.util';
 
 const EXT_MAP: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -36,6 +38,20 @@ export class FileService {
     } catch (error) {
       this.logger.error(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       throw new InternalServerErrorException('File upload failed');
+    }
+  }
+
+  async download(key: string): Promise<StreamableFile> {
+    try {
+      const stream = await this.minioClient.getObject(this.bucket, key);
+      const contentType = getContentType(key);
+      return new StreamableFile(stream as Readable, { type: contentType });
+    } catch (error: any) {
+      if (error?.code === 'NoSuchKey' || error?.code === 'NotFound') {
+        throw new NotFoundException('File not found');
+      }
+      this.logger.error(`Download failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new InternalServerErrorException('File download failed');
     }
   }
 }
