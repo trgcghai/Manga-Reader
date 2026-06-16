@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { useMangaList } from '#/hooks/useManga'
 import type { MangaResponse } from '#/services/api/mangaApi'
@@ -136,7 +136,13 @@ function LibraryPage() {
         <>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:gap-6">
             {data!.data.map((manga: MangaResponse) => (
-              <MangaCard key={manga.id} manga={manga} />
+              <Link
+                key={manga.id}
+                to="/_app/manga/$id"
+                params={{ id: String(manga.id) }}
+              >
+                <MangaCard manga={manga} />
+              </Link>
             ))}
           </div>
 
