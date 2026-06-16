@@ -20,6 +20,7 @@ import { Route as AdminAuthorsRouteImport } from './routes/admin/authors'
 import { Route as AdminMangasIndexRouteImport } from './routes/admin/mangas/index'
 import { Route as AdminMangasNewRouteImport } from './routes/admin/mangas/new'
 import { Route as AdminMangasIdRouteImport } from './routes/admin/mangas/$id'
+import { Route as AppMangaIdRouteImport } from './routes/_app/manga/$id'
 import { Route as AdminMangasIdIndexRouteImport } from './routes/admin/mangas/$id.index'
 import { Route as AdminMangasIdEditRouteImport } from './routes/admin/mangas/$id.edit'
 
@@ -77,6 +78,11 @@ const AdminMangasIdRoute = AdminMangasIdRouteImport.update({
   path: '/mangas/$id',
   getParentRoute: () => AdminRoute,
 } as any)
+const AppMangaIdRoute = AppMangaIdRouteImport.update({
+  id: '/manga/$id',
+  path: '/manga/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 const AdminMangasIdIndexRoute = AdminMangasIdIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/translators': typeof AdminTranslatorsRoute
   '/admin/': typeof AdminIndexRoute
+  '/manga/$id': typeof AppMangaIdRoute
   '/admin/mangas/$id': typeof AdminMangasIdRouteWithChildren
   '/admin/mangas/new': typeof AdminMangasNewRoute
   '/admin/mangas/': typeof AdminMangasIndexRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/admin/translators': typeof AdminTranslatorsRoute
   '/': typeof AppIndexRoute
   '/admin': typeof AdminIndexRoute
+  '/manga/$id': typeof AppMangaIdRoute
   '/admin/mangas/new': typeof AdminMangasNewRoute
   '/admin/mangas': typeof AdminMangasIndexRoute
   '/admin/mangas/$id/edit': typeof AdminMangasIdEditRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/admin/translators': typeof AdminTranslatorsRoute
   '/_app/': typeof AppIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/_app/manga/$id': typeof AppMangaIdRoute
   '/admin/mangas/$id': typeof AdminMangasIdRouteWithChildren
   '/admin/mangas/new': typeof AdminMangasNewRoute
   '/admin/mangas/': typeof AdminMangasIndexRoute
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/admin/languages'
     | '/admin/translators'
     | '/admin/'
+    | '/manga/$id'
     | '/admin/mangas/$id'
     | '/admin/mangas/new'
     | '/admin/mangas/'
@@ -153,6 +163,7 @@ export interface FileRouteTypes {
     | '/admin/translators'
     | '/'
     | '/admin'
+    | '/manga/$id'
     | '/admin/mangas/new'
     | '/admin/mangas'
     | '/admin/mangas/$id/edit'
@@ -167,6 +178,7 @@ export interface FileRouteTypes {
     | '/admin/translators'
     | '/_app/'
     | '/admin/'
+    | '/_app/manga/$id'
     | '/admin/mangas/$id'
     | '/admin/mangas/new'
     | '/admin/mangas/'
@@ -258,6 +270,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMangasIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_app/manga/$id': {
+      id: '/_app/manga/$id'
+      path: '/manga/$id'
+      fullPath: '/manga/$id'
+      preLoaderRoute: typeof AppMangaIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/admin/mangas/$id/': {
       id: '/admin/mangas/$id/'
       path: '/'
@@ -277,10 +296,12 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
+  AppMangaIdRoute: typeof AppMangaIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
+  AppMangaIdRoute: AppMangaIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
