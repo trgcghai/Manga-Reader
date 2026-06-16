@@ -50,8 +50,10 @@ export class MangaController {
   findAll(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
+    @Query('search') search?: string,
+    @Query('status') status?: string,
   ) {
-    return this.mangaService.findAll(parseInt(page), parseInt(limit));
+    return this.mangaService.findAll(parseInt(page), parseInt(limit), search, status);
   }
 
   @Post('import')

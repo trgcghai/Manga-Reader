@@ -89,7 +89,7 @@ describe('MangaController', () => {
 
       const result = await controller.findAll();
 
-      expect(service.findAll).toHaveBeenCalledWith(1, 20);
+      expect(service.findAll).toHaveBeenCalledWith(1, 20, undefined, undefined);
       expect(result).toEqual(paginatedResult);
     });
 
@@ -105,7 +105,17 @@ describe('MangaController', () => {
 
       const result = await controller.findAll('1', '20');
 
-      expect(service.findAll).toHaveBeenCalledWith(1, 20);
+      expect(service.findAll).toHaveBeenCalledWith(1, 20, undefined, undefined);
+      expect(result).toEqual(paginatedResult);
+    });
+
+    it('should pass search and status query params to service', async () => {
+      const paginatedResult = { data: [], total: 0, page: 1, limit: 20, totalPages: 0 };
+      service.findAll.mockResolvedValue(paginatedResult);
+
+      const result = await controller.findAll('1', '20', 'naruto', 'ongoing');
+
+      expect(service.findAll).toHaveBeenCalledWith(1, 20, 'naruto', 'ongoing');
       expect(result).toEqual(paginatedResult);
     });
   });
