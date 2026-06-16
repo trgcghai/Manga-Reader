@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useMangaList } from '#/hooks/useManga'
 import type { MangaResponse } from '#/services/api/mangaApi'
 import { MangaCard } from '#/components/manga/MangaCard'
+import { LibraryFilterBar } from '#/components/library/LibraryFilterBar'
 import { Pagination } from '#/components/ui/pagination'
 import { Skeleton } from '#/components/ui/skeleton'
 import {
@@ -24,40 +25,81 @@ export const Route = createFileRoute('/_app/')({
 })
 
 function LibraryPage() {
+  const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [status, setStatus] = useState('')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
-  const { data, isLoading, isError, refetch } = useMangaList(page, pageSize)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(timer)
+  }, [search])
+
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch, status])
+
+  const { data, isLoading, isError, refetch } = useMangaList({
+    page,
+    limit: pageSize,
+    search: debouncedSearch || undefined,
+    status: status || undefined,
+  })
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:gap-6">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="rounded-lg border">
-            <Skeleton className="aspect-3/4 rounded-t-lg" />
-            <div className="space-y-2 p-3">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-3 w-2/3" />
-              <Skeleton className="h-5 w-16" />
+      <div>
+        <div className="mb-6">
+          <LibraryFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            status={status}
+            onStatusChange={setStatus}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="rounded-lg border">
+              <Skeleton className="aspect-3/4 rounded-t-lg" />
+              <div className="space-y-2 p-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-3 w-2/3" />
+                <Skeleton className="h-5 w-16" />
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     )
   }
 
   if (isError) {
     return (
-      <ErrorDisplay>
-        <ErrorTitle>Failed to Load Library</ErrorTitle>
-        <ErrorDescription>
-          Could not fetch manga list. The backend may be unavailable.
-        </ErrorDescription>
-        <Button onClick={() => refetch()}>Retry</Button>
-      </ErrorDisplay>
+      <div>
+        <div className="mb-6">
+          <LibraryFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            status={status}
+            onStatusChange={setStatus}
+          />
+        </div>
+        <ErrorDisplay>
+          <ErrorTitle>Failed to Load Library</ErrorTitle>
+          <ErrorDescription>
+            Could not fetch manga list. The backend may be unavailable.
+          </ErrorDescription>
+          <Button onClick={() => refetch()}>Retry</Button>
+        </ErrorDisplay>
+      </div>
     )
   }
 
-  if (!data || data.data.length === 0) {
+  const hasFilters = !!debouncedSearch || !!status
+  const isEmpty = !data || data.data.length === 0
+
+  if (isEmpty && !hasFilters) {
     return (
       <Empty>
         <EmptyHeader>
@@ -72,20 +114,42 @@ function LibraryPage() {
 
   return (
     <div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:gap-6">
-        {data.data.map((manga: MangaResponse) => (
-          <MangaCard key={manga.id} manga={manga} />
-        ))}
+      <div className="mb-6">
+        <LibraryFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          status={status}
+          onStatusChange={setStatus}
+        />
       </div>
 
-      <Pagination
-        page={data.page}
-        totalPages={data.totalPages}
-        totalItems={data.total}
-        pageSize={data.limit}
-        onPageChange={setPage}
-        onPageSizeChange={setPageSize}
-      />
+      {isEmpty && hasFilters ? (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <BookOpen />
+            </EmptyMedia>
+            <EmptyTitle>No mangas match your filters</EmptyTitle>
+          </EmptyHeader>
+        </Empty>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:gap-6">
+            {data!.data.map((manga: MangaResponse) => (
+              <MangaCard key={manga.id} manga={manga} />
+            ))}
+          </div>
+
+          <Pagination
+            page={data!.page}
+            totalPages={data!.totalPages}
+            totalItems={data!.total}
+            pageSize={data!.limit}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
+        </>
+      )}
     </div>
   )
 }

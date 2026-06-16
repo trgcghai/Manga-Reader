@@ -113,7 +113,7 @@ function MangaListPage() {
   const [pageSize, setPageSize] = useState(20)
   const [importOpen, setImportOpen] = useState(false)
   const navigate = useNavigate()
-  const { data, isLoading, isError } = useMangaList(page, pageSize)
+  const { data, isLoading, isError } = useMangaList({ page, limit: pageSize })
 
   const table = useReactTable({
     data: data?.data ?? [],
