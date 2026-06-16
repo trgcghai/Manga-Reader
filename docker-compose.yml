@@ -6,6 +6,7 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -23,6 +24,7 @@ services:
     volumes:
       - mongodb-data:/data/db
       - mongodb-config:/data/configdb
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
       interval: 10s
@@ -39,8 +41,27 @@ services:
       POSTGRES_DB: manga_reader
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U manga -d manga_reader"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -48,6 +69,7 @@ services:
   backend:
     build:
       context: ./backend
+      target: development
     ports:
       - "3001:3001"
     environment:
@@ -60,24 +82,40 @@ services:
       REDIS_URL: redis://redis:6379
       MONGODB_URI: mongodb://manga:manga@mongodb:27017/manga_reader?authSource=admin
       DATABASE_URL: postgresql://manga:manga@postgres:5432/manga_reader
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: manga
+      DB_PASSWORD: manga
+      DB_NAME: manga_reader
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: manga-pages
     volumes:
       - ./backend:/app
       - backend-node-modules:/app/node_modules
     depends_on:
-      - redis
-      - mongodb
-      - postgres
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      mongodb:
+        condition: service_started
     command: npm run start:dev
+    init: true
 
   frontend:
     build:
       context: ./frontend
+      target: development
     ports:
       - "3000:3000"
     environment:
       NODE_ENV: development
       CHOKIDAR_USEPOLLING: "true"
       CHOKIDAR_INTERVAL: 500
+      WATCHPACK_POLLING: "true"
+      WATCHPACK_POLLING_INTERVAL: 1000
       VITE_API_URL: http://localhost:3001
     volumes:
       - ./frontend:/app
@@ -85,11 +123,13 @@ services:
     depends_on:
       - backend
     command: npm run dev -- --host 0.0.0.0
+    init: true
 
 volumes:
   redis-data:
   mongodb-data:
   mongodb-config:
   postgres-data:
+  minio-data:
   backend-node-modules:
   frontend-node-modules:
