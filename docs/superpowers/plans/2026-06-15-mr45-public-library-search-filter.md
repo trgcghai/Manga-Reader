@@ -12,6 +12,8 @@
 
 ### Task 1: Backend — add search + status to manga repository
 
+**Related Skills:** `nestjs-best-practices`, `nestjs-testing`, `verification-before-completion`
+
 **Files:**
 - Modify: `backend/src/modules/manga/repositories/manga.repository.ts`
 - Test: `backend/src/modules/manga/repositories/manga.repository.spec.ts`
@@ -179,6 +181,8 @@ git commit -m "feat: add search and status filtering to manga repository"
 
 ### Task 2: Backend — update service to pass through filter params
 
+**Related Skills:** `nestjs-best-practices`, `nestjs-testing`, `verification-before-completion`
+
 **Files:**
 - Modify: `backend/src/modules/manga/services/manga.service.ts`
 - Test: `backend/src/modules/manga/services/manga.service.spec.ts`
@@ -239,6 +243,8 @@ git commit -m "feat: forward search and status params in manga service"
 
 ### Task 3: Backend — add search + status query params to controller
 
+**Related Skills:** `nestjs-best-practices`, `nestjs-testing`, `verification-before-completion`
+
 **Files:**
 - Modify: `backend/src/modules/manga/manga.controller.ts`
 - Test: `backend/src/modules/manga/manga.controller.spec.ts`
@@ -293,6 +299,8 @@ git commit -m "feat: add search and status query params to GET /mangas"
 
 ### Task 4: Frontend — update getAllMangas to use object param
 
+**Related Skills:** `verification-before-completion`
+
 **Files:**
 - Modify: `frontend/src/services/api/mangaApi.ts`
 
@@ -332,6 +340,8 @@ git commit -m "feat: getAllMangas accepts object params with search and status"
 ---
 
 ### Task 5: Frontend — update useMangaList hook
+
+**Related Skills:** `tanstack-query-best-practices`, `verification-before-completion`
 
 **Files:**
 - Modify: `frontend/src/hooks/useManga.ts`
@@ -373,6 +383,8 @@ git commit -m "feat: useMangaList accepts object param with search and status"
 ---
 
 ### Task 6: Frontend — create LibraryFilterBar component
+
+**Related Skills:** `frontend-design`, `verification-before-completion`
 
 **Files:**
 - Create: `frontend/src/components/library/LibraryFilterBar.tsx`
@@ -468,6 +480,8 @@ git commit -m "feat: add LibraryFilterBar component with search and status filte
 ---
 
 ### Task 7: Frontend — wire filters into library page
+
+**Related Skills:** `tanstack-query-best-practices`, `verification-before-completion`
 
 **Files:**
 - Modify: `frontend/src/routes/_app/index.tsx`
