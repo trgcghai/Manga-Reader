@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { Loader2, Plus, X } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
@@ -230,9 +231,7 @@ export function MangaForm({
                     <Button
                       type="button"
                       variant="secondary"
-                      onClick={() =>
-                        addTag(field, authorInput, setAuthorInput)
-                      }
+                      onClick={() => addTag(field, authorInput, setAuthorInput)}
                     >
                       <Plus className="size-3" />
                       Add

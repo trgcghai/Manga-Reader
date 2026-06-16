@@ -17,6 +17,7 @@ import {
 } from '#/components/ui/empty'
 import { Button } from '#/components/ui/button'
 import { ArrowLeft, BookOpen } from 'lucide-react'
+import { Separator } from '#/components/ui/separator'
 
 export const Route = createFileRoute('/_app/manga/$id')({
   component: MangaDetailPage,
@@ -35,7 +36,7 @@ function MangaDetailPage() {
       <div className="space-y-8">
         <Skeleton className="h-5 w-32" />
         <div className="flex flex-col gap-6 md:flex-row">
-          <Skeleton className="aspect-[3/4] w-full rounded-xl md:w-72" />
+          <Skeleton className="aspect-3/4 w-full rounded-xl md:w-72" />
           <div className="flex-1 space-y-4">
             <Skeleton className="h-9 w-3/4" />
             <Skeleton className="h-5 w-1/2" />
@@ -76,13 +77,12 @@ function MangaDetailPage() {
   if (!manga) {
     return (
       <div>
-        <Link
-          to="/"
-          className="mb-6 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" />
-          Back to Library
-        </Link>
+        <Button variant="link" className="px-0">
+          <Link to="/">
+            <ArrowLeft className="size-4" />
+            Back to Library
+          </Link>
+        </Button>
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
@@ -106,6 +106,7 @@ function MangaDetailPage() {
       </Link>
 
       <MangaDetailHeader manga={manga} />
+      <Separator className="mt-4 mb-8" />
       <ChapterList chapters={manga.chapters} />
     </div>
   )

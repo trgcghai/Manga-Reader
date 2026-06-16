@@ -138,7 +138,7 @@ function LibraryPage() {
             {data!.data.map((manga: MangaResponse) => (
               <Link
                 key={manga.id}
-                to="/_app/manga/$id"
+                to="/manga/$id"
                 params={{ id: String(manga.id) }}
               >
                 <MangaCard manga={manga} />
