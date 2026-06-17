@@ -2,12 +2,14 @@ import { Global, Module, OnModuleInit, Inject, Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
 import { FileService } from './file.service';
+import { FileController } from './file.controller';
 
 export const MINIO_CLIENT = 'MINIO_CLIENT';
 
 @Global()
 @Module({
   imports: [ConfigModule],
+  controllers: [FileController],
   providers: [
     {
       provide: MINIO_CLIENT,
