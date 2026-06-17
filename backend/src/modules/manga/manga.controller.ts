@@ -53,7 +53,12 @@ export class MangaController {
     @Query('search') search?: string,
     @Query('status') status?: string,
   ) {
-    return this.mangaService.findAll(parseInt(page), parseInt(limit), search, status);
+    return this.mangaService.findAll(
+      parseInt(page),
+      parseInt(limit),
+      search,
+      status,
+    );
   }
 
   @Post('import')
@@ -128,7 +133,12 @@ export class MangaController {
     @Param('translationId', ParseIntPipe) translationId: number,
     @Body() dto: UpdateTranslationDto,
   ) {
-    return this.translationService.update(mangaId, chapterId, translationId, dto)
+    return this.translationService.update(
+      mangaId,
+      chapterId,
+      translationId,
+      dto,
+    );
   }
 
   @Delete(':mangaId/chapter/:chapterId/translations/:translationId')
@@ -138,6 +148,6 @@ export class MangaController {
     @Param('chapterId', ParseIntPipe) chapterId: number,
     @Param('translationId', ParseIntPipe) translationId: number,
   ) {
-    return this.translationService.delete(mangaId, chapterId, translationId)
+    return this.translationService.delete(mangaId, chapterId, translationId);
   }
 }

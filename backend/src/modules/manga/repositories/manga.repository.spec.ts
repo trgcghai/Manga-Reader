@@ -253,7 +253,7 @@ describe('MangaRepository', () => {
 
   describe('findAll with filters', () => {
     it('should filter by search term across title, description, authors, and genres', async () => {
-      const mockData = [{ id: 1, title: 'Naruto' }] as Manga[]
+      const mockData = [{ id: 1, title: 'Naruto' }] as Manga[];
       const mockQueryBuilder = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
@@ -261,37 +261,41 @@ describe('MangaRepository', () => {
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
         getManyAndCount: jest.fn().mockResolvedValue([mockData, 1]),
-      }
+      };
       const repoWithQB = {
         createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
         findOne: jest.fn(),
         save: jest.fn(),
         preload: jest.fn(),
         delete: jest.fn(),
-      }
-      const repo = new MangaRepository(repoWithQB as unknown as Repository<Manga>)
+      };
+      const repo = new MangaRepository(
+        repoWithQB as unknown as Repository<Manga>,
+      );
 
-      const result = await repo.findAll(1, 20, 'naruto')
+      const result = await repo.findAll(1, 20, 'naruto');
 
-      expect(repoWithQB.createQueryBuilder).toHaveBeenCalledWith('manga')
-      expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledTimes(2)
+      expect(repoWithQB.createQueryBuilder).toHaveBeenCalledWith('manga');
+      expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledTimes(2);
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         expect.stringContaining('LOWER(manga.title) LIKE LOWER(:search)'),
         { search: '%naruto%' },
-      )
-      const whereSql = mockQueryBuilder.andWhere.mock.calls[0][0]
-      expect(whereSql).toContain('LOWER(manga.title)')
-      expect(whereSql).toContain('LOWER(manga.description)')
-      expect(whereSql).toContain('ARRAY_TO_STRING(manga.alternativeTitles')
-      expect(whereSql).toContain('LOWER(author.name)')
-      expect(whereSql).toContain('LOWER(genre.name)')
-      expect(mockQueryBuilder.getManyAndCount).toHaveBeenCalled()
-      expect(result.data).toEqual(mockData)
-      expect(result.total).toBe(1)
-    })
+      );
+      const whereSql = mockQueryBuilder.andWhere.mock.calls[0][0];
+      expect(whereSql).toContain('LOWER(manga.title)');
+      expect(whereSql).toContain('LOWER(manga.description)');
+      expect(whereSql).toContain('ARRAY_TO_STRING(manga.alternativeTitles');
+      expect(whereSql).toContain('LOWER(author.name)');
+      expect(whereSql).toContain('LOWER(genre.name)');
+      expect(mockQueryBuilder.getManyAndCount).toHaveBeenCalled();
+      expect(result.data).toEqual(mockData);
+      expect(result.total).toBe(1);
+    });
 
     it('should filter by status', async () => {
-      const mockData = [{ id: 2, title: 'One Piece', status: 'ongoing' }] as Manga[]
+      const mockData = [
+        { id: 2, title: 'One Piece', status: 'ongoing' },
+      ] as Manga[];
       const mockQueryBuilder = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
@@ -299,24 +303,26 @@ describe('MangaRepository', () => {
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
         getManyAndCount: jest.fn().mockResolvedValue([mockData, 1]),
-      }
+      };
       const repoWithQB = {
         createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
         findOne: jest.fn(),
         save: jest.fn(),
         preload: jest.fn(),
         delete: jest.fn(),
-      }
-      const repo = new MangaRepository(repoWithQB as unknown as Repository<Manga>)
+      };
+      const repo = new MangaRepository(
+        repoWithQB as unknown as Repository<Manga>,
+      );
 
-      const result = await repo.findAll(1, 20, undefined, 'ongoing')
+      const result = await repo.findAll(1, 20, undefined, 'ongoing');
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'manga.status = :status',
         { status: 'ongoing' },
-      )
-      expect(result.data).toEqual(mockData)
-    })
+      );
+      expect(result.data).toEqual(mockData);
+    });
 
     it('should combine search and status filters', async () => {
       const mockQueryBuilder = {
@@ -326,19 +332,21 @@ describe('MangaRepository', () => {
         skip: jest.fn().mockReturnThis(),
         take: jest.fn().mockReturnThis(),
         getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
-      }
+      };
       const repoWithQB = {
         createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
         findOne: jest.fn(),
         save: jest.fn(),
         preload: jest.fn(),
         delete: jest.fn(),
-      }
-      const repo = new MangaRepository(repoWithQB as unknown as Repository<Manga>)
+      };
+      const repo = new MangaRepository(
+        repoWithQB as unknown as Repository<Manga>,
+      );
 
-      await repo.findAll(1, 20, 'naruto', 'completed')
+      await repo.findAll(1, 20, 'naruto', 'completed');
 
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledTimes(2)
-    })
-  })
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledTimes(2);
+    });
+  });
 });

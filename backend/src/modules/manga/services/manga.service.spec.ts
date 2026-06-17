@@ -69,7 +69,12 @@ describe('MangaService', () => {
       const result = await service.findAll(1, 20);
 
       expect(result).toEqual(paginatedResult);
-      expect(mockMangaRepository.findAll).toHaveBeenCalledWith(1, 20, undefined, undefined);
+      expect(mockMangaRepository.findAll).toHaveBeenCalledWith(
+        1,
+        20,
+        undefined,
+        undefined,
+      );
     });
 
     it('should forward search and status to repository', async () => {
@@ -85,7 +90,12 @@ describe('MangaService', () => {
       const result = await service.findAll(1, 20, 'naruto', 'ongoing');
 
       expect(result).toEqual(paginatedResult);
-      expect(mockMangaRepository.findAll).toHaveBeenCalledWith(1, 20, 'naruto', 'ongoing');
+      expect(mockMangaRepository.findAll).toHaveBeenCalledWith(
+        1,
+        20,
+        'naruto',
+        'ongoing',
+      );
     });
   });
 
