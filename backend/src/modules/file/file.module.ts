@@ -3,8 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
 import { FileService } from './file.service';
 import { FileController } from './file.controller';
-
-export const MINIO_CLIENT = 'MINIO_CLIENT';
+import { MINIO_CLIENT } from './file.constants';
 
 @Global()
 @Module({
@@ -60,5 +59,19 @@ export class FileModule implements OnModuleInit {
       await this.minioClient.makeBucket(bucket, 'us-east-1');
       this.logger.log(`Minio bucket "${bucket}" created`);
     }
+
+    const policy = {
+      Version: '2012-10-17',
+      Statement: [
+        {
+          Effect: 'Allow',
+          Principal: { AWS: ['*'] },
+          Action: ['s3:GetObject'],
+          Resource: [`arn:aws:s3:::${bucket}/*`],
+        },
+      ],
+    };
+    await this.minioClient.setBucketPolicy(bucket, JSON.stringify(policy));
+    this.logger.log(`Public read policy applied to bucket "${bucket}"`);
   }
 }
