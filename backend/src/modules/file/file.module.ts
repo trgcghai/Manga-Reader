@@ -1,6 +1,7 @@
 import { Global, Module, OnModuleInit, Inject, Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
+import { FileService } from './file.service';
 
 export const MINIO_CLIENT = 'MINIO_CLIENT';
 
@@ -23,6 +24,7 @@ export const MINIO_CLIENT = 'MINIO_CLIENT';
       },
       inject: [ConfigService],
     },
+    FileService,
   ],
   exports: [],
 })

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { FileModule, MINIO_CLIENT } from './file.module';
+import { FileService } from './file.service';
 import * as Minio from 'minio';
 
 describe('FileModule', () => {
@@ -8,6 +9,7 @@ describe('FileModule', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({
+          isGlobal: true,
           ignoreEnvFile: true,
           ignoreEnvVars: true,
           load: [() => ({
@@ -19,7 +21,15 @@ describe('FileModule', () => {
         }),
         FileModule,
       ],
-    }).compile();
+    })
+      .overrideProvider(FileService)
+      .useValue({
+        upload: jest.fn(),
+        download: jest.fn(),
+        delete: jest.fn(),
+        list: jest.fn(),
+      })
+      .compile();
 
     const minioClient = module.get<Minio.Client>(MINIO_CLIENT);
     expect(minioClient).toBeDefined();
