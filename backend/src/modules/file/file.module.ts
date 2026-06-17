@@ -36,12 +36,16 @@ export class FileModule implements OnModuleInit {
 
   async onModuleInit() {
     const bucket = this.configService.get<string>('MINIO_BUCKET')!;
-    const exists = await this.minioClient.bucketExists(bucket);
-    if (exists) {
-      this.logger.log(`Minio bucket "${bucket}" found`);
-    } else {
-      await this.minioClient.makeBucket(bucket, 'us-east-1');
-      this.logger.log(`Minio bucket "${bucket}" created`);
+    try {
+      const exists = await this.minioClient.bucketExists(bucket);
+      if (exists) {
+        this.logger.log(`Minio bucket "${bucket}" found`);
+      } else {
+        await this.minioClient.makeBucket(bucket, 'us-east-1');
+        this.logger.log(`Minio bucket "${bucket}" created`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to verify Minio bucket "${bucket}": ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 }
