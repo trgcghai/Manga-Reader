@@ -141,7 +141,7 @@ function LibraryPage() {
                 to="/manga/$id"
                 params={{ id: String(manga.id) }}
               >
-                <MangaCard manga={manga} />
+                <MangaCard manga={manga} key={manga.id} />
               </Link>
             ))}
           </div>
