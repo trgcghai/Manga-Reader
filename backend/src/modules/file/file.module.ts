@@ -18,9 +18,12 @@ export const MINIO_CLIENT = 'MINIO_CLIENT';
         const accessKey = configService.get<string>('MINIO_ACCESS_KEY');
         const secretKey = configService.get<string>('MINIO_SECRET_KEY');
 
-        if (!endpoint) throw new Error('MINIO_ENDPOINT environment variable is required');
-        if (!accessKey) throw new Error('MINIO_ACCESS_KEY environment variable is required');
-        if (!secretKey) throw new Error('MINIO_SECRET_KEY environment variable is required');
+        if (!endpoint)
+          throw new Error('MINIO_ENDPOINT environment variable is required');
+        if (!accessKey)
+          throw new Error('MINIO_ACCESS_KEY environment variable is required');
+        if (!secretKey)
+          throw new Error('MINIO_SECRET_KEY environment variable is required');
 
         const url = new URL(endpoint);
         return new Minio.Client({
