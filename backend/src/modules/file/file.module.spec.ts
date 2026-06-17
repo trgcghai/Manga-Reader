@@ -12,12 +12,14 @@ describe('FileModule', () => {
           isGlobal: true,
           ignoreEnvFile: true,
           ignoreEnvVars: true,
-          load: [() => ({
-            MINIO_ENDPOINT: 'http://localhost:9000',
-            MINIO_ACCESS_KEY: 'test',
-            MINIO_SECRET_KEY: 'test',
-            MINIO_BUCKET: 'test-bucket',
-          })],
+          load: [
+            () => ({
+              MINIO_ENDPOINT: 'http://localhost:9000',
+              MINIO_ACCESS_KEY: 'test',
+              MINIO_SECRET_KEY: 'test',
+              MINIO_BUCKET: 'test-bucket',
+            }),
+          ],
         }),
         FileModule,
       ],

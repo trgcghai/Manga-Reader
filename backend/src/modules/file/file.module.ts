@@ -26,7 +26,7 @@ export const MINIO_CLIENT = 'MINIO_CLIENT';
     },
     FileService,
   ],
-  exports: [],
+  exports: [FileService],
 })
 export class FileModule implements OnModuleInit {
   private readonly logger = new Logger(FileModule.name);
@@ -47,7 +47,9 @@ export class FileModule implements OnModuleInit {
         this.logger.log(`Minio bucket "${bucket}" created`);
       }
     } catch (error) {
-      this.logger.error(`Failed to verify Minio bucket "${bucket}": ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Failed to verify Minio bucket "${bucket}": ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 }

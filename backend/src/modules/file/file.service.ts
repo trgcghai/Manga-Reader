@@ -1,9 +1,15 @@
-import { Inject, Injectable, InternalServerErrorException, Logger, NotFoundException, StreamableFile } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+  StreamableFile,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
 import { MINIO_CLIENT } from './file.module';
 import { randomUUID } from 'node:crypto';
-import { Readable } from 'node:stream';
 import { getContentType } from 'src/common/utils/file-mime.util';
 
 const EXT_MAP: Record<string, string> = {
@@ -24,20 +30,34 @@ export class FileService {
     configService: ConfigService,
   ) {
     this.bucket = configService.get<string>('MINIO_BUCKET')!;
-    this.endpoint = configService.get<string>('MINIO_ENDPOINT', '').replace(/\/+$/, '');
+    this.endpoint = configService
+      .get<string>('MINIO_ENDPOINT', '')
+      .replace(/\/+$/, '');
   }
 
-  async upload(prefix: string, buffer: Buffer, mimetype: string): Promise<{ key: string; url: string }> {
+  async upload(
+    prefix: string,
+    buffer: Buffer,
+    mimetype: string,
+  ): Promise<{ key: string; url: string }> {
     const ext = EXT_MAP[mimetype] || 'bin';
     const key = `${prefix}/${randomUUID()}.${ext}`;
 
     try {
-      await this.minioClient.putObject(this.bucket, key, buffer, {
-        'Content-Type': mimetype,
-      });
+      await this.minioClient.putObject(
+        this.bucket,
+        key,
+        buffer,
+        buffer.length,
+        {
+          'Content-Type': mimetype,
+        },
+      );
       return { key, url: `${this.endpoint}/${this.bucket}/${key}` };
     } catch (error) {
-      this.logger.error(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       throw new InternalServerErrorException('File upload failed');
     }
   }
@@ -46,12 +66,15 @@ export class FileService {
     try {
       const stream = await this.minioClient.getObject(this.bucket, key);
       const contentType = getContentType(key);
-      return new StreamableFile(stream as Readable, { type: contentType });
-    } catch (error: any) {
-      if (error?.code === 'NoSuchKey' || error?.code === 'NotFound') {
+      return new StreamableFile(stream, { type: contentType });
+    } catch (error: unknown) {
+      const minioError = error as { code?: string };
+      if (minioError.code === 'NoSuchKey' || minioError.code === 'NotFound') {
         throw new NotFoundException('File not found');
       }
-      this.logger.error(`Download failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Download failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       throw new InternalServerErrorException('File download failed');
     }
   }
@@ -60,21 +83,29 @@ export class FileService {
     try {
       await this.minioClient.removeObject(this.bucket, key);
     } catch (error) {
-      this.logger.error(`Delete failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Delete failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       throw new InternalServerErrorException('File delete failed');
     }
   }
 
   async list(prefix?: string): Promise<string[]> {
     try {
-      const stream = this.minioClient.listObjects(this.bucket, prefix || '', true);
+      const stream = this.minioClient.listObjects(
+        this.bucket,
+        prefix || '',
+        true,
+      );
       const keys: string[] = [];
       for await (const obj of stream) {
         keys.push(obj.name);
       }
       return keys;
     } catch (error) {
-      this.logger.error(`List failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `List failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       throw new InternalServerErrorException('File list failed');
     }
   }
