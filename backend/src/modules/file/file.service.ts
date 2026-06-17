@@ -99,7 +99,10 @@ export class FileService {
       );
       const keys: string[] = [];
       for await (const obj of stream) {
-        keys.push((obj as Minio.BucketItem).name);
+        const item = obj as Minio.BucketItem;
+        if (item.name) {
+          keys.push(item.name);
+        }
       }
       return keys;
     } catch (error: unknown) {
