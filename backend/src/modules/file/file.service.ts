@@ -54,7 +54,7 @@ export class FileService {
         },
       );
       return { key, url: `${this.endpoint}/${this.bucket}/${key}` };
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error(
         `Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
@@ -82,7 +82,7 @@ export class FileService {
   async delete(key: string): Promise<void> {
     try {
       await this.minioClient.removeObject(this.bucket, key);
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error(
         `Delete failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
@@ -99,10 +99,10 @@ export class FileService {
       );
       const keys: string[] = [];
       for await (const obj of stream) {
-        keys.push(obj.name);
+        keys.push((obj as Minio.BucketItem).name);
       }
       return keys;
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error(
         `List failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );

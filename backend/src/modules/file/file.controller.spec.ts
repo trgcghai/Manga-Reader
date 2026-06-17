@@ -4,23 +4,21 @@ import { FileService } from './file.service';
 
 describe('FileController', () => {
   let controller: FileController;
-  let fileService: jest.Mocked<FileService>;
 
   const mockFileService = {
     upload: jest.fn(),
     delete: jest.fn(),
-  } as any;
+    download: jest.fn(),
+    list: jest.fn(),
+  } as jest.Mocked<Pick<FileService, 'upload' | 'delete'>>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [FileController],
-      providers: [
-        { provide: FileService, useValue: mockFileService },
-      ],
+      providers: [{ provide: FileService, useValue: mockFileService }],
     }).compile();
 
     controller = module.get<FileController>(FileController);
-    fileService = module.get(FileService);
   });
 
   afterEach(() => {
@@ -33,7 +31,10 @@ describe('FileController', () => {
 
   describe('POST /files/upload', () => {
     it('should upload file and return key and url', async () => {
-      const mockResult = { key: 'uploads/uuid.jpg', url: 'http://localhost:9000/manga-pages/uploads/uuid.jpg' };
+      const mockResult = {
+        key: 'uploads/uuid.jpg',
+        url: 'http://localhost:9000/manga-pages/uploads/uuid.jpg',
+      };
       mockFileService.upload.mockResolvedValue(mockResult);
 
       const file = {
@@ -44,7 +45,11 @@ describe('FileController', () => {
 
       const result = await controller.upload(file);
       expect(result).toEqual(mockResult);
-      expect(mockFileService.upload).toHaveBeenCalledWith('uploads', file.buffer, file.mimetype);
+      expect(mockFileService.upload).toHaveBeenCalledWith(
+        'uploads',
+        file.buffer,
+        file.mimetype,
+      );
     });
   });
 

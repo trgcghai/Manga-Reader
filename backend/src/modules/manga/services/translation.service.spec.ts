@@ -102,7 +102,7 @@ describe('TranslationService', () => {
       mockLanguageService.findOne.mockResolvedValue(language);
       mockTranslatorService.findOne.mockResolvedValue(translator);
       mockTranslationRepo.findByChapterAndLanguageAndTranslator.mockResolvedValue(
-        { id: 2 } as Translation,
+        { id: 2 },
       );
       await expect(service.update(10, 5, 1, dto)).rejects.toThrow(
         ConflictException,
@@ -135,7 +135,7 @@ describe('TranslationService', () => {
         ...translation,
         folderPath: '/new/path',
         language: newLang,
-      } as Translation;
+      };
       mockTranslationRepo.findById.mockResolvedValue(translation);
       mockLanguageService.findOne.mockResolvedValue(newLang);
       mockTranslationRepo.findByChapterAndLanguageAndTranslator.mockResolvedValue(

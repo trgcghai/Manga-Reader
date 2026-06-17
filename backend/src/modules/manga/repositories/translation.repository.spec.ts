@@ -86,7 +86,7 @@ describe('TranslationRepository', () => {
         folderPath: '/new/path',
         chapter: { id: 1 },
       } as Translation;
-      (mockRepo.update as jest.Mock).mockResolvedValue({ affected: 1 });
+      mockRepo.update.mockResolvedValue({ affected: 1 });
       mockRepo.findOne.mockResolvedValue(updated);
       const result = await repo.update(id, data);
       expect(mockRepo.update).toHaveBeenCalledWith(id, data);
@@ -96,7 +96,7 @@ describe('TranslationRepository', () => {
 
   describe('delete', () => {
     it('should delete translation by id', async () => {
-      (mockRepo.delete as jest.Mock).mockResolvedValue({ affected: 1 });
+      mockRepo.delete.mockResolvedValue({ affected: 1 });
       await repo.delete(1);
       expect(mockRepo.delete).toHaveBeenCalledWith(1);
     });

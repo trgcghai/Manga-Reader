@@ -65,6 +65,7 @@ describe('FileService', () => {
       expect(result.url).toMatch(
         /^http:\/\/localhost:9000\/test-bucket\/covers\/.+\.jpg$/,
       );
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockMinioClient.putObject).toHaveBeenCalledTimes(1);
     });
 
@@ -84,6 +85,7 @@ describe('FileService', () => {
       mockMinioClient.getObject.mockResolvedValue(mockStream);
       const result = await service.download('covers/test.jpg');
       expect(result).toBeDefined();
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockMinioClient.getObject).toHaveBeenCalledWith(
         'test-bucket',
         'covers/test.jpg',
@@ -91,8 +93,8 @@ describe('FileService', () => {
     });
 
     it('should throw NotFoundException when file does not exist', async () => {
-      const error = new Error('Not found');
-      (error as any).code = 'NoSuchKey';
+      const error = new Error('Not found') as Error & { code: string };
+      error.code = 'NoSuchKey';
       mockMinioClient.getObject.mockRejectedValue(error);
       await expect(service.download('covers/missing.jpg')).rejects.toThrow(
         NotFoundException,
@@ -104,6 +106,7 @@ describe('FileService', () => {
     it('should call removeObject with correct key', async () => {
       mockMinioClient.removeObject.mockResolvedValue(undefined);
       await service.delete('covers/test.jpg');
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockMinioClient.removeObject).toHaveBeenCalledWith(
         'test-bucket',
         'covers/test.jpg',
@@ -122,19 +125,27 @@ describe('FileService', () => {
 
   describe('list', () => {
     it('should return list of file keys', async () => {
-      const gen = (async function* () {
+      const gen = (function* () {
         yield { name: 'covers/a.jpg' };
         yield { name: 'covers/b.jpg' };
       })();
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockMinioClient.listObjects.mockReturnValue(gen as any);
       const result = await service.list('covers');
       expect(result).toEqual(['covers/a.jpg', 'covers/b.jpg']);
     });
 
     it('should throw InternalServerErrorException on list failure', async () => {
-      const errorStream = (async function* () {
-        throw new Error('Connection lost');
-      })();
+      const errorStream = {
+        [Symbol.asyncIterator]() {
+          return {
+            next() {
+              return Promise.reject(new Error('Connection lost'));
+            },
+          };
+        },
+      };
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       mockMinioClient.listObjects.mockReturnValue(errorStream as any);
       await expect(service.list('covers')).rejects.toThrow(
         InternalServerErrorException,
