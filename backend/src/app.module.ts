@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CacheModule } from '@nestjs/cache-manager';
 import KeyvRedis from '@keyv/redis';
+import { FileModule } from 'src/modules/file/file.module';
 import { MangaModule } from 'src/modules/manga/manga.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
@@ -54,6 +55,7 @@ import { LanguageModule } from './modules/language/language.module';
       },
       inject: [ConfigService],
     }),
+    FileModule,
     MangaModule,
     TranslatorModule,
     LanguageModule,
