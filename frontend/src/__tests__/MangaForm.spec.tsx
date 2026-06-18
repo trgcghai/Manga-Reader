@@ -15,7 +15,7 @@ const defaultValues = {
 }
 
 describe('MangaForm cover field', () => {
-  it('renders file input instead of text input', () => {
+  it('renders drag-and-drop zone instead of text input', () => {
     render(
       <MangaForm
         defaultValues={defaultValues}
@@ -27,12 +27,11 @@ describe('MangaForm cover field', () => {
         heading="Test"
       />,
     )
-    const fileInput = screen.getByLabelText('Cover Image')
-    expect(fileInput).toBeInTheDocument()
-    expect(fileInput).toHaveAttribute('type', 'file')
+    expect(screen.getByText('Drag & drop or click to upload')).toBeInTheDocument()
+    expect(screen.getByText('Browse')).toBeInTheDocument()
   })
 
-  it('accepts image file types', () => {
+  it('renders hidden file input with image accept types', () => {
     render(
       <MangaForm
         defaultValues={defaultValues}
@@ -44,8 +43,9 @@ describe('MangaForm cover field', () => {
         heading="Test"
       />,
     )
-    const fileInput = screen.getByLabelText('Cover Image') as HTMLInputElement
-    expect(fileInput.accept).toBe('image/jpeg,image/png,image/webp,image/gif')
+    const hiddenInput = document.querySelector<HTMLInputElement>('input[type="file"]')
+    expect(hiddenInput).toBeInTheDocument()
+    expect(hiddenInput!.accept).toBe('image/jpeg,image/png,image/webp,image/gif')
   })
 
   it('shows preview when coverPath exists (edit mode)', () => {
@@ -64,14 +64,13 @@ describe('MangaForm cover field', () => {
     expect(img).toHaveAttribute('src', 'http://example.com/cover.jpg')
   })
 
-  it('calls onSubmit with coverRemoved=true when Remove is clicked', async () => {
-    const onSubmit = vi.fn()
+  it('removes cover preview when Remove is clicked', async () => {
     const user = userEvent.setup()
 
     render(
       <MangaForm
-        defaultValues={{ ...defaultValues, title: 'Test Manga', coverPath: 'http://example.com/cover.jpg', authors: ['Author'], genres: ['Genre'] }}
-        onSubmit={onSubmit}
+        defaultValues={{ ...defaultValues, coverPath: 'http://example.com/cover.jpg' }}
+        onSubmit={vi.fn()}
         isPending={false}
         submitLabel="Save"
         submitIcon={<span>✓</span>}
@@ -80,9 +79,11 @@ describe('MangaForm cover field', () => {
       />,
     )
 
-    await user.click(screen.getByText('Remove Cover'))
-    await user.click(screen.getByText('Save'))
+    expect(screen.getByAltText('Cover preview')).toBeInTheDocument()
 
-    expect(onSubmit).toHaveBeenCalledWith(expect.any(Object), true)
+    await user.click(screen.getByRole('button', { name: /remove/i }))
+
+    expect(screen.queryByAltText('Cover preview')).not.toBeInTheDocument()
+    expect(screen.getByText('Drag & drop or click to upload')).toBeInTheDocument()
   })
 })

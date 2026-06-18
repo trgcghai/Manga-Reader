@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
-import type { ReactNode } from 'react'
-import { Loader2, Plus, X } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import type { ReactNode, ChangeEvent, DragEvent } from 'react'
+import { Loader2, Plus, X, Upload, ImageIcon } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Textarea } from '#/components/ui/textarea'
@@ -45,9 +45,7 @@ interface MangaFormProps {
   submitLabel: string
   submitIcon: ReactNode
   cancelLabel: string
-  /** Callback when cancel is clicked. If `resetOnCancel` is true, the form resets instead. */
   cancelAction?: () => void
-  /** When true, cancel button resets the form internally */
   resetOnCancel?: boolean
   heading: string
 }
@@ -69,6 +67,8 @@ export function MangaForm({
   const [genreInput, setGenreInput] = useState('')
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
   const [coverRemoved, setCoverRemoved] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const form = useForm({
     validators: { onSubmit: mangaSchema },
@@ -82,9 +82,46 @@ export function MangaForm({
     }
   }, [coverPreview])
 
+  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null
+    if (!file) return
+    form.setFieldValue('coverFile', file)
+    setCoverPreview(URL.createObjectURL(file))
+    setCoverRemoved(false)
+    e.target.value = ''
+  }
+
+  const handleDragOver = (e: DragEvent) => {
+    e.preventDefault()
+    setDragOver(true)
+  }
+
+  const handleDragLeave = () => setDragOver(false)
+
+  const handleDrop = (e: DragEvent) => {
+    e.preventDefault()
+    setDragOver(false)
+    const file = e.dataTransfer.files.item(0)
+    if (!file) return
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    if (!validTypes.includes(file.type)) return
+    form.setFieldValue('coverFile', file)
+    setCoverPreview(URL.createObjectURL(file))
+    setCoverRemoved(false)
+  }
+
+  const handleRemoveCover = () => {
+    form.setFieldValue('coverFile', null)
+    setCoverPreview(null)
+    setCoverRemoved(true)
+  }
+
+  const hasExistingCover = !!form.getFieldValue('coverPath')
+  const showCoverPreview = !coverRemoved && (!!coverPreview || hasExistingCover)
+
   return (
-    <div className="max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold">{heading}</h1>
+    <div className="mx-auto max-w-4xl">
+      <h1 className="text-2xl font-bold tracking-tight">{heading}</h1>
 
       <form
         onSubmit={(e) => {
@@ -92,288 +129,351 @@ export function MangaForm({
           e.stopPropagation()
           form.handleSubmit()
         }}
-        className="mt-6"
+        className="mt-8"
       >
         <FieldGroup>
-          <form.Field name="title">
-            {(field) => (
-              <UiField data-invalid={field.state.meta.errors.length > 0}>
-                <FieldLabel htmlFor="title" required>
-                  Title
-                </FieldLabel>
-                <Input
-                  id="title"
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="One Piece"
-                  aria-invalid={field.state.meta.errors.length > 0 || undefined}
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <UiFieldError errors={field.state.meta.errors} />
-                )}
-              </UiField>
-            )}
-          </form.Field>
-
-          <form.Field name="status">
-            {(field) => (
-              <UiField>
-                <FieldLabel htmlFor="status">Status</FieldLabel>
-                <Select
-                  value={field.state.value}
-                  onValueChange={(v) => field.handleChange(v)}
-                >
-                  <SelectTrigger id="status">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="ongoing">Ongoing</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="paused">Paused</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </UiField>
-            )}
-          </form.Field>
-
-          <form.Field name="description">
-            {(field) => (
-              <UiField>
-                <FieldLabel htmlFor="description">Description</FieldLabel>
-                <Textarea
-                  id="description"
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="A story about..."
-                  rows={3}
-                />
-              </UiField>
-            )}
-          </form.Field>
-
-          <form.Field name="alternativeTitles">
-            {(field) => {
-              const titles = field.state.value
-              return (
-                <UiField>
-                  <FieldLabel>Alternative Titles</FieldLabel>
-                  <div className="flex gap-2">
-                    <Input
-                      value={altInput}
-                      onChange={(e) => setAltInput(e.target.value)}
-                      onKeyDown={(e) =>
-                        e.key === 'Enter' &&
-                        (e.preventDefault(),
-                        addTag(field, altInput, setAltInput))
-                      }
-                      placeholder="Type and press Enter"
-                    />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => addTag(field, altInput, setAltInput)}
-                    >
-                      <Plus className="size-3" />
-                      Add
-                    </Button>
-                  </div>
-                  {titles.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {titles.map((t, i) => (
-                        <Badge key={i} variant="secondary" className="gap-1">
-                          {t}
-                          <button
-                            type="button"
-                            onClick={() =>
-                              field.handleChange(
-                                titles.filter((_, j) => j !== i),
-                              )
+          <div className="grid gap-8 md:grid-cols-[280px_1fr]">
+            <div className="space-y-3">
+              <form.Field name="coverFile">
+                {(_) => (
+                  <UiField>
+                    <FieldLabel>Cover Image</FieldLabel>
+                    <div className="space-y-3">
+                      {showCoverPreview ? (
+                        <div className="relative aspect-3/4 overflow-hidden rounded-lg border bg-muted">
+                          <img
+                            src={
+                              coverPreview || form.getFieldValue('coverPath')
                             }
+                            alt="Cover preview"
+                            className="size-full object-cover"
+                          />
+                          <div className="absolute inset-x-0 bottom-0 flex gap-1 p-2">
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="w-full text-xs"
+                              onClick={handleRemoveCover}
+                            >
+                              <X className="mr-1 size-3" />
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDrop}
+                          onClick={() => fileInputRef.current?.click()}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              fileInputRef.current?.click()
+                            }
+                          }}
+                          className={`flex aspect-3/4 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                            dragOver
+                              ? 'border-primary bg-primary/5'
+                              : 'border-muted-foreground/25 hover:border-muted-foreground/50'
+                          }`}
+                        >
+                          <ImageIcon className="size-8 text-muted-foreground/60" />
+                          <p className="text-center text-xs text-muted-foreground">
+                            Drag & drop or click to upload
+                          </p>
+                          <p className="text-[11px] text-muted-foreground/60">
+                            JPG, PNG, WebP, GIF
+                          </p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="mt-1"
                           >
-                            <X className="size-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </UiField>
-              )
-            }}
-          </form.Field>
-
-          <form.Field name="coverFile">
-            {(field) => (
-              <UiField>
-                <FieldLabel htmlFor="coverFile">Cover Image</FieldLabel>
-                <div className="flex items-center gap-4">
-                  {(coverPreview || form.getFieldValue('coverPath')) && (
-                    <div className="relative size-24 shrink-0 overflow-hidden rounded border">
-                      <img
-                        src={coverPreview || form.getFieldValue('coverPath')}
-                        alt="Cover preview"
-                        className="size-full object-cover"
+                            <Upload className="mr-1 size-3" />
+                            Browse
+                          </Button>
+                        </div>
+                      )}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        className="hidden"
+                        onChange={handleFileSelect}
                       />
                     </div>
-                  )}
-                  <div className="flex flex-col gap-2">
-                    <Input
-                      id="coverFile"
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] ?? null
-                        field.handleChange(file)
-                        if (file) {
-                          setCoverPreview(URL.createObjectURL(file))
-                          setCoverRemoved(false)
+                  </UiField>
+                )}
+              </form.Field>
+            </div>
+
+            <div className="min-w-0 space-y-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <form.Field name="title">
+                  {(field) => (
+                    <UiField data-invalid={field.state.meta.errors.length > 0}>
+                      <FieldLabel htmlFor="title" required>
+                        Title
+                      </FieldLabel>
+                      <Input
+                        id="title"
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        placeholder="One Piece"
+                        aria-invalid={
+                          field.state.meta.errors.length > 0 || undefined
                         }
-                      }}
-                      className="file:text-foreground cursor-pointer file:cursor-pointer"
-                    />
-                    {form.getFieldValue('coverPath') && !coverPreview && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          field.handleChange(null)
-                          setCoverPreview(null)
-                          setCoverRemoved(true)
-                        }}
+                      />
+                      {field.state.meta.errors.length > 0 && (
+                        <UiFieldError errors={field.state.meta.errors} />
+                      )}
+                    </UiField>
+                  )}
+                </form.Field>
+
+                <form.Field name="status">
+                  {(field) => (
+                    <UiField>
+                      <FieldLabel htmlFor="status">Status</FieldLabel>
+                      <Select
+                        value={field.state.value}
+                        onValueChange={(v) => field.handleChange(v)}
                       >
-                        <X className="size-3" />
-                        Remove Cover
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </UiField>
-            )}
-          </form.Field>
-
-          <form.Field name="authors">
-            {(field) => {
-              const authors = field.state.value
-              return (
-                <UiField data-invalid={field.state.meta.errors.length > 0}>
-                  <FieldLabel required>Authors</FieldLabel>
-                  <div className="flex gap-2">
-                    <Input
-                      value={authorInput}
-                      onChange={(e) => setAuthorInput(e.target.value)}
-                      onKeyDown={(e) =>
-                        e.key === 'Enter' &&
-                        (e.preventDefault(),
-                        addTag(field, authorInput, setAuthorInput))
-                      }
-                      placeholder="Eiichiro Oda"
-                      aria-invalid={
-                        field.state.meta.errors.length > 0 || undefined
-                      }
-                    />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => addTag(field, authorInput, setAuthorInput)}
-                    >
-                      <Plus className="size-3" />
-                      Add
-                    </Button>
-                  </div>
-                  {field.state.meta.errors.length > 0 && (
-                    <UiFieldError errors={field.state.meta.errors} />
+                        <SelectTrigger id="status">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value="ongoing">Ongoing</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                            <SelectItem value="paused">Paused</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </UiField>
                   )}
-                  {authors.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {authors.map((a, i) => (
-                        <Badge key={i} variant="secondary" className="gap-1">
-                          {a}
-                          <button
+                </form.Field>
+              </div>
+
+              <form.Field name="description">
+                {(field) => (
+                  <UiField>
+                    <FieldLabel htmlFor="description">Description</FieldLabel>
+                    <Textarea
+                      id="description"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="A story about..."
+                      rows={3}
+                    />
+                  </UiField>
+                )}
+              </form.Field>
+
+              <div className="border-t" />
+
+              <form.Field name="alternativeTitles">
+                {(field) => {
+                  const titles = field.state.value
+                  return (
+                    <UiField>
+                      <FieldLabel>Alternative Titles</FieldLabel>
+                      <div className="flex gap-2">
+                        <Input
+                          value={altInput}
+                          onChange={(e) => setAltInput(e.target.value)}
+                          onKeyDown={(e) =>
+                            e.key === 'Enter' &&
+                            (e.preventDefault(),
+                            addTag(field, altInput, setAltInput))
+                          }
+                          placeholder="Type and press Enter"
+                        />
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => addTag(field, altInput, setAltInput)}
+                        >
+                          <Plus className="size-3" />
+                          Add
+                        </Button>
+                      </div>
+                      {titles.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {titles.map((t, i) => (
+                            <Badge
+                              key={i}
+                              variant="secondary"
+                              className="gap-1"
+                            >
+                              {t}
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  field.handleChange(
+                                    titles.filter((_, j) => j !== i),
+                                  )
+                                }
+                              >
+                                <X className="size-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </UiField>
+                  )
+                }}
+              </form.Field>
+
+              <div className="border-t" />
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <form.Field name="authors">
+                  {(field) => {
+                    const authors = field.state.value
+                    return (
+                      <UiField
+                        data-invalid={field.state.meta.errors.length > 0}
+                      >
+                        <FieldLabel required>Authors</FieldLabel>
+                        <div className="flex gap-2">
+                          <Input
+                            value={authorInput}
+                            onChange={(e) => setAuthorInput(e.target.value)}
+                            onKeyDown={(e) =>
+                              e.key === 'Enter' &&
+                              (e.preventDefault(),
+                              addTag(field, authorInput, setAuthorInput))
+                            }
+                            placeholder="Eiichiro Oda"
+                            aria-invalid={
+                              field.state.meta.errors.length > 0 || undefined
+                            }
+                          />
+                          <Button
                             type="button"
+                            variant="secondary"
                             onClick={() =>
-                              field.handleChange(
-                                authors.filter((_, j) => j !== i),
-                              )
+                              addTag(field, authorInput, setAuthorInput)
                             }
                           >
-                            <X className="size-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </UiField>
-              )
-            }}
-          </form.Field>
+                            <Plus className="size-3" />
+                            Add
+                          </Button>
+                        </div>
+                        {field.state.meta.errors.length > 0 && (
+                          <UiFieldError errors={field.state.meta.errors} />
+                        )}
+                        {authors.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {authors.map((a, i) => (
+                              <Badge
+                                key={i}
+                                variant="secondary"
+                                className="gap-1"
+                              >
+                                {a}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    field.handleChange(
+                                      authors.filter((_, j) => j !== i),
+                                    )
+                                  }
+                                >
+                                  <X className="size-3" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </UiField>
+                    )
+                  }}
+                </form.Field>
 
-          <form.Field name="genres">
-            {(field) => {
-              const genres = field.state.value
-              return (
-                <UiField data-invalid={field.state.meta.errors.length > 0}>
-                  <FieldLabel required>Genres</FieldLabel>
-                  <div className="flex gap-2">
-                    <Input
-                      value={genreInput}
-                      onChange={(e) => setGenreInput(e.target.value)}
-                      onKeyDown={(e) =>
-                        e.key === 'Enter' &&
-                        (e.preventDefault(),
-                        addTag(field, genreInput, setGenreInput))
-                      }
-                      placeholder="Action"
-                      aria-invalid={
-                        field.state.meta.errors.length > 0 || undefined
-                      }
-                    />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => addTag(field, genreInput, setGenreInput)}
-                    >
-                      <Plus className="size-3" />
-                      Add
-                    </Button>
-                  </div>
-                  {field.state.meta.errors.length > 0 && (
-                    <UiFieldError errors={field.state.meta.errors} />
-                  )}
-                  {genres.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {genres.map((g, i) => (
-                        <Badge key={i} variant="secondary" className="gap-1">
-                          {g}
-                          <button
+                <form.Field name="genres">
+                  {(field) => {
+                    const genres = field.state.value
+                    return (
+                      <UiField
+                        data-invalid={field.state.meta.errors.length > 0}
+                      >
+                        <FieldLabel required>Genres</FieldLabel>
+                        <div className="flex gap-2">
+                          <Input
+                            value={genreInput}
+                            onChange={(e) => setGenreInput(e.target.value)}
+                            onKeyDown={(e) =>
+                              e.key === 'Enter' &&
+                              (e.preventDefault(),
+                              addTag(field, genreInput, setGenreInput))
+                            }
+                            placeholder="Action"
+                            aria-invalid={
+                              field.state.meta.errors.length > 0 || undefined
+                            }
+                          />
+                          <Button
                             type="button"
+                            variant="secondary"
                             onClick={() =>
-                              field.handleChange(
-                                genres.filter((_, j) => j !== i),
-                              )
+                              addTag(field, genreInput, setGenreInput)
                             }
                           >
-                            <X className="size-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </UiField>
-              )
-            }}
-          </form.Field>
+                            <Plus className="size-3" />
+                            Add
+                          </Button>
+                        </div>
+                        {field.state.meta.errors.length > 0 && (
+                          <UiFieldError errors={field.state.meta.errors} />
+                        )}
+                        {genres.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {genres.map((g, i) => (
+                              <Badge
+                                key={i}
+                                variant="secondary"
+                                className="gap-1"
+                              >
+                                {g}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    field.handleChange(
+                                      genres.filter((_, j) => j !== i),
+                                    )
+                                  }
+                                >
+                                  <X className="size-3" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </UiField>
+                    )
+                  }}
+                </form.Field>
+              </div>
+            </div>
+          </div>
 
           {error && (
-            <UiField data-invalid>
+            <UiField data-invalid className="mt-6">
               <FieldDescription className="text-destructive">
                 {error}
               </FieldDescription>
             </UiField>
           )}
 
-          <div className="flex items-center justify-end gap-3 pt-2">
+          <div className="mt-8 flex items-center justify-end gap-3 border-t pt-6">
             <Button
               type="button"
               variant="outline"
