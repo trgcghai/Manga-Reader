@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileService } from './file.service';
-import { ALLOWED_MIME_TYPES } from '../../common/constants/chapter.constant';
+import { ALLOWED_MIME_TYPES } from 'src/common/constants/chapter.constant';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
@@ -37,7 +37,7 @@ export class FileController {
     return this.fileService.upload('uploads', file.buffer, file.mimetype);
   }
 
-  @Delete(':key*')
+  @Delete('*key')
   async delete(@Param('key') key: string) {
     await this.fileService.delete(key);
   }

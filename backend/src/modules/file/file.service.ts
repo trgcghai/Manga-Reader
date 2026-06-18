@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
-import { MINIO_CLIENT } from './file.module';
+import { MINIO_CLIENT } from './file.constants';
 import { randomUUID } from 'node:crypto';
 import { getContentType } from 'src/common/utils/file-mime.util';
 

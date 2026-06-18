@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FileService } from './file.service';
-import { MINIO_CLIENT } from './file.module';
+import { MINIO_CLIENT } from './file.constants';
 import { ConfigModule } from '@nestjs/config';
 import {
   NotFoundException,
