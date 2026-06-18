@@ -12,6 +12,7 @@ import {
 import { MangaStatus } from 'src/common/constants/manga.constant';
 import { GenreService } from 'src/modules/genre/genre.service';
 import { AuthorService } from 'src/modules/author/author.service';
+import { FileService } from 'src/modules/file/file.service';
 
 describe('MangaService', () => {
   let service: MangaService;
@@ -34,6 +35,12 @@ describe('MangaService', () => {
     findOrCreate: jest.fn(),
   };
 
+  const mockFileService = {
+    endpoint: 'http://localhost:9000',
+    bucket: 'manga-pages',
+    delete: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -41,6 +48,7 @@ describe('MangaService', () => {
         { provide: MangaRepository, useValue: mockMangaRepository },
         { provide: AuthorService, useValue: mockAuthorService },
         { provide: GenreService, useValue: mockGenreService },
+        { provide: FileService, useValue: mockFileService },
       ],
     }).compile();
 

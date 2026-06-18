@@ -22,8 +22,8 @@ const EXT_MAP: Record<string, string> = {
 @Injectable()
 export class FileService {
   private readonly logger = new Logger(FileService.name);
-  private readonly bucket: string;
-  private readonly endpoint: string;
+  readonly bucket: string;
+  readonly endpoint: string;
 
   constructor(
     @Inject(MINIO_CLIENT) private readonly minioClient: Minio.Client,

@@ -17,13 +17,19 @@ import { AuthorService } from 'src/modules/author/author.service';
 import { GenreService } from 'src/modules/genre/genre.service';
 import { Author } from 'src/modules/author/entities/author.entity';
 import { Genre } from 'src/modules/genre/entities/genre.entity';
+import { FileService } from 'src/modules/file/file.service';
+import { extractKeyFromUrl } from 'src/common/utils/file-mime.util';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class MangaService {
+  private readonly logger = new Logger(MangaService.name);
+
   constructor(
     private readonly mangaRepository: MangaRepository,
     private readonly authorService: AuthorService,
     private readonly genreService: GenreService,
+    private readonly fileService: FileService,
   ) {}
 
   findAll = async (
@@ -160,7 +166,25 @@ export class MangaService {
       if (dto.description) updateData.description = dto.description;
       if (dto.alternativeTitles)
         updateData.alternativeTitles = dto.alternativeTitles;
-      if (dto.coverPath !== undefined) updateData.coverPath = dto.coverPath;
+      if (dto.coverPath !== undefined) {
+        if (existing.coverPath && existing.coverPath !== dto.coverPath) {
+          const key = extractKeyFromUrl(
+            existing.coverPath,
+            this.fileService.endpoint,
+            this.fileService.bucket,
+          );
+          if (key) {
+            this.fileService
+              .delete(key)
+              .catch((err) =>
+                this.logger.error(
+                  `Failed to delete old cover: ${err instanceof Error ? err.message : 'Unknown error'}`,
+                ),
+              );
+          }
+        }
+        updateData.coverPath = dto.coverPath;
+      }
 
       if (dto.authors) {
         const authors = await Promise.all(

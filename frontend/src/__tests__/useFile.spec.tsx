@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 
 vi.mock('#/services/api/fileApi', () => ({
-  uploadFile: vi.fn(),
+  uploadCover: vi.fn(),
 }))
 
 function createWrapper() {
@@ -16,18 +16,18 @@ function createWrapper() {
   }
 }
 
-describe('useFileUpload', () => {
+describe('useCoverUpload', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it('returns upload response on success', async () => {
-    const mockResponse = { key: 'uploads/uuid.jpg', url: 'http://localhost:9000/manga/uploads/uuid.jpg' }
-    const { uploadFile } = await import('#/services/api/fileApi')
-    vi.mocked(uploadFile).mockResolvedValue(mockResponse)
+    const mockResponse = { key: 'manga/cover/uuid.jpg', url: 'http://localhost:9000/manga-pages/manga/cover/uuid.jpg' }
+    const { uploadCover } = await import('#/services/api/fileApi')
+    vi.mocked(uploadCover).mockResolvedValue(mockResponse)
 
-    const { useFileUpload } = await import('#/hooks/useFile')
-    const { result } = renderHook(() => useFileUpload(), { wrapper: createWrapper() })
+    const { useCoverUpload } = await import('#/hooks/useFile')
+    const { result } = renderHook(() => useCoverUpload(), { wrapper: createWrapper() })
 
     const file = new File(['fake-content'], 'cover.jpg', { type: 'image/jpeg' })
     result.current.mutate(file)
@@ -37,11 +37,11 @@ describe('useFileUpload', () => {
   })
 
   it('sets error state on failure', async () => {
-    const { uploadFile } = await import('#/services/api/fileApi')
-    vi.mocked(uploadFile).mockRejectedValue(new Error('Network error'))
+    const { uploadCover } = await import('#/services/api/fileApi')
+    vi.mocked(uploadCover).mockRejectedValue(new Error('Network error'))
 
-    const { useFileUpload } = await import('#/hooks/useFile')
-    const { result } = renderHook(() => useFileUpload(), { wrapper: createWrapper() })
+    const { useCoverUpload } = await import('#/hooks/useFile')
+    const { result } = renderHook(() => useCoverUpload(), { wrapper: createWrapper() })
 
     const file = new File(['fake-content'], 'cover.jpg', { type: 'image/jpeg' })
     result.current.mutate(file)
