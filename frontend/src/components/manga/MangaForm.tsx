@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { Loader2, Plus, X } from 'lucide-react'
 import { Button } from '#/components/ui/button'
@@ -30,6 +30,7 @@ export const mangaSchema = z.object({
   description: z.string(),
   alternativeTitles: z.array(z.string()),
   coverPath: z.string(),
+  coverFile: z.instanceof(File).nullable().optional(),
   authors: z.array(z.string()).min(1, 'At least one author required'),
   genres: z.array(z.string()).min(1, 'At least one genre required'),
 })
@@ -38,7 +39,7 @@ type FormValues = z.infer<typeof mangaSchema>
 
 interface MangaFormProps {
   defaultValues: FormValues
-  onSubmit: (values: FormValues) => void
+  onSubmit: (values: FormValues, coverRemoved: boolean) => void
   isPending: boolean
   error?: string | null
   submitLabel: string
@@ -66,12 +67,20 @@ export function MangaForm({
   const [altInput, setAltInput] = useState('')
   const [authorInput, setAuthorInput] = useState('')
   const [genreInput, setGenreInput] = useState('')
+  const [coverPreview, setCoverPreview] = useState<string | null>(null)
+  const [coverRemoved, setCoverRemoved] = useState(false)
 
   const form = useForm({
     validators: { onSubmit: mangaSchema },
     defaultValues,
-    onSubmit: async ({ value }) => onSubmit(value),
+    onSubmit: async ({ value }) => onSubmit(value, coverRemoved),
   })
+
+  useEffect(() => {
+    return () => {
+      if (coverPreview) URL.revokeObjectURL(coverPreview)
+    }
+  }, [coverPreview])
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -194,16 +203,52 @@ export function MangaForm({
             }}
           </form.Field>
 
-          <form.Field name="coverPath">
+          <form.Field name="coverFile">
             {(field) => (
               <UiField>
-                <FieldLabel htmlFor="coverPath">Cover Path</FieldLabel>
-                <Input
-                  id="coverPath"
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="/covers/one_piece.jpg"
-                />
+                <FieldLabel htmlFor="coverFile">Cover Image</FieldLabel>
+                <div className="flex items-center gap-4">
+                  {(coverPreview || form.getFieldValue('coverPath')) && (
+                    <div className="relative size-24 shrink-0 overflow-hidden rounded border">
+                      <img
+                        src={coverPreview || form.getFieldValue('coverPath')}
+                        alt="Cover preview"
+                        className="size-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    <Input
+                      id="coverFile"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] ?? null
+                        field.handleChange(file)
+                        if (file) {
+                          setCoverPreview(URL.createObjectURL(file))
+                          setCoverRemoved(false)
+                        }
+                      }}
+                      className="file:text-foreground cursor-pointer file:cursor-pointer"
+                    />
+                    {form.getFieldValue('coverPath') && !coverPreview && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          field.handleChange(null)
+                          setCoverPreview(null)
+                          setCoverRemoved(true)
+                        }}
+                      >
+                        <X className="size-3" />
+                        Remove Cover
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </UiField>
             )}
           </form.Field>

@@ -160,7 +160,7 @@ export class MangaService {
       if (dto.description) updateData.description = dto.description;
       if (dto.alternativeTitles)
         updateData.alternativeTitles = dto.alternativeTitles;
-      if (dto.coverPath) updateData.coverPath = dto.coverPath;
+      if (dto.coverPath !== undefined) updateData.coverPath = dto.coverPath;
 
       if (dto.authors) {
         const authors = await Promise.all(
