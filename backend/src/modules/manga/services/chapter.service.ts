@@ -55,7 +55,7 @@ export class ChapterService {
         chapter: existingChapter,
         language,
         translator,
-        folderPath: dto.folderPath,
+        url: dto.url,
       });
 
       return existingChapter;
@@ -71,7 +71,7 @@ export class ChapterService {
       chapter,
       language,
       translator,
-      folderPath: dto.folderPath,
+      url: dto.url,
     });
 
     return chapter;

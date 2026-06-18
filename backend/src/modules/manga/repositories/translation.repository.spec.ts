@@ -46,7 +46,7 @@ describe('TranslationRepository', () => {
 
   describe('create', () => {
     it('should save and return a new translation', async () => {
-      const data = { folderPath: '/chapters/1' } as Partial<Translation>;
+      const data = { url: '/chapters/1' } as Partial<Translation>;
       const saved = { id: 1, ...data } as Translation;
       mockRepo.save.mockResolvedValue(saved);
       const result = await repo.create(data);
@@ -80,10 +80,10 @@ describe('TranslationRepository', () => {
   describe('update', () => {
     it('should update and return the translation', async () => {
       const id = 1;
-      const data = { folderPath: '/new/path' };
+      const data = { url: '/new/path' };
       const updated = {
         id,
-        folderPath: '/new/path',
+        url: '/new/path',
         chapter: { id: 1 },
       } as Translation;
       mockRepo.update.mockResolvedValue({ affected: 1 });

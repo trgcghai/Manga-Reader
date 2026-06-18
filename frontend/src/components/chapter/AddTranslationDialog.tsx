@@ -31,7 +31,7 @@ import { useCreateChapterForManga } from '#/hooks/useManga'
 const translationSchema = z.object({
   languageId: z.number().refine((n) => n > 0, 'Language is required'),
   translatorId: z.number().refine((n) => n > 0, 'Translator is required'),
-  folderPath: z.string().min(1, 'Folder path is required'),
+  url: z.string().min(1, 'Url is required'),
 })
 
 type FormValues = z.infer<typeof translationSchema>
@@ -39,7 +39,7 @@ type FormValues = z.infer<typeof translationSchema>
 const defaultValues: FormValues = {
   languageId: 0,
   translatorId: 0,
-  folderPath: '',
+  url: '',
 }
 
 interface AddTranslationDialogProps {
@@ -72,7 +72,7 @@ export default function AddTranslationDialog({
           title: chapterTitle ?? '',
           languageId: values.value.languageId,
           translatorId: values.value.translatorId,
-          folderPath: values.value.folderPath,
+          url: values.value.url,
         },
         {
           onSuccess: () => {
@@ -185,14 +185,14 @@ export default function AddTranslationDialog({
               )}
             </form.Field>
 
-            <form.Field name="folderPath">
+            <form.Field name="url">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="translation-folder-path" required>
-                    Folder Path
+                  <FieldLabel htmlFor="translation-url" required>
+                    Url
                   </FieldLabel>
                   <Input
-                    id="translation-folder-path"
+                    id="translation-url"
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
                     placeholder="/chapters/volume-1/chapter-1"

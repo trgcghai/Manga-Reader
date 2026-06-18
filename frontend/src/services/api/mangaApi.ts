@@ -35,7 +35,7 @@ export interface CreateMangaPayload {
 
 export interface TranslationDetail {
   id: number
-  folderPath: string
+  url: string
   note?: string
   createdAt: string
   language: { id: number; code: string; name: string }
@@ -66,7 +66,7 @@ export interface CreateChapterPayload {
   title: string
   languageId: number
   translatorId: number
-  folderPath: string
+  url: string
 }
 
 export async function getAllMangas(params: {
@@ -150,7 +150,7 @@ export async function createChapter(
 export interface UpdateTranslationPayload {
   languageId?: number
   translatorId?: number
-  folderPath?: string
+  url?: string
 }
 
 export async function updateTranslation(

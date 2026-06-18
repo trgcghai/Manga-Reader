@@ -46,7 +46,7 @@ describe('MangaRepository', () => {
             translations: [
               {
                 id: 1,
-                folderPath: '/path',
+                url: '/path',
                 language: { id: 1, code: 'en', name: 'English' },
                 translator: { id: 1, name: 'T1' },
               },

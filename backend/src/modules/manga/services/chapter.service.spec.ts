@@ -68,7 +68,7 @@ describe('ChapterService', () => {
     chapter,
     language,
     translator,
-    folderPath: '/path',
+    url: '/path',
   } as unknown as Translation;
 
   const dto: CreateChapterDto = {
@@ -76,7 +76,7 @@ describe('ChapterService', () => {
     title: 'Ch 5',
     languageId: 1,
     translatorId: 1,
-    folderPath: '/chapters/5',
+    url: '/chapters/5',
   };
 
   beforeEach(async () => {
@@ -155,7 +155,7 @@ describe('ChapterService', () => {
         chapter,
         language,
         translator,
-        folderPath: dto.folderPath,
+        url: dto.url,
       });
       expect(result).toEqual(chapter);
     });
@@ -177,7 +177,7 @@ describe('ChapterService', () => {
         chapter,
         language,
         translator,
-        folderPath: dto.folderPath,
+        url: dto.url,
       });
       expect(result).toEqual(chapter);
     });

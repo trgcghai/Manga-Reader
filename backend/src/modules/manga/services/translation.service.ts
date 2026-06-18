@@ -43,8 +43,8 @@ export class TranslationService {
       const translator = await this.translatorService.findOne(dto.translatorId);
       partial.translator = translator;
     }
-    if (dto.folderPath !== undefined) {
-      partial.folderPath = dto.folderPath;
+    if (dto.url !== undefined) {
+      partial.url = dto.url;
     }
 
     if (dto.languageId !== undefined || dto.translatorId !== undefined) {

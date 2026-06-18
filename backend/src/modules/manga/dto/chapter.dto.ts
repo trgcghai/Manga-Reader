@@ -17,5 +17,5 @@ export class CreateChapterDto {
 
   @IsString()
   @MinLength(1)
-  folderPath: string;
+  url: string;
 }

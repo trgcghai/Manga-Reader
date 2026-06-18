@@ -93,7 +93,7 @@ export class MangaService {
             translations:
               ch.translations?.map((tr) => ({
                 id: tr.id,
-                folderPath: tr.folderPath,
+                url: tr.url,
                 note: tr.note ?? undefined,
                 createdAt: tr.createdAt.toISOString(),
                 language: {

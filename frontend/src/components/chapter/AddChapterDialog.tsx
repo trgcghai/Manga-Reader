@@ -33,7 +33,7 @@ const chapterSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   languageId: z.number().refine((n) => n > 0, 'Language is required'),
   translatorId: z.number().refine((n) => n > 0, 'Translator is required'),
-  folderPath: z.string().min(1, 'Folder path is required'),
+  url: z.string().min(1, 'Url is required'),
 })
 
 type FormValues = z.infer<typeof chapterSchema>
@@ -43,7 +43,7 @@ const defaultValues: FormValues = {
   title: '',
   languageId: 0,
   translatorId: 0,
-  folderPath: '',
+  url: '',
 }
 
 interface AddChapterDialogProps {
@@ -102,7 +102,9 @@ export default function AddChapterDialog({
             <form.Field name="number">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="chapter-number" required>Chapter Number</FieldLabel>
+                  <FieldLabel htmlFor="chapter-number" required>
+                    Chapter Number
+                  </FieldLabel>
                   <Input
                     id="chapter-number"
                     type="number"
@@ -110,7 +112,9 @@ export default function AddChapterDialog({
                     step={0.1}
                     value={field.state.value}
                     onChange={(e) => field.handleChange(Number(e.target.value))}
-                    aria-invalid={field.state.meta.errors.length > 0 || undefined}
+                    aria-invalid={
+                      field.state.meta.errors.length > 0 || undefined
+                    }
                   />
                   {field.state.meta.errors.length > 0 && (
                     <UiFieldError errors={field.state.meta.errors} />
@@ -122,12 +126,16 @@ export default function AddChapterDialog({
             <form.Field name="title">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="chapter-title" required>Title</FieldLabel>
+                  <FieldLabel htmlFor="chapter-title" required>
+                    Title
+                  </FieldLabel>
                   <Input
                     id="chapter-title"
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={field.state.meta.errors.length > 0 || undefined}
+                    aria-invalid={
+                      field.state.meta.errors.length > 0 || undefined
+                    }
                   />
                   {field.state.meta.errors.length > 0 && (
                     <UiFieldError errors={field.state.meta.errors} />
@@ -139,14 +147,18 @@ export default function AddChapterDialog({
             <form.Field name="languageId">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="chapter-language" required>Language</FieldLabel>
+                  <FieldLabel htmlFor="chapter-language" required>
+                    Language
+                  </FieldLabel>
                   <Select
                     value={String(field.state.value || '')}
                     onValueChange={(v) => field.handleChange(Number(v))}
                   >
                     <SelectTrigger
                       id="chapter-language"
-                      aria-invalid={field.state.meta.errors.length > 0 || undefined}
+                      aria-invalid={
+                        field.state.meta.errors.length > 0 || undefined
+                      }
                     >
                       <SelectValue
                         placeholder={
@@ -172,18 +184,24 @@ export default function AddChapterDialog({
             <form.Field name="translatorId">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="chapter-translator" required>Translator</FieldLabel>
+                  <FieldLabel htmlFor="chapter-translator" required>
+                    Translator
+                  </FieldLabel>
                   <Select
                     value={String(field.state.value || '')}
                     onValueChange={(v) => field.handleChange(Number(v))}
                   >
                     <SelectTrigger
                       id="chapter-translator"
-                      aria-invalid={field.state.meta.errors.length > 0 || undefined}
+                      aria-invalid={
+                        field.state.meta.errors.length > 0 || undefined
+                      }
                     >
                       <SelectValue
                         placeholder={
-                          translatorsLoading ? 'Loading...' : 'Select translator'
+                          translatorsLoading
+                            ? 'Loading...'
+                            : 'Select translator'
                         }
                       />
                     </SelectTrigger>
@@ -202,16 +220,20 @@ export default function AddChapterDialog({
               )}
             </form.Field>
 
-            <form.Field name="folderPath">
+            <form.Field name="url">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="chapter-folder-path" required>Folder Path</FieldLabel>
+                  <FieldLabel htmlFor="chapter-url" required>
+                    Url
+                  </FieldLabel>
                   <Input
-                    id="chapter-folder-path"
+                    id="chapter-url"
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
                     placeholder="/chapters/volume-1/chapter-1"
-                    aria-invalid={field.state.meta.errors.length > 0 || undefined}
+                    aria-invalid={
+                      field.state.meta.errors.length > 0 || undefined
+                    }
                   />
                   {field.state.meta.errors.length > 0 && (
                     <UiFieldError errors={field.state.meta.errors} />

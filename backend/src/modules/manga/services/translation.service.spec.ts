@@ -32,7 +32,7 @@ describe('TranslationService', () => {
 
   const translation = {
     id: 1,
-    folderPath: '/path',
+    url: '/path',
     language,
     translator,
     chapter: { id: 5, manga: { id: 10 } },
@@ -40,7 +40,7 @@ describe('TranslationService', () => {
 
   const dto: UpdateTranslationDto = {
     languageId: 2,
-    folderPath: '/new/path',
+    url: '/new/path',
   };
 
   beforeEach(async () => {
@@ -117,10 +117,10 @@ describe('TranslationService', () => {
       });
       mockTranslationRepo.update.mockResolvedValue({
         ...translation,
-        folderPath: '/updated/path',
+        url: '/updated/path',
       });
       const dtoFolderOnly: UpdateTranslationDto = {
-        folderPath: '/updated/path',
+        url: '/updated/path',
       };
       const result = await service.update(10, 5, 1, dtoFolderOnly);
       expect(
@@ -133,7 +133,7 @@ describe('TranslationService', () => {
       const newLang = { id: 2, code: 'fr', name: 'French' } as Language;
       const updated = {
         ...translation,
-        folderPath: '/new/path',
+        url: '/new/path',
         language: newLang,
       };
       mockTranslationRepo.findById.mockResolvedValue(translation);
@@ -145,7 +145,7 @@ describe('TranslationService', () => {
       const result = await service.update(10, 5, 1, dto);
       expect(mockTranslationRepo.update).toHaveBeenCalledWith(1, {
         language: newLang,
-        folderPath: '/new/path',
+        url: '/new/path',
       });
       expect(result).toEqual(updated);
     });

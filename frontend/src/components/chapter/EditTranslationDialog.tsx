@@ -32,7 +32,7 @@ import type { TranslationDetail } from '#/services/api/mangaApi'
 const translationSchema = z.object({
   languageId: z.number().refine((n) => n > 0, 'Language is required'),
   translatorId: z.number().refine((n) => n > 0, 'Translator is required'),
-  folderPath: z.string().min(1, 'Folder path is required'),
+  url: z.string().min(1, 'Url is required'),
 })
 
 type FormValues = z.infer<typeof translationSchema>
@@ -60,7 +60,7 @@ export default function EditTranslationDialog({
   const defaultValues: FormValues = {
     languageId: translation.language.id,
     translatorId: translation.translator.id,
-    folderPath: translation.folderPath,
+    url: translation.url,
   }
 
   const form = useForm({
@@ -73,7 +73,7 @@ export default function EditTranslationDialog({
           data: {
             languageId: values.value.languageId,
             translatorId: values.value.translatorId,
-            folderPath: values.value.folderPath,
+            url: values.value.url,
           },
         },
         {
@@ -186,14 +186,14 @@ export default function EditTranslationDialog({
               )}
             </form.Field>
 
-            <form.Field name="folderPath">
+            <form.Field name="url">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="edit-translation-folder-path" required>
-                    Folder Path
+                  <FieldLabel htmlFor="edit-translation-url" required>
+                    Url
                   </FieldLabel>
                   <Input
-                    id="edit-translation-folder-path"
+                    id="edit-translation-url"
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
                     placeholder="/chapters/volume-1/chapter-1"

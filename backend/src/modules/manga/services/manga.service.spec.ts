@@ -143,7 +143,7 @@ describe('MangaService', () => {
             translations: [
               {
                 id: 1,
-                folderPath: '/path',
+                url: '/path',
                 note: null,
                 createdAt: new Date('2024-01-01'),
                 language: { id: 1, code: 'en', name: 'English' },

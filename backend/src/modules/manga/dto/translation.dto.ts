@@ -12,5 +12,5 @@ export class UpdateTranslationDto {
   @IsOptional()
   @IsString()
   @MinLength(1)
-  folderPath?: string;
+  url?: string;
 }

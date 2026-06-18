@@ -292,7 +292,7 @@ describe('MangaController', () => {
       title: 'Chapter 1',
       languageId: 1,
       translatorId: 1,
-      folderPath: '/chapters/1',
+      url: '/chapters/1',
     };
 
     it('should call ChapterService.create and return 201', async () => {
