@@ -15,7 +15,6 @@ function CreateMangaPage() {
   const createMutation = useCreateManga()
   const uploadMutation = useFileUpload()
   const [formError, setFormError] = useState<string | null>(null)
-  const [uploading, setUploading] = useState(false)
 
   return (
     <MangaForm
@@ -30,19 +29,16 @@ function CreateMangaPage() {
         authors: [],
         genres: [],
       }}
-      onSubmit={async (value, coverRemoved) => {
+      onSubmit={async (value, _) => {
         setFormError(null)
         let coverPath: string | undefined
         if (value.coverFile) {
-          setUploading(true)
           try {
             const { url } = await uploadMutation.mutateAsync(value.coverFile)
             coverPath = url
           } catch {
             setFormError('Failed to upload cover image')
             return
-          } finally {
-            setUploading(false)
           }
         }
         const payload: CreateMangaPayload = {
@@ -61,9 +57,15 @@ function CreateMangaPage() {
           onSuccess: () => navigate({ to: '/admin/mangas' }),
         })
       }}
-      isPending={createMutation.isPending || uploading}
+      isPending={createMutation.isPending || uploadMutation.isPending}
       error={formError || createMutation.error?.message || null}
-      submitLabel={uploading ? 'Uploading...' : createMutation.isPending ? 'Saving...' : 'Create Manga'}
+      submitLabel={
+        uploadMutation.isPending
+          ? 'Uploading...'
+          : createMutation.isPending
+            ? 'Saving...'
+            : 'Create Manga'
+      }
       submitIcon={<Plus className="size-4" />}
       cancelLabel="Reset"
       resetOnCancel

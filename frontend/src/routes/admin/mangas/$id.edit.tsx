@@ -7,7 +7,11 @@ import type { UpdateMangaPayload } from '#/services/api/mangaApi'
 import { MangaForm } from '#/components/manga/MangaForm'
 import { Save } from 'lucide-react'
 import { Skeleton } from '#/components/ui/skeleton'
-import { ErrorDisplay, ErrorTitle, ErrorDescription } from '#/components/ui/error-display'
+import {
+  ErrorDisplay,
+  ErrorTitle,
+  ErrorDescription,
+} from '#/components/ui/error-display'
 
 export const Route = createFileRoute('/admin/mangas/$id/edit')({
   component: EditMangaPage,
@@ -20,7 +24,6 @@ function EditMangaPage() {
   const updateMutation = useUpdateManga()
   const uploadMutation = useFileUpload()
   const [formError, setFormError] = useState<string | null>(null)
-  const [uploading, setUploading] = useState(false)
 
   if (isLoading) {
     return (
@@ -63,15 +66,12 @@ function EditMangaPage() {
         setFormError(null)
         let coverPath: string | undefined
         if (value.coverFile) {
-          setUploading(true)
           try {
             const { url } = await uploadMutation.mutateAsync(value.coverFile)
             coverPath = url
           } catch {
             setFormError('Failed to upload cover image')
             return
-          } finally {
-            setUploading(false)
           }
         } else if (coverRemoved) {
           coverPath = ''
@@ -109,9 +109,15 @@ function EditMangaPage() {
           { onSuccess: () => navigate({ to: '/admin/mangas' }) },
         )
       }}
-      isPending={updateMutation.isPending || uploading}
+      isPending={updateMutation.isPending || uploadMutation.isPending}
       error={formError || updateMutation.error?.message || null}
-      submitLabel={uploading ? 'Uploading...' : updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+      submitLabel={
+        uploadMutation.isPending
+          ? 'Uploading...'
+          : updateMutation.isPending
+            ? 'Saving...'
+            : 'Save Changes'
+      }
       submitIcon={<Save className="size-4" />}
       cancelLabel="Cancel"
       cancelAction={() => navigate({ to: '/admin/mangas' })}
