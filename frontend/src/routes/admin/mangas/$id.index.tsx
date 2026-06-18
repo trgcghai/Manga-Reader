@@ -132,13 +132,24 @@ function MangaDetailPage() {
         <div className="min-w-0 flex-1 space-y-6">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight">
-                {manga.title}
-              </h1>
               <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold tracking-tight">
+                  {manga.title}
+                </h1>
                 <Badge variant={variant} className="capitalize">
                   {manga.status}
                 </Badge>
+              </div>
+              <div className="flex items-center gap-3">
+                {manga.genres.map((g) => (
+                  <Badge
+                    key={g.id}
+                    variant="secondary"
+                    className="text-secondary-foreground"
+                  >
+                    {g.name}
+                  </Badge>
+                ))}
               </div>
             </div>
             <Button
@@ -167,32 +178,8 @@ function MangaDetailPage() {
               <p className="mb-1.5 text-xs font-medium text-muted-foreground capitalize tracking-wider">
                 Authors
               </p>
-              <div className="flex flex-wrap gap-1.5">
-                {manga.authors.map((a) => (
-                  <Badge
-                    key={a.id}
-                    variant="secondary"
-                    className="text-secondary-foreground"
-                  >
-                    {a.name}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="mb-1.5 text-xs font-medium text-muted-foreground capitalize tracking-wider">
-                Genres
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {manga.genres.map((g) => (
-                  <Badge
-                    key={g.id}
-                    variant="secondary"
-                    className="text-secondary-foreground"
-                  >
-                    {g.name}
-                  </Badge>
-                ))}
+              <div className="flex flex-wrap gap-1.5 text-secondary-foreground text-sm">
+                {manga.authors.map(a => a.name).join(', ')}
               </div>
             </div>
           </div>
@@ -203,16 +190,8 @@ function MangaDetailPage() {
                 <p className="mb-1.5 text-xs font-medium text-muted-foreground capitalize tracking-wider">
                   Also
                 </p>
-                <p className="flex flex-wrap gap-1.5">
-                  {manga.alternativeTitles.map((t) => (
-                    <Badge
-                      key={t}
-                      variant="secondary"
-                      className="text-xs text-secondary-foreground"
-                    >
-                      {t}
-                    </Badge>
-                  ))}
+                <p className="flex flex-wrap gap-1.5 text-secondary-foreground text-sm">
+                  {manga.alternativeTitles.join(', ')}
                 </p>
               </div>
             )}
