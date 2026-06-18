@@ -19,9 +19,9 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
-  @Post('upload')
+  @Post('upload/cover')
   @UseInterceptors(FileInterceptor('file'))
-  async upload(
+  async uploadCover(
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -34,7 +34,7 @@ export class FileController {
     )
     file: Express.Multer.File,
   ) {
-    return this.fileService.upload('uploads', file.buffer, file.mimetype);
+    return this.fileService.upload('manga/cover', file.buffer, file.mimetype);
   }
 
   @Delete('*key')

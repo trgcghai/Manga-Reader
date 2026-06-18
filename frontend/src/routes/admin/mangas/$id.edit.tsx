@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useManga, useUpdateManga } from '#/hooks/useManga'
-import { useFileUpload } from '#/hooks/useFile'
+import { useCoverUpload } from '#/hooks/useFile'
 import type { UpdateMangaPayload } from '#/services/api/mangaApi'
 import { MangaForm } from '#/components/manga/MangaForm'
 import { Save } from 'lucide-react'
@@ -22,7 +22,7 @@ function EditMangaPage() {
   const navigate = useNavigate()
   const { data: manga, isLoading, isError } = useManga(Number(id))
   const updateMutation = useUpdateManga()
-  const uploadMutation = useFileUpload()
+  const uploadMutation = useCoverUpload()
   const [formError, setFormError] = useState<string | null>(null)
 
   if (isLoading) {

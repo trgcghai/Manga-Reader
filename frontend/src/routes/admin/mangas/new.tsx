@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useCreateManga } from '#/hooks/useManga'
-import { useFileUpload } from '#/hooks/useFile'
+import { useCoverUpload } from '#/hooks/useFile'
 import type { CreateMangaPayload } from '#/services/api/mangaApi'
 import { MangaForm } from '#/components/manga/MangaForm'
 import { Plus } from 'lucide-react'
@@ -13,7 +13,7 @@ export const Route = createFileRoute('/admin/mangas/new')({
 function CreateMangaPage() {
   const navigate = useNavigate()
   const createMutation = useCreateManga()
-  const uploadMutation = useFileUpload()
+  const uploadMutation = useCoverUpload()
   const [formError, setFormError] = useState<string | null>(null)
 
   return (

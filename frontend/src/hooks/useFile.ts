@@ -1,9 +1,9 @@
 import { useMutation } from '@tanstack/react-query'
-import { uploadFile } from '#/services/api/fileApi'
+import { uploadCover } from '#/services/api/fileApi'
 import type { UploadFileResponse } from '#/services/api/fileApi'
 
-export function useFileUpload() {
+export function useCoverUpload() {
   return useMutation<UploadFileResponse, Error, File>({
-    mutationFn: (file: File) => uploadFile(file),
+    mutationFn: (file: File) => uploadCover(file),
   })
 }

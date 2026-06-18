@@ -29,24 +29,24 @@ describe('FileController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('POST /files/upload', () => {
-    it('should upload file and return key and url', async () => {
+  describe('POST /files/upload/cover', () => {
+    it('should upload cover file and return key and url', async () => {
       const mockResult = {
-        key: 'uploads/uuid.jpg',
-        url: 'http://localhost:9000/manga-pages/uploads/uuid.jpg',
+        key: 'manga/cover/uuid.jpg',
+        url: 'http://localhost:9000/manga-pages/manga/cover/uuid.jpg',
       };
       mockFileService.upload.mockResolvedValue(mockResult);
 
       const file = {
-        originalname: 'test.jpg',
+        originalname: 'cover.jpg',
         buffer: Buffer.from('test'),
         mimetype: 'image/jpeg',
       } as Express.Multer.File;
 
-      const result = await controller.upload(file);
+      const result = await controller.uploadCover(file);
       expect(result).toEqual(mockResult);
       expect(mockFileService.upload).toHaveBeenCalledWith(
-        'uploads',
+        'manga/cover',
         file.buffer,
         file.mimetype,
       );
