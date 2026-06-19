@@ -11,45 +11,16 @@ import * as Minio from 'minio';
 import { MINIO_CLIENT } from './file.constants';
 import { randomUUID } from 'node:crypto';
 import { getContentType } from 'src/common/utils/file-mime.util';
+import { TRANSLATION_EXTENSIONS } from 'src/common/constants/translation.constant';
 
 const EXT_MAP: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
   'image/gif': 'gif',
-  'application/zip': 'cbz',
+  'application/zip': 'zip',
+  'application/vnd.comicbook+zip': 'cbz',
 };
-
-function detectMimeFromBuffer(buffer: Buffer): string | null {
-  if (buffer.length < 4) return null;
-  // ZIP — PK\x03\x04
-  if (
-    buffer[0] === 0x50 && buffer[1] === 0x4B &&
-    buffer[2] === 0x03 && buffer[3] === 0x04
-  ) {
-    return 'application/zip';
-  }
-  // JPEG — \xFF\xD8\xFF
-  if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) {
-    return 'image/jpeg';
-  }
-  // PNG — \x89PNG
-  if (
-    buffer[0] === 0x89 && buffer[1] === 0x50 &&
-    buffer[2] === 0x4E && buffer[3] === 0x47
-  ) {
-    return 'image/png';
-  }
-  // WebP — RIFF....WEBP
-  if (
-    buffer.length >= 12 &&
-    buffer[8] === 0x57 && buffer[9] === 0x45 &&
-    buffer[10] === 0x42 && buffer[11] === 0x50
-  ) {
-    return 'image/webp';
-  }
-  return null;
-}
 
 @Injectable()
 export class FileService {
@@ -72,8 +43,12 @@ export class FileService {
     buffer: Buffer,
     mimetype: string,
   ): Promise<{ key: string; url: string }> {
-    const effectiveMime = EXT_MAP[mimetype] ? mimetype : (detectMimeFromBuffer(buffer) || mimetype);
-    const ext = EXT_MAP[effectiveMime] || 'bin';
+    if (!EXT_MAP[mimetype]) {
+      this.logger.warn(
+        `Unrecognized mimetype "${mimetype}", falling back to .bin`,
+      );
+    }
+    const ext = EXT_MAP[mimetype] || 'bin';
     const key = `${prefix}/${randomUUID()}.${ext}`;
 
     try {
@@ -83,7 +58,7 @@ export class FileService {
         buffer,
         buffer.length,
         {
-          'Content-Type': effectiveMime,
+          'Content-Type': mimetype,
         },
       );
       return { key, url: `${this.endpoint}/${this.bucket}/${key}` };
@@ -93,6 +68,30 @@ export class FileService {
       );
       throw new InternalServerErrorException('File upload failed');
     }
+  }
+
+  async uploadTranslation(
+    prefix: string,
+    file: Express.Multer.File,
+  ): Promise<{ key: string; url: string }> {
+    const ext = file.originalname.split('.').pop();
+
+    if (ext && TRANSLATION_EXTENSIONS.includes(ext)) {
+      switch (ext) {
+        case 'cbz':
+          return this.upload(
+            prefix,
+            file.buffer,
+            'application/vnd.comicbook+zip',
+          );
+        case 'zip':
+          return this.upload(prefix, file.buffer, 'application/zip');
+        default:
+          return this.upload(prefix, file.buffer, file.mimetype);
+      }
+    }
+
+    throw new InternalServerErrorException('Invalid translation file type');
   }
 
   async download(key: string): Promise<StreamableFile> {

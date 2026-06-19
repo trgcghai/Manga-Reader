@@ -317,7 +317,7 @@ function ChapterRow({
                             {formatDateTime(tr.createdAt)}
                           </TableCell>
                           <TableCell className="font-mono text-sm w-1/2 truncate">
-                            {tr.url}
+                            {tr.url.split('/').pop()}
                           </TableCell>
                           <TableCell className="w-20">
                             <div className="flex gap-1">

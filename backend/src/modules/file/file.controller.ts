@@ -9,6 +9,7 @@ import {
   FileTypeValidator,
   MaxFileSizeValidator,
   Body,
+  Logger,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileService } from './file.service';
@@ -21,6 +22,8 @@ const MAX_TRANSLATION_FILE_SIZE = 100 * 1024 * 1024;
 
 @Controller('files')
 export class FileController {
+  private readonly logger = new Logger(FileController.name);
+
   constructor(private readonly fileService: FileService) {}
 
   @Post('upload/cover')
@@ -60,7 +63,8 @@ export class FileController {
     @Body() dto: UploadTranslationFileDto,
   ) {
     const prefix = `manga/${dto.mangaId}/chapter/${dto.chapterNumber}/translations`;
-    return this.fileService.upload(prefix, file.buffer, file.mimetype);
+
+    return this.fileService.uploadTranslation(prefix, file);
   }
 
   @Delete('*key')
