@@ -7,7 +7,10 @@ import { TranslationRepository } from 'src/modules/manga/repositories/translatio
 import { LanguageService } from 'src/modules/language/language.service';
 import { TranslatorService } from 'src/modules/translator/translator.service';
 import { FileService } from 'src/modules/file/file.service';
-import { TranslationDetailResponse, UpdateTranslationDto } from 'src/modules/manga/dto/translation.dto';
+import {
+  TranslationDetailResponse,
+  UpdateTranslationDto,
+} from 'src/modules/manga/dto/translation.dto';
 import { extractKeyFromUrl } from 'src/common/utils/file-mime.util';
 
 @Injectable()
@@ -19,7 +22,9 @@ export class TranslationService {
     private readonly fileService: FileService,
   ) {}
 
-  findOne = async (translationId: number): Promise<TranslationDetailResponse> => {
+  findOne = async (
+    translationId: number,
+  ): Promise<TranslationDetailResponse> => {
     const translation = await this.translationRepo.findById(translationId);
     if (!translation) {
       throw new NotFoundException('Translation not found');
@@ -90,7 +95,11 @@ export class TranslationService {
       }
     }
 
-    if (dto.url !== undefined && translation.url && translation.url !== dto.url) {
+    if (
+      dto.url !== undefined &&
+      translation.url &&
+      translation.url !== dto.url
+    ) {
       const key = extractKeyFromUrl(
         translation.url,
         this.fileService.endpoint,

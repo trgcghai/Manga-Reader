@@ -173,7 +173,9 @@ describe('TranslationService', () => {
         ...withOldUrl,
         url: 'http://localhost:9000/manga-pages/new/file.cbz',
       });
-      await service.update(10, 5, 1, { url: 'http://localhost:9000/manga-pages/new/file.cbz' });
+      await service.update(10, 5, 1, {
+        url: 'http://localhost:9000/manga-pages/new/file.cbz',
+      });
       expect(mockFileService.delete).toHaveBeenCalledWith('old/file.cbz');
     });
 
@@ -198,8 +200,14 @@ describe('TranslationService', () => {
       mockTranslationRepo.findById.mockResolvedValue(withUrl);
       mockTranslationRepo.update.mockResolvedValue(withUrl);
       const dtoNoUrl = { languageId: 2 };
-      mockLanguageService.findOne.mockResolvedValue({ id: 2, code: 'fr', name: 'French' } as Language);
-      mockTranslationRepo.findByChapterAndLanguageAndTranslator.mockResolvedValue(null);
+      mockLanguageService.findOne.mockResolvedValue({
+        id: 2,
+        code: 'fr',
+        name: 'French',
+      });
+      mockTranslationRepo.findByChapterAndLanguageAndTranslator.mockResolvedValue(
+        null,
+      );
       await service.update(10, 5, 1, dtoNoUrl);
       expect(mockFileService.delete).not.toHaveBeenCalled();
     });
@@ -224,10 +232,18 @@ describe('TranslationService', () => {
         url: 'http://localhost:9000/manga-pages/old/file.cbz',
       };
       mockTranslationRepo.findById.mockResolvedValue(withUrl);
-      mockLanguageService.findOne.mockResolvedValue({ id: 2, code: 'fr', name: 'French' } as Language);
-      mockTranslationRepo.findByChapterAndLanguageAndTranslator.mockResolvedValue(null);
+      mockLanguageService.findOne.mockResolvedValue({
+        id: 2,
+        code: 'fr',
+        name: 'French',
+      });
+      mockTranslationRepo.findByChapterAndLanguageAndTranslator.mockResolvedValue(
+        null,
+      );
       mockFileService.delete.mockRejectedValue(new Error('Minio error'));
-      await expect(service.update(10, 5, 1, { url: '/new/path' })).rejects.toThrow('Minio error');
+      await expect(
+        service.update(10, 5, 1, { url: '/new/path' }),
+      ).rejects.toThrow('Minio error');
     });
   });
 

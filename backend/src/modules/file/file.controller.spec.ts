@@ -7,10 +7,13 @@ describe('FileController', () => {
 
   const mockFileService = {
     upload: jest.fn(),
+    uploadTranslation: jest.fn(),
     delete: jest.fn(),
     download: jest.fn(),
     list: jest.fn(),
-  } as jest.Mocked<Pick<FileService, 'upload' | 'delete'>>;
+  } as jest.Mocked<
+    Pick<FileService, 'upload' | 'uploadTranslation' | 'delete'>
+  >;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -69,12 +72,13 @@ describe('FileController', () => {
 
       const dto = { mangaId: 1, chapterNumber: 3 };
 
+      mockFileService.uploadTranslation.mockResolvedValue(mockResult);
+
       const result = await controller.uploadTranslation(file, dto);
       expect(result).toEqual(mockResult);
-      expect(mockFileService.upload).toHaveBeenCalledWith(
+      expect(mockFileService.uploadTranslation).toHaveBeenCalledWith(
         'manga/1/chapter/3/translations',
-        file.buffer,
-        file.mimetype,
+        file,
       );
     });
   });

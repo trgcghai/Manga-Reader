@@ -142,9 +142,7 @@ export class MangaController {
   }
 
   @Get('translations/:translationId')
-  getTranslation(
-    @Param('translationId', ParseIntPipe) translationId: number,
-  ) {
+  getTranslation(@Param('translationId', ParseIntPipe) translationId: number) {
     return this.translationService.findOne(translationId);
   }
 

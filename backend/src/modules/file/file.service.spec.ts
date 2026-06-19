@@ -54,7 +54,7 @@ describe('FileService', () => {
   });
 
   describe('upload', () => {
-    it('should map application/zip to .cbz extension', async () => {
+    it('should map application/zip to .zip extension', async () => {
       mockMinioClient.putObject.mockResolvedValue({
         etag: '"abc123"',
         versionId: null,
@@ -64,7 +64,7 @@ describe('FileService', () => {
         Buffer.from('data'),
         'application/zip',
       );
-      expect(result.key).toMatch(/\.cbz$/);
+      expect(result.key).toMatch(/\.zip$/);
     });
 
     it('should upload a buffer and return key and Minio URL', async () => {
