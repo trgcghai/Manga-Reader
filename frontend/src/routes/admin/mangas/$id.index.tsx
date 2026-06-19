@@ -350,6 +350,7 @@ function ChapterRow({
                           }
                           mangaId={Number(mangaId)}
                           chapterId={chapter.id}
+                          chapterNumber={chapter.number}
                           translation={tr}
                         />
 
