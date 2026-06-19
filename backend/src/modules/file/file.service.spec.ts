@@ -59,7 +59,11 @@ describe('FileService', () => {
         etag: '"abc123"',
         versionId: null,
       });
-      const result = await service.upload('prefix', Buffer.from('data'), 'application/zip');
+      const result = await service.upload(
+        'prefix',
+        Buffer.from('data'),
+        'application/zip',
+      );
       expect(result.key).toMatch(/\.cbz$/);
     });
 

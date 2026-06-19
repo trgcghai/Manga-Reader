@@ -49,7 +49,9 @@ export class FileController {
         validators: [
           new MaxFileSizeValidator({ maxSize: MAX_TRANSLATION_FILE_SIZE }),
           new FileTypeValidator({
-            fileType: new RegExp(`^(${TRANSLATION_ALLOWED_MIME_TYPES.join('|')})$`),
+            fileType: new RegExp(
+              `^(${TRANSLATION_ALLOWED_MIME_TYPES.join('|')})$`,
+            ),
           }),
         ],
       }),
