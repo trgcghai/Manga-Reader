@@ -16,6 +16,7 @@ import { UploadTranslationFileDto } from './dto/uploadTranslationFile.dto';
 import { ALLOWED_MIME_TYPES } from 'src/common/constants/chapter.constant';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_TRANSLATION_FILE_SIZE = 15 * 1024 * 1024;
 
 @Controller('files')
 export class FileController {
@@ -45,7 +46,7 @@ export class FileController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 15 * 1024 * 1024 }),
+          new MaxFileSizeValidator({ maxSize: MAX_TRANSLATION_FILE_SIZE }),
           new FileTypeValidator({
             fileType: /^application\/zip$/,
           }),
@@ -55,7 +56,7 @@ export class FileController {
     file: Express.Multer.File,
     @Body() dto: UploadTranslationFileDto,
   ) {
-    const prefix = `/manga/${dto.mangaId}/chapter/${dto.chapterNumber}/translations`;
+    const prefix = `manga/${dto.mangaId}/chapter/${dto.chapterNumber}/translations`;
     return this.fileService.upload(prefix, file.buffer, file.mimetype);
   }
 

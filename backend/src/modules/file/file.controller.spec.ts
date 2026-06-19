@@ -56,7 +56,7 @@ describe('FileController', () => {
   describe('POST /files/upload/translation', () => {
     it('should upload translation file with mangaId and chapterNumber', async () => {
       const mockResult = {
-        key: '/manga/1/chapter/3/translations/uuid.cbz',
+        key: 'manga/1/chapter/3/translations/uuid.cbz',
         url: 'http://localhost:9000/manga-pages/manga/1/chapter/3/translations/uuid.cbz',
       };
       mockFileService.upload.mockResolvedValue(mockResult);
@@ -72,7 +72,7 @@ describe('FileController', () => {
       const result = await controller.uploadTranslation(file, dto);
       expect(result).toEqual(mockResult);
       expect(mockFileService.upload).toHaveBeenCalledWith(
-        '/manga/1/chapter/3/translations',
+        'manga/1/chapter/3/translations',
         file.buffer,
         file.mimetype,
       );
