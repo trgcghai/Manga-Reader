@@ -1,5 +1,9 @@
 import { useMutation } from '@tanstack/react-query'
-import { uploadCover, uploadTranslation } from '#/services/api/fileApi'
+import {
+  uploadCover,
+  uploadTranslation,
+  downloadFile,
+} from '#/services/api/fileApi'
 import type { UploadFileResponse } from '#/services/api/fileApi'
 
 export function useCoverUpload() {
@@ -16,5 +20,11 @@ export function useTranslationFileUpload(mangaId: number) {
   >({
     mutationFn: ({ file, chapterNumber }) =>
       uploadTranslation(file, mangaId, chapterNumber),
+  })
+}
+
+export function useFileDownload() {
+  return useMutation<Blob, Error, string>({
+    mutationFn: (url: string) => downloadFile(url),
   })
 }

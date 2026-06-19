@@ -36,3 +36,11 @@ export async function uploadTranslation(
   )
   return res.data
 }
+
+export async function downloadFile(url: string): Promise<Blob> {
+  const res = await axiosInstance.get('/files/download', {
+    params: { url },
+    responseType: 'blob',
+  })
+  return res.data
+}
