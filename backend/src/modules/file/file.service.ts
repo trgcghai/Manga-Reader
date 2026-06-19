@@ -20,6 +20,37 @@ const EXT_MAP: Record<string, string> = {
   'application/zip': 'cbz',
 };
 
+function detectMimeFromBuffer(buffer: Buffer): string | null {
+  if (buffer.length < 4) return null;
+  // ZIP — PK\x03\x04
+  if (
+    buffer[0] === 0x50 && buffer[1] === 0x4B &&
+    buffer[2] === 0x03 && buffer[3] === 0x04
+  ) {
+    return 'application/zip';
+  }
+  // JPEG — \xFF\xD8\xFF
+  if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) {
+    return 'image/jpeg';
+  }
+  // PNG — \x89PNG
+  if (
+    buffer[0] === 0x89 && buffer[1] === 0x50 &&
+    buffer[2] === 0x4E && buffer[3] === 0x47
+  ) {
+    return 'image/png';
+  }
+  // WebP — RIFF....WEBP
+  if (
+    buffer.length >= 12 &&
+    buffer[8] === 0x57 && buffer[9] === 0x45 &&
+    buffer[10] === 0x42 && buffer[11] === 0x50
+  ) {
+    return 'image/webp';
+  }
+  return null;
+}
+
 @Injectable()
 export class FileService {
   private readonly logger = new Logger(FileService.name);
@@ -41,7 +72,8 @@ export class FileService {
     buffer: Buffer,
     mimetype: string,
   ): Promise<{ key: string; url: string }> {
-    const ext = EXT_MAP[mimetype] || 'bin';
+    const effectiveMime = EXT_MAP[mimetype] ? mimetype : (detectMimeFromBuffer(buffer) || mimetype);
+    const ext = EXT_MAP[effectiveMime] || 'bin';
     const key = `${prefix}/${randomUUID()}.${ext}`;
 
     try {
@@ -51,7 +83,7 @@ export class FileService {
         buffer,
         buffer.length,
         {
-          'Content-Type': mimetype,
+          'Content-Type': effectiveMime,
         },
       );
       return { key, url: `${this.endpoint}/${this.bucket}/${key}` };
