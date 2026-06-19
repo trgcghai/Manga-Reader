@@ -7,7 +7,6 @@ import {
   Query,
   Patch,
   Delete,
-  Header,
   HttpCode,
   HttpStatus,
   StreamableFile,
@@ -73,14 +72,6 @@ export class MangaController {
   }
 
   @Get('import-template')
-  @Header(
-    'Content-Type',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  )
-  @Header(
-    'Content-Disposition',
-    'attachment; filename="manga-import-template.xlsx"',
-  )
   downloadTemplate(): StreamableFile {
     const workbook = XLSX.utils.book_new();
     const headerRow = [
@@ -99,7 +90,10 @@ export class MangaController {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    return new StreamableFile(buffer);
+    return new StreamableFile(buffer, {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      disposition: 'attachment; filename="manga-import-template.xlsx"',
+    });
   }
 
   @Get(':id')
