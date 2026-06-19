@@ -27,14 +27,14 @@ export class TranslationService {
     return {
       id: translation.id,
       url: translation.url,
-      note: translation.note,
+      note: translation.note ?? undefined,
       createdAt: translation.createdAt.toISOString(),
       language: translation.language,
       translator: translation.translator,
       chapter: {
         id: translation.chapter.id,
         number: translation.chapter.number,
-        title: translation.chapter.title,
+        title: translation.chapter.title ?? undefined,
         manga: {
           id: translation.chapter.manga.id,
           title: translation.chapter.manga.title,
