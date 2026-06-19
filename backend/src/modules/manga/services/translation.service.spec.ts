@@ -51,7 +51,8 @@ describe('TranslationService', () => {
   };
 
   beforeEach(async () => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
+    mockFileService.delete.mockResolvedValue(undefined);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TranslationService,
@@ -188,6 +189,32 @@ describe('TranslationService', () => {
       await service.update(10, 5, 1, dto);
       expect(mockFileService.delete).not.toHaveBeenCalled();
     });
+
+    it('should not delete file when URL is not provided', async () => {
+      const withUrl = {
+        ...translation,
+        url: 'http://localhost:9000/manga-pages/old/file.cbz',
+      };
+      mockTranslationRepo.findById.mockResolvedValue(withUrl);
+      mockTranslationRepo.update.mockResolvedValue(withUrl);
+      const dtoNoUrl = { languageId: 2 };
+      mockLanguageService.findOne.mockResolvedValue({ id: 2, code: 'fr', name: 'French' } as Language);
+      mockTranslationRepo.findByChapterAndLanguageAndTranslator.mockResolvedValue(null);
+      await service.update(10, 5, 1, dtoNoUrl);
+      expect(mockFileService.delete).not.toHaveBeenCalled();
+    });
+
+    it('should propagate file delete error during update', async () => {
+      const withUrl = {
+        ...translation,
+        url: 'http://localhost:9000/manga-pages/old/file.cbz',
+      };
+      mockTranslationRepo.findById.mockResolvedValue(withUrl);
+      mockLanguageService.findOne.mockResolvedValue({ id: 2, code: 'fr', name: 'French' } as Language);
+      mockTranslationRepo.findByChapterAndLanguageAndTranslator.mockResolvedValue(null);
+      mockFileService.delete.mockRejectedValue(new Error('Minio error'));
+      await expect(service.update(10, 5, 1, { url: '/new/path' })).rejects.toThrow('Minio error');
+    });
   });
 
   describe('delete', () => {
@@ -233,6 +260,16 @@ describe('TranslationService', () => {
       mockTranslationRepo.delete.mockResolvedValue(undefined);
       await service.delete(10, 5, 1);
       expect(mockFileService.delete).not.toHaveBeenCalled();
+    });
+
+    it('should propagate file delete error during delete', async () => {
+      const withUrl = {
+        ...translation,
+        url: 'http://localhost:9000/manga-pages/old/file.cbz',
+      };
+      mockTranslationRepo.findById.mockResolvedValue(withUrl);
+      mockFileService.delete.mockRejectedValue(new Error('Minio error'));
+      await expect(service.delete(10, 5, 1)).rejects.toThrow('Minio error');
     });
 
     it('should not attempt file delete when translation has no url', async () => {
