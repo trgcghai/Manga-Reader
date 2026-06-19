@@ -231,6 +231,51 @@ describe('TranslationService', () => {
     });
   });
 
+  describe('findOne', () => {
+    it('should return TranslationDetailResponse when translation exists', async () => {
+      const found = {
+        id: 1,
+        url: '/path/to/file.cbz',
+        note: 'v2',
+        createdAt: new Date('2026-01-01'),
+        language: { id: 1, code: 'en', name: 'English' },
+        translator: { id: 1, name: 'Translator A' },
+        chapter: {
+          id: 5,
+          number: 1,
+          title: 'Chapter 1',
+          manga: { id: 10, title: 'One Piece' },
+        },
+      } as unknown as Translation;
+      mockTranslationRepo.findById.mockResolvedValue(found);
+
+      const result = await service.findOne(1);
+
+      expect(mockTranslationRepo.findById).toHaveBeenCalledWith(1);
+      expect(result).toEqual({
+        id: 1,
+        url: '/path/to/file.cbz',
+        note: 'v2',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        language: { id: 1, code: 'en', name: 'English' },
+        translator: { id: 1, name: 'Translator A' },
+        chapter: {
+          id: 5,
+          number: 1,
+          title: 'Chapter 1',
+          manga: { id: 10, title: 'One Piece' },
+        },
+      });
+    });
+
+    it('should throw NotFoundException when translation does not exist', async () => {
+      mockTranslationRepo.findById.mockResolvedValue(null);
+
+      await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
+      expect(mockTranslationRepo.findById).toHaveBeenCalledWith(999);
+    });
+  });
+
   describe('delete', () => {
     it('should throw NotFoundException when translation does not exist', async () => {
       mockTranslationRepo.findById.mockResolvedValue(null);

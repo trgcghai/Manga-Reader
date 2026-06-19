@@ -7,7 +7,7 @@ import { TranslationRepository } from 'src/modules/manga/repositories/translatio
 import { LanguageService } from 'src/modules/language/language.service';
 import { TranslatorService } from 'src/modules/translator/translator.service';
 import { FileService } from 'src/modules/file/file.service';
-import { UpdateTranslationDto } from 'src/modules/manga/dto/translation.dto';
+import { TranslationDetailResponse, UpdateTranslationDto } from 'src/modules/manga/dto/translation.dto';
 import { extractKeyFromUrl } from 'src/common/utils/file-mime.util';
 
 @Injectable()
@@ -18,6 +18,30 @@ export class TranslationService {
     private readonly translatorService: TranslatorService,
     private readonly fileService: FileService,
   ) {}
+
+  findOne = async (translationId: number): Promise<TranslationDetailResponse> => {
+    const translation = await this.translationRepo.findById(translationId);
+    if (!translation) {
+      throw new NotFoundException('Translation not found');
+    }
+    return {
+      id: translation.id,
+      url: translation.url,
+      note: translation.note,
+      createdAt: translation.createdAt.toISOString(),
+      language: translation.language,
+      translator: translation.translator,
+      chapter: {
+        id: translation.chapter.id,
+        number: translation.chapter.number,
+        title: translation.chapter.title,
+        manga: {
+          id: translation.chapter.manga.id,
+          title: translation.chapter.manga.title,
+        },
+      },
+    };
+  };
 
   update = async (
     mangaId: number,
