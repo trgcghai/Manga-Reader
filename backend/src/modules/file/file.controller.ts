@@ -8,9 +8,11 @@ import {
   ParseFilePipe,
   FileTypeValidator,
   MaxFileSizeValidator,
+  Body,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileService } from './file.service';
+import { UploadTranslationFileDto } from './dto/uploadTranslationFile.dto';
 import { ALLOWED_MIME_TYPES } from 'src/common/constants/chapter.constant';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -35,6 +37,26 @@ export class FileController {
     file: Express.Multer.File,
   ) {
     return this.fileService.upload('manga/cover', file.buffer, file.mimetype);
+  }
+
+  @Post('upload/translation')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadTranslation(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 15 * 1024 * 1024 }),
+          new FileTypeValidator({
+            fileType: /^application\/zip$/,
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+    @Body() dto: UploadTranslationFileDto,
+  ) {
+    const prefix = `/manga/${dto.mangaId}/chapter/${dto.chapterNumber}/translations`;
+    return this.fileService.upload(prefix, file.buffer, file.mimetype);
   }
 
   @Delete('*key')

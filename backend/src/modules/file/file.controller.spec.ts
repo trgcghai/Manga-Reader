@@ -53,6 +53,32 @@ describe('FileController', () => {
     });
   });
 
+  describe('POST /files/upload/translation', () => {
+    it('should upload translation file with mangaId and chapterNumber', async () => {
+      const mockResult = {
+        key: '/manga/1/chapter/3/translations/uuid.cbz',
+        url: 'http://localhost:9000/manga-pages/manga/1/chapter/3/translations/uuid.cbz',
+      };
+      mockFileService.upload.mockResolvedValue(mockResult);
+
+      const file = {
+        originalname: 'chapter.cbz',
+        buffer: Buffer.from('test'),
+        mimetype: 'application/zip',
+      } as Express.Multer.File;
+
+      const dto = { mangaId: 1, chapterNumber: 3 };
+
+      const result = await controller.uploadTranslation(file, dto);
+      expect(result).toEqual(mockResult);
+      expect(mockFileService.upload).toHaveBeenCalledWith(
+        '/manga/1/chapter/3/translations',
+        file.buffer,
+        file.mimetype,
+      );
+    });
+  });
+
   describe('DELETE /files/:key', () => {
     it('should delete file by key', async () => {
       mockFileService.delete.mockResolvedValue(undefined);
