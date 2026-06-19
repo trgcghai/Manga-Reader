@@ -6,7 +6,9 @@ import {
 import { TranslationRepository } from 'src/modules/manga/repositories/translation.repository';
 import { LanguageService } from 'src/modules/language/language.service';
 import { TranslatorService } from 'src/modules/translator/translator.service';
+import { FileService } from 'src/modules/file/file.service';
 import { UpdateTranslationDto } from 'src/modules/manga/dto/translation.dto';
+import { extractKeyFromUrl } from 'src/common/utils/file-mime.util';
 
 @Injectable()
 export class TranslationService {
@@ -14,6 +16,7 @@ export class TranslationService {
     private readonly translationRepo: TranslationRepository,
     private readonly languageService: LanguageService,
     private readonly translatorService: TranslatorService,
+    private readonly fileService: FileService,
   ) {}
 
   update = async (
@@ -63,6 +66,17 @@ export class TranslationService {
       }
     }
 
+    if (dto.url !== undefined && translation.url) {
+      const key = extractKeyFromUrl(
+        translation.url,
+        this.fileService.endpoint,
+        this.fileService.bucket,
+      );
+      if (key) {
+        await this.fileService.delete(key);
+      }
+    }
+
     const result = await this.translationRepo.update(translationId, partial);
     if (!result) {
       throw new NotFoundException('Translation not found');
@@ -84,6 +98,17 @@ export class TranslationService {
     }
     if (translation.chapter.manga.id !== mangaId) {
       throw new NotFoundException('Translation not found');
+    }
+
+    if (translation.url) {
+      const key = extractKeyFromUrl(
+        translation.url,
+        this.fileService.endpoint,
+        this.fileService.bucket,
+      );
+      if (key) {
+        await this.fileService.delete(key);
+      }
     }
 
     await this.translationRepo.delete(translationId);

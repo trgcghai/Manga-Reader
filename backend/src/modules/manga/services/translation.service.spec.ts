@@ -4,6 +4,7 @@ import { TranslationService } from './translation.service';
 import { TranslationRepository } from 'src/modules/manga/repositories/translation.repository';
 import { LanguageService } from 'src/modules/language/language.service';
 import { TranslatorService } from 'src/modules/translator/translator.service';
+import { FileService } from 'src/modules/file/file.service';
 import { Translation } from 'src/modules/manga/entities/translation.entity';
 import { Language } from 'src/modules/language/entities/language.entity';
 import { Translator } from 'src/modules/translator/entities/translator.entity';
@@ -25,6 +26,12 @@ describe('TranslationService', () => {
 
   const mockTranslatorService = {
     findOne: jest.fn(),
+  };
+
+  const mockFileService = {
+    endpoint: 'http://localhost:9000',
+    bucket: 'manga-pages',
+    delete: jest.fn().mockResolvedValue(undefined),
   };
 
   const language = { id: 1, code: 'en', name: 'English' } as Language;
@@ -51,6 +58,7 @@ describe('TranslationService', () => {
         { provide: TranslationRepository, useValue: mockTranslationRepo },
         { provide: LanguageService, useValue: mockLanguageService },
         { provide: TranslatorService, useValue: mockTranslatorService },
+        { provide: FileService, useValue: mockFileService },
       ],
     }).compile();
 
@@ -149,6 +157,37 @@ describe('TranslationService', () => {
       });
       expect(result).toEqual(updated);
     });
+
+    it('should delete old file when url is changed to a Minio url', async () => {
+      const withOldUrl = {
+        ...translation,
+        url: 'http://localhost:9000/manga-pages/old/file.cbz',
+      };
+      mockTranslationRepo.findById.mockResolvedValue(withOldUrl);
+      mockLanguageService.findOne.mockResolvedValue(language);
+      mockTranslationRepo.findByChapterAndLanguageAndTranslator.mockResolvedValue(
+        null,
+      );
+      mockTranslationRepo.update.mockResolvedValue({
+        ...withOldUrl,
+        url: 'http://localhost:9000/manga-pages/new/file.cbz',
+      });
+      await service.update(10, 5, 1, { url: 'http://localhost:9000/manga-pages/new/file.cbz' });
+      expect(mockFileService.delete).toHaveBeenCalledWith('old/file.cbz');
+    });
+
+    it('should not delete file when updating url but old url is not a Minio url', async () => {
+      mockTranslationRepo.findById.mockResolvedValue(translation);
+      mockTranslationRepo.findByChapterAndLanguageAndTranslator.mockResolvedValue(
+        null,
+      );
+      mockTranslationRepo.update.mockResolvedValue({
+        ...translation,
+        url: '/new/path',
+      });
+      await service.update(10, 5, 1, dto);
+      expect(mockFileService.delete).not.toHaveBeenCalled();
+    });
   });
 
   describe('delete', () => {
@@ -176,6 +215,32 @@ describe('TranslationService', () => {
       mockTranslationRepo.delete.mockResolvedValue(undefined);
       await service.delete(10, 5, 1);
       expect(mockTranslationRepo.delete).toHaveBeenCalledWith(1);
+    });
+
+    it('should delete file when translation has a Minio url', async () => {
+      const withUrl = {
+        ...translation,
+        url: 'http://localhost:9000/manga-pages/some/file.cbz',
+      };
+      mockTranslationRepo.findById.mockResolvedValue(withUrl);
+      mockTranslationRepo.delete.mockResolvedValue(undefined);
+      await service.delete(10, 5, 1);
+      expect(mockFileService.delete).toHaveBeenCalledWith('some/file.cbz');
+    });
+
+    it('should not delete file when translation url is not a Minio url', async () => {
+      mockTranslationRepo.findById.mockResolvedValue(translation);
+      mockTranslationRepo.delete.mockResolvedValue(undefined);
+      await service.delete(10, 5, 1);
+      expect(mockFileService.delete).not.toHaveBeenCalled();
+    });
+
+    it('should not attempt file delete when translation has no url', async () => {
+      const noUrl = { ...translation, url: null };
+      mockTranslationRepo.findById.mockResolvedValue(noUrl);
+      mockTranslationRepo.delete.mockResolvedValue(undefined);
+      await service.delete(10, 5, 1);
+      expect(mockFileService.delete).not.toHaveBeenCalled();
     });
   });
 });
