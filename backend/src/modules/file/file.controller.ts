@@ -17,7 +17,7 @@ import { ALLOWED_MIME_TYPES } from 'src/common/constants/chapter.constant';
 import { TRANSLATION_ALLOWED_MIME_TYPES } from 'src/common/constants/translation.constant';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
-const MAX_TRANSLATION_FILE_SIZE = 15 * 1024 * 1024;
+const MAX_TRANSLATION_FILE_SIZE = 100 * 1024 * 1024;
 
 @Controller('files')
 export class FileController {

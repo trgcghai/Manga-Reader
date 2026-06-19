@@ -3,7 +3,6 @@ import { z } from 'zod'
 import { useLanguageList } from '#/hooks/useLanguages'
 import { useTranslatorList } from '#/hooks/useTranslators'
 import { Button } from '#/components/ui/button'
-import { Input } from '#/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -24,16 +23,18 @@ import {
   FieldLabel,
   FieldError as UiFieldError,
 } from '#/components/ui/field'
-import { Loader2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Loader2, Upload } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import type { ChangeEvent, DragEvent } from 'react'
 import { useUpdateTranslation } from '#/hooks/useManga'
 import { useTranslationFileUpload } from '#/hooks/useFile'
 import type { TranslationDetail } from '#/services/api/mangaApi'
+import { Badge } from '#/components/ui/badge'
 
 const translationSchema = z.object({
   languageId: z.number().refine((n) => n > 0, 'Language is required'),
   translatorId: z.number().refine((n) => n > 0, 'Translator is required'),
-  file: z.instanceof(File).nullable().optional(),
+  file: z.instanceof(File, { message: 'CBZ file is required' }),
 })
 
 type FormValues = z.infer<typeof translationSchema>
@@ -56,49 +57,71 @@ export default function EditTranslationDialog({
   translation,
 }: EditTranslationDialogProps) {
   const updateMutation = useUpdateTranslation(mangaId, chapterId)
-  const [showFileInput, setShowFileInput] = useState(false)
   const uploadMutation = useTranslationFileUpload(mangaId)
-  const existingFileName = translation.url.split('/').pop() ?? 'current file'
+  const [dragOver, setDragOver] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { data: languages, isLoading: languagesLoading } = useLanguageList()
   const { data: translatorsData, isLoading: translatorsLoading } =
     useTranslatorList(1, 100)
 
+  const handleFileSelect =
+    (field: { handleChange: (v: File) => void }) =>
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0] ?? null
+      if (!file) return
+      field.handleChange(file)
+      e.target.value = ''
+    }
+
+  const handleDragOver = (e: DragEvent) => {
+    e.preventDefault()
+    setDragOver(true)
+  }
+
+  const handleDragLeave = () => setDragOver(false)
+
+  const handleDrop =
+    (field: { handleChange: (v: File) => void }) => (e: DragEvent) => {
+      e.preventDefault()
+      setDragOver(false)
+      const file = e.dataTransfer.files.item(0)
+      if (!file) return
+      field.handleChange(file)
+    }
+
   const defaultValues: FormValues = {
     languageId: translation.language.id,
     translatorId: translation.translator.id,
+    file: null as unknown as File,
   }
 
   const form = useForm({
     validators: { onSubmit: translationSchema },
     defaultValues,
     onSubmit: async (values) => {
-      let url = translation.url
-      if (values.value.file) {
-        try {
-          const result = await uploadMutation.mutateAsync({
-            file: values.value.file,
-            chapterNumber,
-          })
-          url = result.url
-        } catch {
-          return
-        }
+      try {
+        const { url } = await uploadMutation.mutateAsync({
+          file: values.value.file,
+          chapterNumber,
+        })
+        updateMutation.mutate(
+          {
+            translationId: translation.id,
+            data: {
+              languageId: values.value.languageId,
+              translatorId: values.value.translatorId,
+              url,
+            },
+          },
+          {
+            onSuccess: () => {
+              onOpenChange(false)
+            },
+          },
+        )
+      } catch {
+        // error displayed via uploadMutation.error
       }
-      updateMutation.mutate(
-        {
-          translationId: translation.id,
-          data: {
-            languageId: values.value.languageId,
-            translatorId: values.value.translatorId,
-            url,
-          },
-        },
-        {
-          onSuccess: () => {
-            onOpenChange(false)
-          },
-        },
-      )
     },
   })
 
@@ -206,41 +229,55 @@ export default function EditTranslationDialog({
             <form.Field name="file">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="edit-translation-file">
-                    CBZ File
-                  </FieldLabel>
-                  {showFileInput ? (
-                    <div className="space-y-2">
-                      <Input
-                        id="edit-translation-file"
-                        type="file"
-                        accept=".cbz,application/zip"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0] ?? null
-                          field.handleChange(file)
-                        }}
-                      />
-                      {field.state.value && (
-                        <p className="text-sm text-muted-foreground">
+                  <FieldLabel required>CBZ File</FieldLabel>
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop(field)}
+                    onClick={() => fileInputRef.current?.click()}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        fileInputRef.current?.click()
+                      }
+                    }}
+                    className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                      dragOver
+                        ? 'border-primary bg-primary/5'
+                        : 'border-muted-foreground/25 hover:border-muted-foreground/50'
+                    }`}
+                    aria-invalid={
+                      field.state.meta.errors.length > 0 || undefined
+                    }
+                  >
+                    {
+                      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                      field.state.value ? (
+                        <Badge className="text-sm font-medium">
                           {field.state.value.name}
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">
-                        {existingFileName}
-                      </span>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowFileInput(true)}
-                      >
-                        Replace
-                      </Button>
-                    </div>
-                  )}
+                        </Badge>
+                      ) : (
+                        <>
+                          <Upload className="size-8 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">
+                            Drag and drop your CBZ file here, or click to browse
+                          </p>
+                          <Button type="button" variant="outline" size="sm">
+                            Browse Files
+                          </Button>
+                        </>
+                      )
+                    }
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".cbz,application/zip"
+                      className="hidden"
+                      onChange={handleFileSelect(field)}
+                    />
+                  </div>
                   {field.state.meta.errors.length > 0 && (
                     <UiFieldError errors={field.state.meta.errors} />
                   )}
@@ -260,7 +297,10 @@ export default function EditTranslationDialog({
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting || uploadMutation.isPending}>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || uploadMutation.isPending}
+                >
                   {isSubmitting || uploadMutation.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

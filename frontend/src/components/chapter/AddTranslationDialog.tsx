@@ -3,7 +3,6 @@ import { z } from 'zod'
 import { useLanguageList } from '#/hooks/useLanguages'
 import { useTranslatorList } from '#/hooks/useTranslators'
 import { Button } from '#/components/ui/button'
-import { Input } from '#/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -24,10 +23,12 @@ import {
   FieldLabel,
   FieldError as UiFieldError,
 } from '#/components/ui/field'
-import { Loader2 } from 'lucide-react'
-import { useEffect } from 'react'
+import { Loader2, Upload } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import type { ChangeEvent, DragEvent } from 'react'
 import { useCreateChapterForManga } from '#/hooks/useManga'
 import { useTranslationFileUpload } from '#/hooks/useFile'
+import { Badge } from '#/components/ui/badge'
 
 const translationSchema = z.object({
   languageId: z.number().refine((n) => n > 0, 'Language is required'),
@@ -40,6 +41,7 @@ type FormValues = z.infer<typeof translationSchema>
 const defaultValues: FormValues = {
   languageId: 0,
   translatorId: 0,
+  file: null as unknown as File,
 }
 
 interface AddTranslationDialogProps {
@@ -59,9 +61,36 @@ export default function AddTranslationDialog({
 }: AddTranslationDialogProps) {
   const createMutation = useCreateChapterForManga(mangaId)
   const uploadMutation = useTranslationFileUpload(mangaId)
+  const [dragOver, setDragOver] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { data: languages, isLoading: languagesLoading } = useLanguageList()
   const { data: translatorsData, isLoading: translatorsLoading } =
     useTranslatorList(1, 100)
+
+  const handleFileSelect =
+    (field: { handleChange: (v: File) => void }) =>
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0] ?? null
+      if (!file) return
+      field.handleChange(file)
+      e.target.value = ''
+    }
+
+  const handleDragOver = (e: DragEvent) => {
+    e.preventDefault()
+    setDragOver(true)
+  }
+
+  const handleDragLeave = () => setDragOver(false)
+
+  const handleDrop =
+    (field: { handleChange: (v: File) => void }) => (e: DragEvent) => {
+      e.preventDefault()
+      setDragOver(false)
+      const file = e.dataTransfer.files.item(0)
+      if (!file) return
+      field.handleChange(file)
+    }
 
   const form = useForm({
     validators: { onSubmit: translationSchema },
@@ -197,22 +226,56 @@ export default function AddTranslationDialog({
             <form.Field name="file">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="translation-file" required>
-                    CBZ File
-                  </FieldLabel>
-                  <Input
-                    id="translation-file"
-                    type="file"
-                    accept=".cbz,application/zip"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0] ?? null
-                      field.handleChange(file)
+                  <FieldLabel required>CBZ File</FieldLabel>
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop(field)}
+                    onClick={() => fileInputRef.current?.click()}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        fileInputRef.current?.click()
+                      }
                     }}
-                    aria-invalid={field.state.meta.errors.length > 0 || undefined}
-                  />
-                  {field.state.value && (
-                    <p className="text-sm text-muted-foreground">{field.state.value.name}</p>
-                  )}
+                    className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                      dragOver
+                        ? 'border-primary bg-primary/5'
+                        : 'border-muted-foreground/25 hover:border-muted-foreground/50'
+                    }`}
+                    aria-invalid={
+                      field.state.meta.errors.length > 0 || undefined
+                    }
+                  >
+                    {
+                      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                      field.state.value ? (
+                        <Badge className="text-sm font-medium">
+                          {field.state.value.name}
+                        </Badge>
+                      ) : (
+                        <>
+                          {' '}
+                          <Upload className="size-8 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">
+                            Drag and drop your CBZ file here, or click to browse
+                          </p>
+                          <Button type="button" variant="outline" size="sm">
+                            Browse Files
+                          </Button>
+                        </>
+                      )
+                    }
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".cbz,application/zip"
+                      className="hidden"
+                      onChange={handleFileSelect(field)}
+                    />
+                  </div>
                   {field.state.meta.errors.length > 0 && (
                     <UiFieldError errors={field.state.meta.errors} />
                   )}
@@ -232,7 +295,10 @@ export default function AddTranslationDialog({
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting || uploadMutation.isPending}>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || uploadMutation.isPending}
+                >
                   {isSubmitting || uploadMutation.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

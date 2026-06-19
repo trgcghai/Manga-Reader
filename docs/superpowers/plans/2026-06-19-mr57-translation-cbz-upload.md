@@ -217,7 +217,7 @@ async uploadTranslation(
   @UploadedFile(
     new ParseFilePipe({
       validators: [
-        new MaxFileSizeValidator({ maxSize: 15 * 1024 * 1024 }),
+        new MaxFileSizeValidator({ maxSize: 100 * 1024 * 1024 }),
         new FileTypeValidator({
           fileType: /^application\/zip$/,
         }),

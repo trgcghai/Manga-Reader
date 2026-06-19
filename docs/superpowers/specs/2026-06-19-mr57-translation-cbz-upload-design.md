@@ -69,7 +69,7 @@ async uploadTranslation(
   @UploadedFile(
     new ParseFilePipe({
       validators: [
-        new MaxFileSizeValidator({ maxSize: 15 * 1024 * 1024 }),
+        new MaxFileSizeValidator({ maxSize: 100 * 1024 * 1024 }),
         new FileTypeValidator({
           fileType: /^application\/zip$/,
         }),
@@ -84,7 +84,7 @@ async uploadTranslation(
 }
 ```
 
-- 15MB file size limit
+- 100MB file size limit
 - Accepts only `application/zip` (CBZ) files
 - Constructs Minio prefix: `/manga/{mangaId}/chapter/{chapterNumber}/translations/`
 - Returns `{ key, url }` on success
@@ -92,7 +92,7 @@ async uploadTranslation(
 ### 5. Error handling
 
 - Missing/invalid `mangaId` or `chapterNumber` → 400 (ValidationPipe)
-- File > 15MB → 400 (MaxFileSizeValidator)
+- File > 100MB → 400 (MaxFileSizeValidator)
 - Non-CBZ file → 400 (FileTypeValidator)
 - Minio upload failure → 500 (InternalServerErrorException from `fileService.upload`)
 
@@ -141,7 +141,7 @@ it('should map application/zip to .cbz extension', async () => {
 
 - [ ] `POST /files/upload/translation` accepts multipart form: `file` (CBZ), `mangaId` (number), `chapterNumber` (number)
 - [ ] Returns 400 if `mangaId` or `chapterNumber` is missing or not a number
-- [ ] Returns 400 if file > 15MB
+- [ ] Returns 400 if file > 100MB
 - [ ] Returns 400 if file is not `application/zip`
 - [ ] Stores file at `/manga/{mangaId}/chapter/{chapterNumber}/translations/{uuid}.cbz`
 - [ ] Returns `{ key, url }` on success
