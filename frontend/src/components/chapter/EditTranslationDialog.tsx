@@ -28,13 +28,16 @@ import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent } from 'react'
 import { useUpdateTranslation } from '#/hooks/useManga'
 import { useTranslationFileUpload } from '#/hooks/useFile'
-import type { TranslationDetail } from '#/services/api/mangaApi'
+import type {
+  TranslationDetail,
+  UpdateTranslationPayload,
+} from '#/services/api/mangaApi'
 import { Badge } from '#/components/ui/badge'
 
 const translationSchema = z.object({
-  languageId: z.number().refine((n) => n > 0, 'Language is required'),
-  translatorId: z.number().refine((n) => n > 0, 'Translator is required'),
-  file: z.instanceof(File, { message: 'CBZ file is required' }),
+  languageId: z.number().optional(),
+  translatorId: z.number().optional(),
+  file: z.instanceof(File).optional(),
 })
 
 type FormValues = z.infer<typeof translationSchema>
@@ -92,7 +95,6 @@ export default function EditTranslationDialog({
   const defaultValues: FormValues = {
     languageId: translation.language.id,
     translatorId: translation.translator.id,
-    file: null as unknown as File,
   }
 
   const form = useForm({
@@ -100,18 +102,26 @@ export default function EditTranslationDialog({
     defaultValues,
     onSubmit: async (values) => {
       try {
-        const { url } = await uploadMutation.mutateAsync({
-          file: values.value.file,
-          chapterNumber,
-        })
+        const payload: UpdateTranslationPayload = {}
+
+        if (values.value.languageId) {
+          payload.languageId = values.value.languageId
+        }
+        if (values.value.translatorId) {
+          payload.translatorId = values.value.translatorId
+        }
+        if (values.value.file) {
+          const { url } = await uploadMutation.mutateAsync({
+            file: values.value.file,
+            chapterNumber,
+          })
+          payload.url = url
+        }
+
         updateMutation.mutate(
           {
             translationId: translation.id,
-            data: {
-              languageId: values.value.languageId,
-              translatorId: values.value.translatorId,
-              url,
-            },
+            data: payload,
           },
           {
             onSuccess: () => {
@@ -153,7 +163,7 @@ export default function EditTranslationDialog({
             <form.Field name="languageId">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="edit-translation-language" required>
+                  <FieldLabel htmlFor="edit-translation-language">
                     Language
                   </FieldLabel>
                   <Select
@@ -190,7 +200,7 @@ export default function EditTranslationDialog({
             <form.Field name="translatorId">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="edit-translation-translator" required>
+                  <FieldLabel htmlFor="edit-translation-translator">
                     Translator
                   </FieldLabel>
                   <Select
@@ -229,7 +239,7 @@ export default function EditTranslationDialog({
             <form.Field name="file">
               {(field) => (
                 <UiField>
-                  <FieldLabel required>CBZ File</FieldLabel>
+                  <FieldLabel>CBZ File</FieldLabel>
                   <div
                     role="button"
                     tabIndex={0}
@@ -252,24 +262,21 @@ export default function EditTranslationDialog({
                       field.state.meta.errors.length > 0 || undefined
                     }
                   >
-                    {
-                      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                      field.state.value ? (
-                        <Badge className="text-sm font-medium">
-                          {field.state.value.name}
-                        </Badge>
-                      ) : (
-                        <>
-                          <Upload className="size-8 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground">
-                            Drag and drop your CBZ file here, or click to browse
-                          </p>
-                          <Button type="button" variant="outline" size="sm">
-                            Browse Files
-                          </Button>
-                        </>
-                      )
-                    }
+                    {field.state.value ? (
+                      <Badge className="text-sm font-medium">
+                        {field.state.value.name}
+                      </Badge>
+                    ) : (
+                      <>
+                        <Upload className="size-8 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          Drag and drop a new CBZ file here, or click to browse
+                        </p>
+                        <Button type="button" variant="outline" size="sm">
+                          Browse Files
+                        </Button>
+                      </>
+                    )}
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -280,6 +287,11 @@ export default function EditTranslationDialog({
                   </div>
                   {field.state.meta.errors.length > 0 && (
                     <UiFieldError errors={field.state.meta.errors} />
+                  )}
+                  {translation.url && (
+                    <div className="flex items-center gap-2">
+                      Current file: <Badge>{translation.url.split('/').pop()}</Badge>
+                    </div>
                   )}
                 </UiField>
               )}
