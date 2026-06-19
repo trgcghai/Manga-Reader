@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ReaderRouteImport } from './routes/_reader'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
@@ -20,6 +21,7 @@ import { Route as AdminAuthorsRouteImport } from './routes/admin/authors'
 import { Route as AdminMangasIndexRouteImport } from './routes/admin/mangas/index'
 import { Route as AdminMangasNewRouteImport } from './routes/admin/mangas/new'
 import { Route as AdminMangasIdRouteImport } from './routes/admin/mangas/$id'
+import { Route as ReaderReaderTranslationIdRouteImport } from './routes/_reader/reader.$translationId'
 import { Route as AppMangaIdRouteImport } from './routes/_app/manga/$id'
 import { Route as AdminMangasIdIndexRouteImport } from './routes/admin/mangas/$id.index'
 import { Route as AdminMangasIdEditRouteImport } from './routes/admin/mangas/$id.edit'
@@ -27,6 +29,10 @@ import { Route as AdminMangasIdEditRouteImport } from './routes/admin/mangas/$id
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReaderRoute = ReaderRouteImport.update({
+  id: '/_reader',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -78,6 +84,12 @@ const AdminMangasIdRoute = AdminMangasIdRouteImport.update({
   path: '/mangas/$id',
   getParentRoute: () => AdminRoute,
 } as any)
+const ReaderReaderTranslationIdRoute =
+  ReaderReaderTranslationIdRouteImport.update({
+    id: '/reader/$translationId',
+    path: '/reader/$translationId',
+    getParentRoute: () => ReaderRoute,
+  } as any)
 const AppMangaIdRoute = AppMangaIdRouteImport.update({
   id: '/manga/$id',
   path: '/manga/$id',
@@ -103,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/admin/translators': typeof AdminTranslatorsRoute
   '/admin/': typeof AdminIndexRoute
   '/manga/$id': typeof AppMangaIdRoute
+  '/reader/$translationId': typeof ReaderReaderTranslationIdRoute
   '/admin/mangas/$id': typeof AdminMangasIdRouteWithChildren
   '/admin/mangas/new': typeof AdminMangasNewRoute
   '/admin/mangas/': typeof AdminMangasIndexRoute
@@ -110,13 +123,14 @@ export interface FileRoutesByFullPath {
   '/admin/mangas/$id/': typeof AdminMangasIdIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof AppIndexRoute
   '/admin/authors': typeof AdminAuthorsRoute
   '/admin/genres': typeof AdminGenresRoute
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/translators': typeof AdminTranslatorsRoute
-  '/': typeof AppIndexRoute
   '/admin': typeof AdminIndexRoute
   '/manga/$id': typeof AppMangaIdRoute
+  '/reader/$translationId': typeof ReaderReaderTranslationIdRoute
   '/admin/mangas/new': typeof AdminMangasNewRoute
   '/admin/mangas': typeof AdminMangasIndexRoute
   '/admin/mangas/$id/edit': typeof AdminMangasIdEditRoute
@@ -125,6 +139,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/_reader': typeof ReaderRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/admin/authors': typeof AdminAuthorsRoute
   '/admin/genres': typeof AdminGenresRoute
@@ -133,6 +148,7 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/_app/manga/$id': typeof AppMangaIdRoute
+  '/_reader/reader/$translationId': typeof ReaderReaderTranslationIdRoute
   '/admin/mangas/$id': typeof AdminMangasIdRouteWithChildren
   '/admin/mangas/new': typeof AdminMangasNewRoute
   '/admin/mangas/': typeof AdminMangasIndexRoute
@@ -150,6 +166,7 @@ export interface FileRouteTypes {
     | '/admin/translators'
     | '/admin/'
     | '/manga/$id'
+    | '/reader/$translationId'
     | '/admin/mangas/$id'
     | '/admin/mangas/new'
     | '/admin/mangas/'
@@ -157,13 +174,14 @@ export interface FileRouteTypes {
     | '/admin/mangas/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/admin/authors'
     | '/admin/genres'
     | '/admin/languages'
     | '/admin/translators'
-    | '/'
     | '/admin'
     | '/manga/$id'
+    | '/reader/$translationId'
     | '/admin/mangas/new'
     | '/admin/mangas'
     | '/admin/mangas/$id/edit'
@@ -171,6 +189,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
+    | '/_reader'
     | '/admin'
     | '/admin/authors'
     | '/admin/genres'
@@ -179,6 +198,7 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/admin/'
     | '/_app/manga/$id'
+    | '/_reader/reader/$translationId'
     | '/admin/mangas/$id'
     | '/admin/mangas/new'
     | '/admin/mangas/'
@@ -188,6 +208,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  ReaderRoute: typeof ReaderRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
 }
 
@@ -198,6 +219,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_reader': {
+      id: '/_reader'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ReaderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -270,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMangasIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_reader/reader/$translationId': {
+      id: '/_reader/reader/$translationId'
+      path: '/reader/$translationId'
+      fullPath: '/reader/$translationId'
+      preLoaderRoute: typeof ReaderReaderTranslationIdRouteImport
+      parentRoute: typeof ReaderRoute
+    }
     '/_app/manga/$id': {
       id: '/_app/manga/$id'
       path: '/manga/$id'
@@ -305,6 +340,17 @@ const AppRouteChildren: AppRouteChildren = {
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+interface ReaderRouteChildren {
+  ReaderReaderTranslationIdRoute: typeof ReaderReaderTranslationIdRoute
+}
+
+const ReaderRouteChildren: ReaderRouteChildren = {
+  ReaderReaderTranslationIdRoute: ReaderReaderTranslationIdRoute,
+}
+
+const ReaderRouteWithChildren =
+  ReaderRoute._addFileChildren(ReaderRouteChildren)
 
 interface AdminMangasIdRouteChildren {
   AdminMangasIdEditRoute: typeof AdminMangasIdEditRoute
@@ -346,6 +392,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  ReaderRoute: ReaderRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
 }
 export const routeTree = rootRouteImport
