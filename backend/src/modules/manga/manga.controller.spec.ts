@@ -58,6 +58,7 @@ describe('MangaController', () => {
         {
           provide: TranslationService,
           useValue: {
+            findOne: jest.fn(),
             update: jest.fn(),
             delete: jest.fn(),
           },
@@ -325,6 +326,42 @@ describe('MangaController', () => {
       await expect(
         controller.createChapter(1, chapterDto as any),
       ).rejects.toThrow(ConflictException);
+    });
+  });
+
+  describe('getTranslation', () => {
+    const mockResponse = {
+      id: 1,
+      url: '/path/to/file.cbz',
+      note: null,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      language: { id: 1, code: 'en', name: 'English' },
+      translator: { id: 1, name: 'Translator A' },
+      chapter: {
+        id: 5,
+        number: 1,
+        title: 'Chapter 1',
+        manga: { id: 10, title: 'One Piece' },
+      },
+    };
+
+    it('should return translation when found', async () => {
+      translationService.findOne.mockResolvedValue(mockResponse);
+
+      const result = await controller.getTranslation(1);
+
+      expect(translationService.findOne).toHaveBeenCalledWith(1);
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should throw NotFoundException when translation not found', async () => {
+      translationService.findOne.mockRejectedValue(
+        new NotFoundException('Translation not found'),
+      );
+
+      await expect(controller.getTranslation(999)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

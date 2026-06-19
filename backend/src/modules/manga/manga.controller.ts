@@ -141,6 +141,13 @@ export class MangaController {
     );
   }
 
+  @Get('translations/:translationId')
+  getTranslation(
+    @Param('translationId', ParseIntPipe) translationId: number,
+  ) {
+    return this.translationService.findOne(translationId);
+  }
+
   @Delete(':mangaId/chapter/:chapterId/translations/:translationId')
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteTranslation(
