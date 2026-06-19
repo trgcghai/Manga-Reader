@@ -9,6 +9,7 @@ import {
   createChapter,
   updateTranslation,
   deleteTranslation,
+  getTranslation,
 } from '#/services/api/mangaApi'
 import type {
   CreateMangaPayload,
@@ -20,6 +21,7 @@ import type {
   CreateChapterPayload,
   UpdateTranslationPayload,
 } from '#/services/api/mangaApi'
+import type { TranslationDetailResponse } from '#/types/translation'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
@@ -183,5 +185,13 @@ export function useDeleteTranslation(mangaId: number, chapterId: number) {
         err instanceof Error ? err.message : 'Failed to delete translation',
       )
     },
+  })
+}
+
+export function useTranslation(id: number) {
+  return useQuery<TranslationDetailResponse>({
+    queryKey: ['manga', 'translations', id],
+    queryFn: () => getTranslation(id),
+    enabled: !!id,
   })
 }

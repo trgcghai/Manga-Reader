@@ -1,4 +1,5 @@
 import axiosInstance from '#/services/api/api'
+import type { TranslationDetailResponse } from '#/types/translation'
 
 export interface MangaResponse {
   id: number
@@ -173,4 +174,13 @@ export async function deleteTranslation(
   await axiosInstance.delete(
     `/mangas/${mangaId}/chapter/${chapterId}/translations/${translationId}`,
   )
+}
+
+export async function getTranslation(
+  id: number,
+): Promise<TranslationDetailResponse> {
+  const res = await axiosInstance.get<TranslationDetailResponse>(
+    `/mangas/translations/${id}`,
+  )
+  return res.data
 }
