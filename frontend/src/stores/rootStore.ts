@@ -35,7 +35,7 @@ const initialState = {
   displayMode: 'single' as const,
 }
 
-export const translationSlice: StateCreator<TranslationSlice, [], [], TranslationSlice> = (set, get) => ({
+export const translationSlice: StateCreator<TranslationSlice, [], [], TranslationSlice> = (set) => ({
   ...initialState,
 
   setCurrentTranslation: (t) =>
@@ -60,7 +60,10 @@ export const translationSlice: StateCreator<TranslationSlice, [], [], Translatio
 
   nextPage: () =>
     set((state) => ({
-      currentPage: Math.min(state.currentPage + 1, state.totalPages - 1),
+      currentPage:
+        state.totalPages === 0
+          ? state.currentPage
+          : Math.min(state.currentPage + 1, state.totalPages - 1),
     })),
 
   prevPage: () =>
