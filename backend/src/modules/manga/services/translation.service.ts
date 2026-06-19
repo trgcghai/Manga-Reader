@@ -66,7 +66,7 @@ export class TranslationService {
       }
     }
 
-    if (dto.url !== undefined && translation.url) {
+    if (dto.url !== undefined && translation.url && translation.url !== dto.url) {
       const key = extractKeyFromUrl(
         translation.url,
         this.fileService.endpoint,

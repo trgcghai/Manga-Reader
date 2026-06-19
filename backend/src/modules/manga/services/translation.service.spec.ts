@@ -204,6 +204,20 @@ describe('TranslationService', () => {
       expect(mockFileService.delete).not.toHaveBeenCalled();
     });
 
+    it('should not delete file when new URL is the same as the existing URL', async () => {
+      const sameUrl = 'http://localhost:9000/manga-pages/same/file.cbz';
+      const withSameUrl = {
+        ...translation,
+        url: sameUrl,
+      };
+      mockTranslationRepo.findById.mockResolvedValue(withSameUrl);
+      mockTranslationRepo.update.mockResolvedValue(withSameUrl);
+
+      await service.update(10, 5, 1, { url: sameUrl });
+
+      expect(mockFileService.delete).not.toHaveBeenCalled();
+    });
+
     it('should propagate file delete error during update', async () => {
       const withUrl = {
         ...translation,
