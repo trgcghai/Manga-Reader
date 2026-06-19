@@ -25,14 +25,15 @@ import {
   FieldError as UiFieldError,
 } from '#/components/ui/field'
 import { Loader2 } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useUpdateTranslation } from '#/hooks/useManga'
+import { useTranslationFileUpload } from '#/hooks/useFile'
 import type { TranslationDetail } from '#/services/api/mangaApi'
 
 const translationSchema = z.object({
   languageId: z.number().refine((n) => n > 0, 'Language is required'),
   translatorId: z.number().refine((n) => n > 0, 'Translator is required'),
-  url: z.string().min(1, 'Url is required'),
+  file: z.instanceof(File).nullable().optional(),
 })
 
 type FormValues = z.infer<typeof translationSchema>
@@ -42,6 +43,7 @@ interface EditTranslationDialogProps {
   onOpenChange: (open: boolean) => void
   mangaId: number
   chapterId: number
+  chapterNumber: number
   translation: TranslationDetail
 }
 
@@ -50,9 +52,13 @@ export default function EditTranslationDialog({
   onOpenChange,
   mangaId,
   chapterId,
+  chapterNumber,
   translation,
 }: EditTranslationDialogProps) {
   const updateMutation = useUpdateTranslation(mangaId, chapterId)
+  const [showFileInput, setShowFileInput] = useState(false)
+  const uploadMutation = useTranslationFileUpload(mangaId)
+  const existingFileName = translation.url.split('/').pop() ?? 'current file'
   const { data: languages, isLoading: languagesLoading } = useLanguageList()
   const { data: translatorsData, isLoading: translatorsLoading } =
     useTranslatorList(1, 100)
@@ -60,20 +66,31 @@ export default function EditTranslationDialog({
   const defaultValues: FormValues = {
     languageId: translation.language.id,
     translatorId: translation.translator.id,
-    url: translation.url,
   }
 
   const form = useForm({
     validators: { onSubmit: translationSchema },
     defaultValues,
     onSubmit: async (values) => {
+      let url = translation.url
+      if (values.value.file) {
+        try {
+          const result = await uploadMutation.mutateAsync({
+            file: values.value.file,
+            chapterNumber,
+          })
+          url = result.url
+        } catch {
+          return
+        }
+      }
       updateMutation.mutate(
         {
           translationId: translation.id,
           data: {
             languageId: values.value.languageId,
             translatorId: values.value.translatorId,
-            url: values.value.url,
+            url,
           },
         },
         {
@@ -186,21 +203,44 @@ export default function EditTranslationDialog({
               )}
             </form.Field>
 
-            <form.Field name="url">
+            <form.Field name="file">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="edit-translation-url" required>
-                    Url
+                  <FieldLabel htmlFor="edit-translation-file">
+                    CBZ File
                   </FieldLabel>
-                  <Input
-                    id="edit-translation-url"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="/chapters/volume-1/chapter-1"
-                    aria-invalid={
-                      field.state.meta.errors.length > 0 || undefined
-                    }
-                  />
+                  {showFileInput ? (
+                    <div className="space-y-2">
+                      <Input
+                        id="edit-translation-file"
+                        type="file"
+                        accept=".cbz,application/zip"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] ?? null
+                          field.handleChange(file)
+                        }}
+                      />
+                      {field.state.value && (
+                        <p className="text-sm text-muted-foreground">
+                          {field.state.value.name}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {existingFileName}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowFileInput(true)}
+                      >
+                        Replace
+                      </Button>
+                    </div>
+                  )}
                   {field.state.meta.errors.length > 0 && (
                     <UiFieldError errors={field.state.meta.errors} />
                   )}
@@ -216,15 +256,15 @@ export default function EditTranslationDialog({
                   type="button"
                   variant="outline"
                   onClick={() => onOpenChange(false)}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || uploadMutation.isPending}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
+                <Button type="submit" disabled={isSubmitting || uploadMutation.isPending}>
+                  {isSubmitting || uploadMutation.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
+                      {uploadMutation.isPending ? 'Uploading...' : 'Saving...'}
                     </>
                   ) : (
                     'Save'
@@ -235,6 +275,13 @@ export default function EditTranslationDialog({
           </form.Subscribe>
         </form>
 
+        {uploadMutation.error && (
+          <p className="px-6 pb-2 text-sm text-destructive">
+            {uploadMutation.error instanceof Error
+              ? uploadMutation.error.message
+              : 'Failed to upload file'}
+          </p>
+        )}
         {updateMutation.error && (
           <p className="px-6 pb-2 text-sm text-destructive">
             {updateMutation.error instanceof Error
