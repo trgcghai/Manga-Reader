@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FileController } from './file.controller';
 import { FileService } from './file.service';
+import { BadRequestException, StreamableFile } from '@nestjs/common';
+import { Readable } from 'node:stream';
 
 describe('FileController', () => {
   let controller: FileController;
@@ -11,8 +13,19 @@ describe('FileController', () => {
     delete: jest.fn(),
     download: jest.fn(),
     list: jest.fn(),
+    endpoint: 'http://localhost:9000/manga-pages',
+    bucket: 'manga-pages',
   } as jest.Mocked<
-    Pick<FileService, 'upload' | 'uploadTranslation' | 'delete'>
+    Pick<
+      FileService,
+      | 'upload'
+      | 'uploadTranslation'
+      | 'delete'
+      | 'download'
+      | 'list'
+      | 'endpoint'
+      | 'bucket'
+    >
   >;
 
   beforeEach(async () => {
@@ -88,6 +101,35 @@ describe('FileController', () => {
       mockFileService.delete.mockResolvedValue(undefined);
       await controller.delete('covers/test.jpg');
       expect(mockFileService.delete).toHaveBeenCalledWith('covers/test.jpg');
+    });
+  });
+
+  describe('GET /files/download', () => {
+    it('should return StreamableFile when valid url provided', async () => {
+      const mockStream = new Readable();
+      mockStream.push('test-data');
+      mockStream.push(null);
+      const mockStreamableFile = new StreamableFile(mockStream);
+      mockFileService.download.mockResolvedValue(mockStreamableFile);
+
+      const result = await controller.download(
+        'http://localhost:9000/manga-pages/manga-pages/manga/1/chapter/1/translations/file.cbz',
+      );
+
+      expect(result).toBeInstanceOf(StreamableFile);
+      expect(mockFileService.download).toHaveBeenCalledWith(
+        'manga/1/chapter/1/translations/file.cbz',
+      );
+    });
+
+    it('should throw BadRequestException when url is missing', async () => {
+      await expect(controller.download('')).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException when url is not a Minio url', async () => {
+      await expect(
+        controller.download('https://example.com/file.cbz'),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

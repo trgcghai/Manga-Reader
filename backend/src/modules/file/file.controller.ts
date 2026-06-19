@@ -1,8 +1,10 @@
 import {
   Controller,
   Post,
+  Get,
   Delete,
   Param,
+  Query,
   UploadedFile,
   UseInterceptors,
   ParseFilePipe,
@@ -10,10 +12,13 @@ import {
   MaxFileSizeValidator,
   Body,
   Logger,
+  StreamableFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileService } from './file.service';
 import { UploadTranslationFileDto } from './dto/uploadTranslationFile.dto';
+import { extractKeyFromUrl } from 'src/common/utils/file-mime.util';
 import { ALLOWED_MIME_TYPES } from 'src/common/constants/chapter.constant';
 import { TRANSLATION_ALLOWED_MIME_TYPES } from 'src/common/constants/translation.constant';
 
@@ -65,6 +70,31 @@ export class FileController {
     const prefix = `manga/${dto.mangaId}/chapter/${dto.chapterNumber}/translations`;
 
     return this.fileService.uploadTranslation(prefix, file);
+  }
+
+  @Get('download')
+  async download(@Query('url') url: string): Promise<StreamableFile> {
+    if (!url) {
+      throw new BadRequestException('url query parameter is required');
+    }
+
+    const key = extractKeyFromUrl(
+      url,
+      this.fileService.endpoint,
+      this.fileService.bucket,
+    );
+
+    if (!key) {
+      throw new BadRequestException('Invalid Minio URL');
+    }
+
+    const filename = key.split('/').pop() || 'download';
+    const file = await this.fileService.download(key);
+
+    return new StreamableFile(file.getStream(), {
+      type: file.getHeaders()['content-type'],
+      disposition: `attachment; filename="${filename}"`,
+    });
   }
 
   @Delete('*key')
