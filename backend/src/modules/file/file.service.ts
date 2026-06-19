@@ -17,6 +17,7 @@ const EXT_MAP: Record<string, string> = {
   'image/png': 'png',
   'image/webp': 'webp',
   'image/gif': 'gif',
+  'application/zip': 'cbz',
 };
 
 @Injectable()
