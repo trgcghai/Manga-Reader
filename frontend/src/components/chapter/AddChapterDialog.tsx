@@ -2,6 +2,7 @@ import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
 import { useLanguageList } from '#/hooks/useLanguages'
 import { useTranslatorList } from '#/hooks/useTranslators'
+import { useTranslationFileUpload } from '#/hooks/useFile'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import {
@@ -33,7 +34,7 @@ const chapterSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   languageId: z.number().refine((n) => n > 0, 'Language is required'),
   translatorId: z.number().refine((n) => n > 0, 'Translator is required'),
-  url: z.string().min(1, 'Url is required'),
+  file: z.instanceof(File, { message: 'CBZ file is required' }),
 })
 
 type FormValues = z.infer<typeof chapterSchema>
@@ -43,7 +44,6 @@ const defaultValues: FormValues = {
   title: '',
   languageId: 0,
   translatorId: 0,
-  url: '',
 }
 
 interface AddChapterDialogProps {
@@ -58,6 +58,7 @@ export default function AddChapterDialog({
   mangaId,
 }: AddChapterDialogProps) {
   const createMutation = useCreateChapterForManga(mangaId)
+  const uploadMutation = useTranslationFileUpload(mangaId)
   const { data: languages, isLoading: languagesLoading } = useLanguageList()
   const { data: translatorsData, isLoading: translatorsLoading } =
     useTranslatorList(1, 100)
@@ -72,12 +73,29 @@ export default function AddChapterDialog({
     validators: { onSubmit: chapterSchema },
     defaultValues,
     onSubmit: async (values) => {
-      createMutation.mutate(values.value, {
-        onSuccess: () => {
-          onOpenChange(false)
-          form.reset()
-        },
-      })
+      try {
+        const { url } = await uploadMutation.mutateAsync({
+          file: values.value.file,
+          chapterNumber: values.value.number,
+        })
+        createMutation.mutate(
+          {
+            number: values.value.number,
+            title: values.value.title,
+            languageId: values.value.languageId,
+            translatorId: values.value.translatorId,
+            url,
+          },
+          {
+            onSuccess: () => {
+              onOpenChange(false)
+              form.reset()
+            },
+          },
+        )
+      } catch {
+        // error displayed via uploadMutation.error
+      }
     },
   })
 
@@ -220,21 +238,25 @@ export default function AddChapterDialog({
               )}
             </form.Field>
 
-            <form.Field name="url">
+            <form.Field name="file">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="chapter-url" required>
-                    Url
+                  <FieldLabel htmlFor="chapter-file" required>
+                    CBZ File
                   </FieldLabel>
                   <Input
-                    id="chapter-url"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="/chapters/volume-1/chapter-1"
-                    aria-invalid={
-                      field.state.meta.errors.length > 0 || undefined
-                    }
+                    id="chapter-file"
+                    type="file"
+                    accept=".cbz,application/zip"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] ?? null
+                      field.handleChange(file)
+                    }}
+                    aria-invalid={field.state.meta.errors.length > 0 || undefined}
                   />
+                  {field.state.value && (
+                    <p className="text-sm text-muted-foreground">{field.state.value.name}</p>
+                  )}
                   {field.state.meta.errors.length > 0 && (
                     <UiFieldError errors={field.state.meta.errors} />
                   )}
@@ -250,15 +272,15 @@ export default function AddChapterDialog({
                   type="button"
                   variant="outline"
                   onClick={() => onOpenChange(false)}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || uploadMutation.isPending}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
+                <Button type="submit" disabled={isSubmitting || uploadMutation.isPending}>
+                  {isSubmitting || uploadMutation.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating...
+                      {uploadMutation.isPending ? 'Uploading...' : 'Creating...'}
                     </>
                   ) : (
                     'Create'
@@ -274,6 +296,13 @@ export default function AddChapterDialog({
             {createMutation.error instanceof Error
               ? createMutation.error.message
               : 'Failed to create chapter'}
+          </p>
+        )}
+        {uploadMutation.error && (
+          <p className="px-6 pb-2 text-sm text-destructive">
+            {uploadMutation.error instanceof Error
+              ? uploadMutation.error.message
+              : 'Failed to upload file'}
           </p>
         )}
       </DialogContent>
