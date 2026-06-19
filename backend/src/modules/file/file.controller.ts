@@ -14,6 +14,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { FileService } from './file.service';
 import { UploadTranslationFileDto } from './dto/uploadTranslationFile.dto';
 import { ALLOWED_MIME_TYPES } from 'src/common/constants/chapter.constant';
+import { TRANSLATION_ALLOWED_MIME_TYPES } from 'src/common/constants/translation.constant';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_TRANSLATION_FILE_SIZE = 15 * 1024 * 1024;
@@ -48,7 +49,7 @@ export class FileController {
         validators: [
           new MaxFileSizeValidator({ maxSize: MAX_TRANSLATION_FILE_SIZE }),
           new FileTypeValidator({
-            fileType: /^application\/zip$/,
+            fileType: new RegExp(`^(${TRANSLATION_ALLOWED_MIME_TYPES.join('|')})$`),
           }),
         ],
       }),
