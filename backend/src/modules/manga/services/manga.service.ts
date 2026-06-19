@@ -174,13 +174,7 @@ export class MangaService {
             this.fileService.bucket,
           );
           if (key) {
-            this.fileService
-              .delete(key)
-              .catch((err) =>
-                this.logger.error(
-                  `Failed to delete old cover: ${err instanceof Error ? err.message : 'Unknown error'}`,
-                ),
-              );
+            await this.fileService.delete(key);
           }
         }
         updateData.coverPath = dto.coverPath;
@@ -230,6 +224,18 @@ export class MangaService {
       if (!existing) {
         throw new NotFoundException(`Manga with ID ${id} not found`);
       }
+
+      if (existing.coverPath) {
+        const key = extractKeyFromUrl(
+          existing.coverPath,
+          this.fileService.endpoint,
+          this.fileService.bucket,
+        );
+        if (key) {
+          await this.fileService.delete(key);
+        }
+      }
+
       await this.mangaRepository.delete(id);
     } catch (error) {
       if (error instanceof NotFoundException) {
