@@ -326,21 +326,6 @@ export default function EditTranslationDialog({
             )}
           </form.Subscribe>
         </form>
-
-        {uploadMutation.error && (
-          <p className="px-6 pb-2 text-sm text-destructive">
-            {uploadMutation.error instanceof Error
-              ? uploadMutation.error.message
-              : 'Failed to upload file'}
-          </p>
-        )}
-        {updateMutation.error && (
-          <p className="px-6 pb-2 text-sm text-destructive">
-            {updateMutation.error instanceof Error
-              ? updateMutation.error.message
-              : 'Failed to update translation'}
-          </p>
-        )}
       </DialogContent>
     </Dialog>
   )

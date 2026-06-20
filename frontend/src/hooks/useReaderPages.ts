@@ -13,7 +13,10 @@ export function useReaderPages(url: string | undefined): {
   error: Error | null
 } {
   const [pages, setPages] = useState<string[]>([])
-  const { mutateAsync, isPending, error } = useFileDownload()
+  const { mutateAsync, isPending, error } = useFileDownload({
+    showErrorToast: false,
+    showSuccessToast: false,
+  })
   const urlsRef = useRef<string[]>([])
 
   const cleanup = useCallback(() => {
