@@ -112,8 +112,8 @@ export function FileDropzone({
     multiple: false,
   })
 
-  const showPreview = previewUrl !== undefined
-  const hasValue = value !== null
+  const showPreview = previewUrl !== undefined && previewUrl !== null
+  const hasValue = value != null
 
   return (
     <div className={cn('space-y-3', className)}>
