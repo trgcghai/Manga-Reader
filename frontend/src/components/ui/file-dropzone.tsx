@@ -112,7 +112,7 @@ export function FileDropzone({
     multiple: false,
   })
 
-  const showPreview = previewUrl !== undefined && previewUrl !== null
+  const showPreview = previewUrl !== undefined
   const hasValue = value != null
 
   return (
