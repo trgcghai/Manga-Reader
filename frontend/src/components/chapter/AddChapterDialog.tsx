@@ -25,11 +25,10 @@ import {
   FieldLabel,
   FieldError as UiFieldError,
 } from '#/components/ui/field'
-import { Loader2, Upload } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
-import type { ChangeEvent, DragEvent } from 'react'
+import { Loader2 } from 'lucide-react'
+import { useEffect } from 'react'
 import { useCreateChapterForManga } from '#/hooks/useManga'
-import { Badge } from '#/components/ui/badge'
+import { FileDropzone } from '#/components/ui/file-dropzone'
 
 const chapterSchema = z.object({
   number: z.number().min(0, 'Number is required'),
@@ -62,36 +61,9 @@ export default function AddChapterDialog({
 }: AddChapterDialogProps) {
   const createMutation = useCreateChapterForManga(mangaId)
   const uploadMutation = useTranslationFileUpload(mangaId)
-  const [dragOver, setDragOver] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const { data: languages, isLoading: languagesLoading } = useLanguageList()
   const { data: translatorsData, isLoading: translatorsLoading } =
     useTranslatorList(1, 100)
-
-  const handleFileSelect =
-    (field: { handleChange: (v: File) => void }) =>
-    (e: ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0] ?? null
-      if (!file) return
-      field.handleChange(file)
-      e.target.value = ''
-    }
-
-  const handleDragOver = (e: DragEvent) => {
-    e.preventDefault()
-    setDragOver(true)
-  }
-
-  const handleDragLeave = () => setDragOver(false)
-
-  const handleDrop =
-    (field: { handleChange: (v: File) => void }) => (e: DragEvent) => {
-      e.preventDefault()
-      setDragOver(false)
-      const file = e.dataTransfer.files.item(0)
-      if (!file) return
-      field.handleChange(file)
-    }
 
   useEffect(() => {
     if (!open) {
@@ -272,57 +244,15 @@ export default function AddChapterDialog({
               {(field) => (
                 <UiField>
                   <FieldLabel required>CBZ File</FieldLabel>
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop(field)}
-                    onClick={() => fileInputRef.current?.click()}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        fileInputRef.current?.click()
-                      }
-                    }}
-                    className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                      dragOver
-                        ? 'border-primary bg-primary/5'
-                        : 'border-muted-foreground/25 hover:border-muted-foreground/50'
-                    }`}
-                    aria-invalid={
-                      field.state.meta.errors.length > 0 || undefined
-                    }
-                  >
-                    {
-                      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                      field.state.value ? (
-                        <Badge className="text-sm font-medium">
-                          {field.state.value.name}
-                        </Badge>
-                      ) : (
-                        <>
-                          <Upload className="size-8 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground">
-                            Drag and drop your CBZ file here, or click to browse
-                          </p>
-                          <Button type="button" variant="outline" size="sm">
-                            Browse Files
-                          </Button>
-                        </>
-                      )
-                    }
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".cbz,application/zip"
-                      className="hidden"
-                      onChange={handleFileSelect(field)}
-                    />
-                  </div>
-                  {field.state.meta.errors.length > 0 && (
-                    <UiFieldError errors={field.state.meta.errors} />
-                  )}
+                  <FileDropzone
+                    accept={{ 'application/zip': ['.cbz', '.zip'] }}
+                    value={field.state.value}
+                    onFileSelect={(file) => field.handleChange(file!)}
+                    error={field.state.meta.errors[0]?.message}
+                    message="Drag and drop your CBZ file here, or click to browse"
+                    hint="CBZ, ZIP"
+                    selectedDisplay="badge"
+                  />
                 </UiField>
               )}
             </form.Field>

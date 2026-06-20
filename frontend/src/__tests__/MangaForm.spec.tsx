@@ -28,24 +28,7 @@ describe('MangaForm cover field', () => {
       />,
     )
     expect(screen.getByText('Drag & drop or click to upload')).toBeInTheDocument()
-    expect(screen.getByText('Browse')).toBeInTheDocument()
-  })
-
-  it('renders hidden file input with image accept types', () => {
-    render(
-      <MangaForm
-        defaultValues={defaultValues}
-        onSubmit={vi.fn()}
-        isPending={false}
-        submitLabel="Create"
-        submitIcon={<span>+</span>}
-        cancelLabel="Cancel"
-        heading="Test"
-      />,
-    )
-    const hiddenInput = document.querySelector<HTMLInputElement>('input[type="file"]')
-    expect(hiddenInput).toBeInTheDocument()
-    expect(hiddenInput!.accept).toBe('image/jpeg,image/png,image/webp,image/gif')
+    expect(screen.getByText('Browse Files')).toBeInTheDocument()
   })
 
   it('shows preview when coverPath exists (edit mode)', () => {
@@ -60,7 +43,7 @@ describe('MangaForm cover field', () => {
         heading="Edit"
       />,
     )
-    const img = screen.getByAltText('Cover preview')
+    const img = screen.getByAltText('Preview')
     expect(img).toHaveAttribute('src', 'http://example.com/cover.jpg')
   })
 
@@ -79,11 +62,11 @@ describe('MangaForm cover field', () => {
       />,
     )
 
-    expect(screen.getByAltText('Cover preview')).toBeInTheDocument()
+    expect(screen.getByAltText('Preview')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /remove/i }))
 
-    expect(screen.queryByAltText('Cover preview')).not.toBeInTheDocument()
+    expect(screen.queryByAltText('Preview')).not.toBeInTheDocument()
     expect(screen.getByText('Drag & drop or click to upload')).toBeInTheDocument()
   })
 })

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '#/components/ui/button'
 import { Badge } from '#/components/ui/badge'
 import { cn } from '#/lib/utils'
@@ -46,7 +47,13 @@ function SelectedFileBadge({ filename }: { filename: string }) {
   return <Badge className="text-sm font-medium">{filename}</Badge>
 }
 
-function SelectedFileIcon({ icon, filename }: { icon: ReactNode; filename: string }) {
+function SelectedFileIcon({
+  icon,
+  filename,
+}: {
+  icon: ReactNode
+  filename: string
+}) {
   return (
     <div className="flex items-center gap-2 text-sm font-medium">
       {icon}
@@ -65,12 +72,13 @@ function PreviewOverlay({
   onRemove?: () => void
 }) {
   return (
-    <div className={cn('relative overflow-hidden rounded-lg border bg-muted', aspectRatio ?? '')}>
-      <img
-        src={previewUrl}
-        alt="Preview"
-        className="size-full object-cover"
-      />
+    <div
+      className={cn(
+        'relative overflow-hidden rounded-lg border bg-muted',
+        aspectRatio ?? '',
+      )}
+    >
+      <img src={previewUrl} alt="Preview" className="size-full object-cover" />
       {onRemove && (
         <div className="absolute inset-x-0 bottom-0 flex gap-1 p-2">
           <Button
@@ -104,12 +112,20 @@ export function FileDropzone({
   aspectRatio,
 }: FileDropzoneProps) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: (acceptedFiles) => {
-      if (acceptedFiles.length > 0) onFileSelect(acceptedFiles[0])
+    onDropAccepted: (files) => {
+      if (files.length > 0) onFileSelect(files[0])
+    },
+    onDropRejected: (rejections) => {
+      const messages = rejections.flatMap((r) => r.errors.map((e) => e.message))
+      for (const msg of messages) {
+        toast.error(msg)
+      }
     },
     accept,
     disabled,
     multiple: false,
+    maxFiles: 1,
+    maxSize: 100 * 1024 * 1024, // 100MB
   })
 
   const showPreview = previewUrl !== undefined
@@ -119,10 +135,17 @@ export function FileDropzone({
     <div className={cn('space-y-3', className)}>
       {showPreview ? (
         <PreviewOverlay
-        previewUrl={previewUrl}
-        aspectRatio={aspectRatio}
-        onRemove={onRemove ? () => { onFileSelect(null); onRemove() } : () => onFileSelect(null)}
-      />
+          previewUrl={previewUrl}
+          aspectRatio={aspectRatio}
+          onRemove={
+            onRemove
+              ? () => {
+                  onFileSelect(null)
+                  onRemove()
+                }
+              : () => onFileSelect(null)
+          }
+        />
       ) : (
         <div
           {...getRootProps()}

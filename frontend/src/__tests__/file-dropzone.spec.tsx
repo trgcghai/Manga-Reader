@@ -1,9 +1,18 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, act, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { toast } from 'sonner'
 import { FileDropzone } from '#/components/ui/file-dropzone'
 
+vi.mock('sonner', () => ({
+  toast: { error: vi.fn() },
+}))
+
 const mockFile = new File([''], 'chapter-1.cbz', { type: 'application/zip' })
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
 
 describe('FileDropzone', () => {
   describe('empty state', () => {
@@ -209,6 +218,25 @@ describe('FileDropzone', () => {
       })
       await waitFor(() => {
         expect(onFileSelect).toHaveBeenCalledWith(file)
+      })
+    })
+
+    it('shows toast.error when a rejected file is dropped', async () => {
+      const onFileSelect = vi.fn()
+      const invalidFile = new File([''], 'image.png', { type: 'image/png' })
+      const { container } = render(
+        <FileDropzone accept={{ 'application/zip': ['.cbz'] }} value={null} onFileSelect={onFileSelect} />,
+      )
+      const dropzone = container.firstChild?.firstChild as HTMLElement
+      const dropEvent = new Event('drop', { bubbles: true })
+      Object.defineProperty(dropEvent, 'dataTransfer', {
+        value: { files: [invalidFile], types: ['Files'] },
+      })
+      act(() => {
+        dropzone.dispatchEvent(dropEvent)
+      })
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalled()
       })
     })
   })

@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
-import type { ReactNode, ChangeEvent, DragEvent } from 'react'
-import { Loader2, Plus, X, Upload, ImageIcon } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import type { ReactNode } from 'react'
+import { Loader2, Plus, X } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Textarea } from '#/components/ui/textarea'
@@ -23,6 +23,7 @@ import { Badge } from '#/components/ui/badge'
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
 import { addTag } from '#/lib/mangaUtils'
+import { FileDropzone } from '#/components/ui/file-dropzone'
 
 export const mangaSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -67,8 +68,6 @@ export function MangaForm({
   const [genreInput, setGenreInput] = useState('')
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
   const [coverRemoved, setCoverRemoved] = useState(false)
-  const [dragOver, setDragOver] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const form = useForm({
     validators: { onSubmit: mangaSchema },
@@ -81,34 +80,6 @@ export function MangaForm({
       if (coverPreview) URL.revokeObjectURL(coverPreview)
     }
   }, [coverPreview])
-
-  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null
-    if (!file) return
-    form.setFieldValue('coverFile', file)
-    setCoverPreview(URL.createObjectURL(file))
-    setCoverRemoved(false)
-    e.target.value = ''
-  }
-
-  const handleDragOver = (e: DragEvent) => {
-    e.preventDefault()
-    setDragOver(true)
-  }
-
-  const handleDragLeave = () => setDragOver(false)
-
-  const handleDrop = (e: DragEvent) => {
-    e.preventDefault()
-    setDragOver(false)
-    const file = e.dataTransfer.files.item(0)
-    if (!file) return
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-    if (!validTypes.includes(file.type)) return
-    form.setFieldValue('coverFile', file)
-    setCoverPreview(URL.createObjectURL(file))
-    setCoverRemoved(false)
-  }
 
   const handleRemoveCover = () => {
     form.setFieldValue('coverFile', null)
@@ -138,75 +109,31 @@ export function MangaForm({
                 {(_) => (
                   <UiField>
                     <FieldLabel>Cover Image</FieldLabel>
-                    <div className="space-y-3">
-                      {showCoverPreview ? (
-                        <div className="relative aspect-3/4 overflow-hidden rounded-lg border bg-muted">
-                          <img
-                            src={
-                              coverPreview || form.getFieldValue('coverPath')
-                            }
-                            alt="Cover preview"
-                            className="size-full object-cover"
-                          />
-                          <div className="absolute inset-x-0 bottom-0 flex gap-1 p-2">
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="sm"
-                              className="w-full text-xs"
-                              onClick={handleRemoveCover}
-                            >
-                              <X className="mr-1 size-3" />
-                              Remove
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          onDragOver={handleDragOver}
-                          onDragLeave={handleDragLeave}
-                          onDrop={handleDrop}
-                          onClick={() => fileInputRef.current?.click()}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault()
-                              fileInputRef.current?.click()
-                            }
-                          }}
-                          className={`flex aspect-3/4 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                            dragOver
-                              ? 'border-primary bg-primary/5'
-                              : 'border-muted-foreground/25 hover:border-muted-foreground/50'
-                          }`}
-                        >
-                          <ImageIcon className="size-8 text-muted-foreground/60" />
-                          <p className="text-center text-xs text-muted-foreground">
-                            Drag & drop or click to upload
-                          </p>
-                          <p className="text-[11px] text-muted-foreground/60">
-                            JPG, PNG, WebP, GIF
-                          </p>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            className="mt-1"
-                          >
-                            <Upload className="mr-1 size-3" />
-                            Browse
-                          </Button>
-                        </div>
-                      )}
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp,image/gif"
-                        className="hidden"
-                        onChange={handleFileSelect}
-                      />
-                    </div>
+                    <FileDropzone
+                      accept={{
+                        'image/jpeg': ['.jpg', '.jpeg'],
+                        'image/png': ['.png'],
+                        'image/webp': ['.webp'],
+                        'image/gif': ['.gif'],
+                      }}
+                      value={form.getFieldValue('coverFile') as File | null}
+                      onFileSelect={(file) => {
+                        form.setFieldValue('coverFile', file)
+                        if (file) {
+                          setCoverPreview(URL.createObjectURL(file))
+                          setCoverRemoved(false)
+                        }
+                      }}
+                      message="Drag & drop or click to upload"
+                      hint="JPG, PNG, WebP, GIF"
+                      previewUrl={
+                        showCoverPreview
+                          ? coverPreview || form.getFieldValue('coverPath')
+                          : undefined
+                      }
+                      onRemove={showCoverPreview ? handleRemoveCover : undefined}
+                      aspectRatio="aspect-3/4"
+                    />
                   </UiField>
                 )}
               </form.Field>

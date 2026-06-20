@@ -1,5 +1,4 @@
-import { useState, useRef } from 'react'
-import type { ChangeEvent, DragEvent } from 'react'
+import { useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -9,8 +8,9 @@ import {
   DialogFooter,
 } from '#/components/ui/dialog'
 import { Button } from '#/components/ui/button'
-import { Upload, FileSpreadsheet, Download } from 'lucide-react'
+import { FileSpreadsheet, Download } from 'lucide-react'
 import { useGetTemplateImport, useImportMangas } from '#/hooks/useManga'
+import { FileDropzone } from '#/components/ui/file-dropzone'
 
 interface ImportDialogProps {
   open: boolean
@@ -19,40 +19,17 @@ interface ImportDialogProps {
 
 export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
   const [file, setFile] = useState<File | null>(null)
-  const [dragOver, setDragOver] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const mutation = useImportMangas()
   const { data: templateBlob } = useGetTemplateImport()
 
   const reset = () => {
     setFile(null)
-    setDragOver(false)
     mutation.reset()
   }
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) reset()
     onOpenChange(nextOpen)
-  }
-
-  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]
-    if (f?.name.endsWith('.xlsx')) setFile(f)
-    e.target.value = ''
-  }
-
-  const handleDragOver = (e: DragEvent) => {
-    e.preventDefault()
-    setDragOver(true)
-  }
-
-  const handleDragLeave = () => setDragOver(false)
-
-  const handleDrop = (e: DragEvent) => {
-    e.preventDefault()
-    setDragOver(false)
-    const droppedFile = e.dataTransfer.files.item(0)
-    if (droppedFile && droppedFile.name.endsWith('.xlsx')) setFile(droppedFile)
   }
 
   const handleImport = () => {
@@ -90,49 +67,15 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
           Download template
         </Button>
 
-        <div
-          role="button"
-          tabIndex={0}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              fileInputRef.current?.click()
-            }
-          }}
-          className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-            dragOver
-              ? 'border-primary bg-primary/5'
-              : 'border-muted-foreground/25 hover:border-muted-foreground/50'
-          }`}
-        >
-          <Upload className="size-8 text-muted-foreground" />
-          {file ? (
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <FileSpreadsheet className="size-5 text-green-600" />
-              {file.name}
-            </div>
-          ) : (
-            <>
-              <p className="text-sm text-muted-foreground">
-                Drag and drop your .xlsx file here, or click to browse
-              </p>
-              <Button type="button" variant="outline" size="sm">
-                Browse Files
-              </Button>
-            </>
-          )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".xlsx"
-            className="hidden"
-            onChange={handleFileSelect}
-          />
-        </div>
+        <FileDropzone
+          accept={{ 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] }}
+          value={file}
+          onFileSelect={(f) => setFile(f)}
+          message="Drag and drop your .xlsx file here, or click to browse"
+          hint=".xlsx"
+          icon={<FileSpreadsheet className="size-8 text-green-600" />}
+          selectedDisplay="icon"
+        />
 
         <DialogFooter>
           <Button
