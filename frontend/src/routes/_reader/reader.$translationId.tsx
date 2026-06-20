@@ -1,5 +1,8 @@
 import { createFileRoute, useParams } from '@tanstack/react-router'
 import { useTranslation } from '#/hooks/useManga'
+import { useReaderStore } from '#/stores/rootStore'
+import { useReaderPages } from '#/hooks/useReaderPages'
+import { PageViewer } from '#/components/reader/PageViewer'
 import { Skeleton } from '#/components/ui/skeleton'
 import { ErrorDisplay, ErrorTitle, ErrorDescription } from '#/components/ui/error-display'
 import { Button } from '#/components/ui/button'
@@ -11,6 +14,12 @@ export const Route = createFileRoute('/_reader/reader/$translationId')({
 function ReaderPage() {
   const { translationId } = useParams({ from: '/_reader/reader/$translationId' })
   const { data, isLoading, isError, refetch } = useTranslation(Number(translationId))
+
+  const { currentPage, displayMode } = useReaderStore()
+  const nextPage = useReaderStore(s => s.nextPage)
+  const prevPage = useReaderStore(s => s.prevPage)
+
+  const { pages, isLoading: pagesLoading, error: pagesError } = useReaderPages(data?.url)
 
   if (isLoading) {
     return (
@@ -38,15 +47,41 @@ function ReaderPage() {
     )
   }
 
+  if (pagesLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="space-y-4 w-96">
+          <Skeleton className="h-96 w-full" />
+          <p className="text-center text-zinc-500 text-sm">Loading pages...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (pagesError) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <ErrorDisplay>
+          <ErrorTitle>Failed to Load Pages</ErrorTitle>
+          <ErrorDescription>{pagesError}</ErrorDescription>
+          <Button onClick={() => refetch()} variant="default">Retry</Button>
+        </ErrorDisplay>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex h-screen flex-col items-center justify-center p-8">
-      <h1 className="text-2xl font-bold">{data.chapter.manga.title}</h1>
-      <p className="text-zinc-400">
-        Chapter {data.chapter.number}{data.chapter.title ? ` — ${data.chapter.title}` : ''}
-      </p>
-      <p className="text-zinc-500 mt-2">
-        {data.language.name} · {data.translator.name}
-      </p>
+    <div className="relative h-screen">
+      <PageViewer
+        pages={pages}
+        displayMode={displayMode}
+        currentPage={currentPage}
+        onNextPage={nextPage}
+        onPrevPage={prevPage}
+      />
+      <div className="absolute top-4 left-4 text-sm text-zinc-400 bg-black/50 px-2 py-1 rounded pointer-events-none select-none">
+        {data.chapter.manga.title} — Ch. {data.chapter.number}
+      </div>
     </div>
   )
 }
