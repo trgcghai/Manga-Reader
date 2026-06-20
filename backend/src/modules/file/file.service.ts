@@ -98,7 +98,11 @@ export class FileService {
     try {
       const stream = await this.minioClient.getObject(this.bucket, key);
       const contentType = getContentType(key);
-      return new StreamableFile(stream, { type: contentType });
+      const filename = key.split('/').pop() || 'download';
+      return new StreamableFile(stream, {
+        type: contentType,
+        disposition: `attachment; filename="${filename}"`,
+      });
     } catch (error: unknown) {
       const minioError = error as { code?: string };
       if (minioError.code === 'NoSuchKey' || minioError.code === 'NotFound') {

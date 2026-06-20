@@ -44,7 +44,7 @@ export function PageViewer({ pages, displayMode, currentPage, onNextPage, onPrev
       return (
         <div
           key={`placeholder-${index}`}
-          className="flex items-center justify-center bg-zinc-800 text-zinc-400 max-h-screen max-w-full aspect-[3/4]"
+          className="flex items-center justify-center bg-zinc-800 text-zinc-400 max-h-screen max-w-full aspect-3/4"
           data-testid={`page-placeholder-${index}`}
         >
           Page {index + 1}

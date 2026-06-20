@@ -87,14 +87,7 @@ export class FileController {
     if (!key) {
       throw new BadRequestException('Invalid Minio URL');
     }
-
-    const filename = key.split('/').pop() || 'download';
-    const file = await this.fileService.download(key);
-
-    return new StreamableFile(file.getStream(), {
-      type: file.getHeaders()['content-type'],
-      disposition: `attachment; filename="${filename}"`,
-    });
+    return await this.fileService.download(key);
   }
 
   @Delete('*key')
