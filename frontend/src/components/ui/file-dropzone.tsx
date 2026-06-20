@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload } from 'lucide-react'
 import { Button } from '#/components/ui/button'
@@ -112,13 +112,17 @@ export function FileDropzone({
     multiple: false,
   })
 
-  const showPreview = previewUrl !== undefined && previewUrl !== null
-  const hasValue = value !== null && value !== undefined
+  const showPreview = previewUrl !== undefined
+  const hasValue = value !== null
 
   return (
     <div className={cn('space-y-3', className)}>
       {showPreview ? (
-        <PreviewOverlay previewUrl={previewUrl} aspectRatio={aspectRatio} onRemove={onRemove} />
+        <PreviewOverlay
+        previewUrl={previewUrl}
+        aspectRatio={aspectRatio}
+        onRemove={onRemove ? () => { onFileSelect(null); onRemove() } : () => onFileSelect(null)}
+      />
       ) : (
         <div
           {...getRootProps()}
