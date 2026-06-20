@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -89,9 +90,11 @@ export class FileService {
         default:
           return this.upload(prefix, file.buffer, file.mimetype);
       }
+    } else {
+      throw new BadRequestException(
+        `Invalid translation file type. Only ${TRANSLATION_EXTENSIONS.join(', ')} files are allowed.`,
+      );
     }
-
-    throw new InternalServerErrorException('Invalid translation file type');
   }
 
   async download(key: string): Promise<StreamableFile> {

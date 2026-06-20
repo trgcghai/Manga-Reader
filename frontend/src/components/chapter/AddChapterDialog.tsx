@@ -245,7 +245,7 @@ export default function AddChapterDialog({
                 <UiField>
                   <FieldLabel required>CBZ File</FieldLabel>
                   <FileDropzone
-                    accept={{ 'application/zip': ['.cbz', '.zip'] }}
+                    accept={{ 'application/zip': ['.zip'] }}
                     value={field.state.value}
                     onFileSelect={(file) => field.handleChange(file!)}
                     error={field.state.meta.errors[0]?.message}

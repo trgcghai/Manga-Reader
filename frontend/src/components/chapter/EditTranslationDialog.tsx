@@ -214,8 +214,8 @@ export default function EditTranslationDialog({
                 <UiField>
                   <FieldLabel>CBZ File</FieldLabel>
                   <FileDropzone
-                    accept={{ 'application/zip': ['.cbz', '.zip'] }}
-                    value={field.state.value}
+                    accept={{ 'application/zip': ['.zip'] }}
+                    value={field.state.value as File | null}
                     onFileSelect={(file) => field.handleChange(file!)}
                     error={field.state.meta.errors[0]?.message}
                     message="Drag and drop a new CBZ file here, or click to browse"
