@@ -1,4 +1,5 @@
-import { createFileRoute, useParams } from '@tanstack/react-router'
+import { useCallback } from 'react'
+import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
 import { useTranslation } from '#/hooks/useManga'
 import { useReaderStore } from '#/stores/rootStore'
 import { useReaderPages } from '#/hooks/useReaderPages'
@@ -11,6 +12,7 @@ import {
   ErrorDescription,
 } from '#/components/ui/error-display'
 import { Button } from '#/components/ui/button'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_reader/reader/$translationId')({
   component: ReaderPage,
@@ -24,9 +26,10 @@ function ReaderPage() {
     Number(translationId),
   )
 
-  const { currentPage, displayMode } = useReaderStore()
+  const { currentPage, displayMode, totalPages } = useReaderStore()
   const nextPage = useReaderStore((s) => s.nextPage)
   const prevPage = useReaderStore((s) => s.prevPage)
+  const navigate = useNavigate()
 
   const {
     pages,
@@ -34,9 +37,35 @@ function ReaderPage() {
     error: pagesError,
   } = useReaderPages(data?.url)
 
+  const handleNextPage = useCallback(() => {
+    if (currentPage < totalPages - 1) {
+      nextPage()
+    } else if (data?.nextTranslationId) {
+      navigate({
+        to: '/reader/$translationId',
+        params: { translationId: String(data.nextTranslationId) },
+      })
+    } else {
+      toast.info('This is the latest chapter')
+    }
+  }, [currentPage, totalPages, nextPage, data?.nextTranslationId, navigate])
+
+  const handlePrevPage = useCallback(() => {
+    if (currentPage > 0) {
+      prevPage()
+    } else if (data?.prevTranslationId) {
+      navigate({
+        to: '/reader/$translationId',
+        params: { translationId: String(data.prevTranslationId) },
+      })
+    } else {
+      toast.info('This is the first chapter')
+    }
+  }, [currentPage, prevPage, data?.prevTranslationId, navigate])
+
   useReaderKeyboard({
-    onNextPage: nextPage,
-    onPrevPage: prevPage,
+    onNextPage: handleNextPage,
+    onPrevPage: handlePrevPage,
     enabled: pages.length > 0,
   })
 
@@ -99,8 +128,8 @@ function ReaderPage() {
         pages={pages}
         displayMode={displayMode}
         currentPage={currentPage}
-        onNextPage={nextPage}
-        onPrevPage={prevPage}
+        onNextPage={handleNextPage}
+        onPrevPage={handlePrevPage}
       />
       <div className="absolute top-4 left-4 text-sm text-zinc-400 bg-black/50 px-2 py-1 rounded pointer-events-none select-none">
         {data?.chapter.manga.title} — Ch. {data?.chapter.number}
