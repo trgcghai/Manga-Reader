@@ -9,62 +9,77 @@ import {
   SheetTrigger,
 } from '#/components/ui/sheet'
 import { Separator } from '#/components/ui/separator'
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from '#/components/ui/toggle-group'
+import { useReaderStore } from '#/stores/rootStore'
 
 interface ReaderSettingsSheetProps {
   children?: ReactNode
 }
 
 export function ReaderSettingsSheet({ children }: ReaderSettingsSheetProps) {
+  const displayMode = useReaderStore((s) => s.displayMode)
+  const readingMode = useReaderStore((s) => s.readingMode)
+  const setDisplayMode = useReaderStore((s) => s.setDisplayMode)
+  const setReadingMode = useReaderStore((s) => s.setReadingMode)
+
   return (
     <Sheet>
       {children}
       <SheetContent
         side="right"
-        className="w-80 bg-zinc-950 border-zinc-800 text-zinc-100"
+        className="w-80 gap-6"
       >
         <SheetHeader>
-          <SheetTitle className="text-zinc-100">Reader Settings</SheetTitle>
+          <SheetTitle>Reader Settings</SheetTitle>
         </SheetHeader>
-        <div className="space-y-6 px-4">
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">
+        <div className="flex flex-col gap-6 px-4">
+          <div className="flex flex-col gap-3">
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Display Mode
             </h3>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-300 cursor-pointer hover:border-zinc-500 transition-colors">
-                Single Page
-              </div>
-              <div className="rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-500 cursor-not-allowed opacity-60">
-                Double Page
-              </div>
-            </div>
+            <ToggleGroup
+              type="single"
+              value={displayMode}
+              onValueChange={(v) => v && setDisplayMode(v as 'single' | 'double')}
+            >
+              <ToggleGroupItem value="single" className="flex-1">Single</ToggleGroupItem>
+              <ToggleGroupItem value="double" className="flex-1">Double</ToggleGroupItem>
+            </ToggleGroup>
           </div>
-          <Separator className="bg-zinc-800" />
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">
-              Scroll Mode
+          <Separator />
+          <div className="flex flex-col gap-3">
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Reading Mode
             </h3>
-            <div className="rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-500 cursor-not-allowed opacity-60">
-              Vertical Scroll
-            </div>
+            <ToggleGroup
+              type="single"
+              value={readingMode}
+              onValueChange={(v) => v && setReadingMode(v as 'page' | 'scroll')}
+            >
+              <ToggleGroupItem value="page" className="flex-1">Page</ToggleGroupItem>
+              <ToggleGroupItem value="scroll" className="flex-1">Scroll</ToggleGroupItem>
+            </ToggleGroup>
           </div>
-          <Separator className="bg-zinc-800" />
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">
+          <Separator />
+          <div className="flex flex-col gap-3">
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Navigation
             </h3>
-            <ul className="space-y-1.5 text-sm text-zinc-500">
+            <ul className="flex flex-col gap-1.5 text-sm text-muted-foreground">
               <li className="flex justify-between">
                 <span>Next Page</span>
-                <kbd className="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-xs">→</kbd>
+                <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">→</kbd>
               </li>
               <li className="flex justify-between">
                 <span>Prev Page</span>
-                <kbd className="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-xs">←</kbd>
+                <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">←</kbd>
               </li>
               <li className="flex justify-between">
                 <span>Next / Space</span>
-                <kbd className="rounded border border-zinc-700 bg-zinc-900 px-1.5 py-0.5 text-xs">Space</kbd>
+                <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">Space</kbd>
               </li>
             </ul>
           </div>
@@ -80,7 +95,7 @@ export function ReaderSettingsTrigger() {
       <Button
         variant="ghost"
         size="icon"
-        className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-100 hover:bg-white/10"
+        className="absolute top-4 right-4 text-muted-foreground hover:text-foreground hover:bg-accent"
       >
         <Settings className="size-5" />
       </Button>
