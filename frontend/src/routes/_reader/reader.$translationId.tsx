@@ -135,7 +135,7 @@ function ReaderPage() {
   }
 
   return (
-    <ReaderSettingsSheet>
+    <ReaderSettingsSheet title={data?.chapter.manga.title}>
       <div className="relative h-screen">
         <PageViewer
           pages={pages}
@@ -144,9 +144,6 @@ function ReaderPage() {
           onNextPage={handleNextPage}
           onPrevPage={handlePrevPage}
         />
-        <div className="absolute top-4 left-4 text-sm text-zinc-400 bg-black/50 px-2 py-1 rounded pointer-events-none select-none flex items-center justify-between">
-          {data?.chapter.manga.title} — Ch. {data?.chapter.number}
-        </div>
         <ReaderSettingsTrigger />
       </div>
     </ReaderSettingsSheet>
