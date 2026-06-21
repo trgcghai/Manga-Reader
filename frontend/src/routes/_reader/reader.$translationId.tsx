@@ -38,6 +38,17 @@ function ReaderPage() {
   const navigate = useNavigate()
   const pendingDirection = useRef<'next' | 'prev' | null>(null)
 
+  useEffect(() => {
+    if (data?.chapter.number) {
+
+      const chapterTitle = data.chapter.title && ` - ${data.chapter.title}`
+
+      toast.message(`Chapter ${Number(data.chapter.number)}${chapterTitle}`, {
+        duration: 2000,
+      })
+    }
+  }, [data?.chapter.number])
+
   const {
     pages,
     isLoading: pagesLoading,
