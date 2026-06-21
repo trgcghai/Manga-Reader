@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface PageViewerProps {
   pages: string[]
@@ -18,6 +18,10 @@ function PageIndicator({ current, total }: { current: number; total: number }) {
 
 export function PageViewer({ pages, displayMode, currentPage, onNextPage, onPrevPage }: PageViewerProps) {
   const [errored, setErrored] = useState<Set<number>>(new Set())
+
+  useEffect(() => {
+    setErrored(new Set())
+  }, [pages])
 
   if (pages.length === 0) return null
 

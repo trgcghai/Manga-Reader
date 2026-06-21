@@ -61,6 +61,7 @@ export function useReaderPages(url: string | undefined): {
     return () => {
       cancelled = true
       cleanup()
+      setPages([])
     }
   }, [url, mutateAsync, cleanup])
 
