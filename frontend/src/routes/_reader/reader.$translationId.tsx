@@ -3,6 +3,7 @@ import { useTranslation } from '#/hooks/useManga'
 import { useReaderStore } from '#/stores/rootStore'
 import { useReaderPages } from '#/hooks/useReaderPages'
 import { PageViewer } from '#/components/reader/PageViewer'
+import { useReaderKeyboard } from '#/hooks/useReaderKeyboard'
 import { Skeleton } from '#/components/ui/skeleton'
 import {
   ErrorDisplay,
@@ -32,6 +33,12 @@ function ReaderPage() {
     isLoading: pagesLoading,
     error: pagesError,
   } = useReaderPages(data?.url)
+
+  useReaderKeyboard({
+    onNextPage: nextPage,
+    onPrevPage: prevPage,
+    enabled: pages.length > 0,
+  })
 
   if (isLoading) {
     return (
