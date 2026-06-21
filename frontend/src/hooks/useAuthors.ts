@@ -76,7 +76,7 @@ export function useDeleteAuthor() {
 
   return useMutation({
     mutationFn: (id: number) => deleteAuthor(id),
-    onSuccess: (_data, id) => {
+    onSuccess: (_data) => {
       queryClient.invalidateQueries({ queryKey: authorKeys.all })
       toast.success(`Author deleted`)
     },

@@ -63,7 +63,7 @@ export function PageViewer({
     setErrored((prev) => new Set(prev).add(index))
   }
 
-  function renderImage(index: number) {
+  function renderImage(index: number, fullWidth?: boolean) {
     if (errored.has(index)) {
       return (
         <div
@@ -81,7 +81,7 @@ export function PageViewer({
         src={pages[index]}
         alt={`Page ${index + 1}`}
         className={
-          displayMode === 'single'
+          displayMode === 'single' || fullWidth
             ? 'max-h-screen max-w-full object-contain'
             : 'max-h-screen max-w-[50vw] object-contain'
         }
@@ -96,17 +96,13 @@ export function PageViewer({
       onClick={handleClick}
       data-testid="page-viewer-container"
     >
-      {displayMode === 'single' ? (
-        renderImage(clampedPage)
-      ) : (
+      {displayMode === 'double' && clampedPage + 1 < pages.length ? (
         <div className="flex items-center justify-center gap-1 h-full">
           {renderImage(clampedPage)}
-          {clampedPage + 1 < pages.length ? (
-            renderImage(clampedPage + 1)
-          ) : (
-            <div className="w-[50vw]" />
-          )}
+          {renderImage(clampedPage + 1)}
         </div>
+      ) : (
+        renderImage(clampedPage, displayMode === 'double')
       )}
       <PageIndicator current={clampedPage} total={pages.length} displayMode={displayMode} />
     </div>
