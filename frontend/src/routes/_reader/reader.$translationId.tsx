@@ -13,6 +13,7 @@ import {
 import { Button } from '#/components/ui/button'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
+import { ReaderSettingsSheet, ReaderSettingsTrigger } from '#/components/reader/ReaderSettingsSheet'
 
 export const Route = createFileRoute('/_reader/reader/$translationId')({
   component: ReaderPage,
@@ -26,7 +27,8 @@ function ReaderPage() {
     Number(translationId),
   )
 
-  const { currentPage, displayMode, totalPages, setCurrentPage } = useReaderStore()
+  const { currentPage, displayMode, totalPages, setCurrentPage } =
+    useReaderStore()
   const nextPage = useReaderStore((s) => s.nextPage)
   const prevPage = useReaderStore((s) => s.prevPage)
   const navigate = useNavigate()
@@ -130,17 +132,20 @@ function ReaderPage() {
   }
 
   return (
-    <div className="relative h-screen">
-      <PageViewer
-        pages={pages}
-        displayMode={displayMode}
-        currentPage={currentPage}
-        onNextPage={handleNextPage}
-        onPrevPage={handlePrevPage}
-      />
-      <div className="absolute top-4 left-4 text-sm text-zinc-400 bg-black/50 px-2 py-1 rounded pointer-events-none select-none">
-        {data?.chapter.manga.title} — Ch. {data?.chapter.number}
+    <ReaderSettingsSheet>
+      <div className="relative h-screen">
+        <PageViewer
+          pages={pages}
+          displayMode={displayMode}
+          currentPage={currentPage}
+          onNextPage={handleNextPage}
+          onPrevPage={handlePrevPage}
+        />
+        <div className="absolute top-4 left-4 text-sm text-zinc-400 bg-black/50 px-2 py-1 rounded pointer-events-none select-none flex items-center justify-between">
+          {data?.chapter.manga.title} — Ch. {data?.chapter.number}
+        </div>
+        <ReaderSettingsTrigger />
       </div>
-    </div>
+    </ReaderSettingsSheet>
   )
 }
