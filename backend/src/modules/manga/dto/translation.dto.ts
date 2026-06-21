@@ -28,4 +28,6 @@ export class TranslationDetailResponse {
     title?: string;
     manga: { id: number; title: string };
   };
+  prevTranslationId: number | null;
+  nextTranslationId: number | null;
 }
