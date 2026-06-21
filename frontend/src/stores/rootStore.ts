@@ -68,12 +68,18 @@ export const translationSlice: StateCreator<
       currentPage:
         state.totalPages === 0
           ? state.currentPage
-          : Math.min(state.currentPage + 1, state.totalPages - 1),
+          : Math.min(
+              state.currentPage + (state.displayMode === 'double' ? 2 : 1),
+              state.totalPages - 1,
+            ),
     })),
 
   prevPage: () =>
     set((state) => ({
-      currentPage: Math.max(state.currentPage - 1, 0),
+      currentPage: Math.max(
+        state.currentPage - (state.displayMode === 'double' ? 2 : 1),
+        0,
+      ),
     })),
 
   reset: () => set({ ...initialState }),
