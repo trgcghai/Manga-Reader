@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useReaderStore } from '#/stores/rootStore'
 import { PageIndicator } from './PageIndicator'
+import { ScrollArea } from '#/components/ui/scroll-area'
 
 interface ScrollViewerProps {
   pages: string[]
@@ -162,15 +163,15 @@ export function ScrollViewer({
 
   return (
     <div className="relative h-full">
-      <div
+      <ScrollArea
         ref={containerRef}
-        className="h-full overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full"
+        className="h-full"
         data-testid="scroll-viewer-container"
       >
         <div className="mx-auto max-w-4xl">
           {renderContent()}
         </div>
-      </div>
+      </ScrollArea>
       <PageIndicator
         current={currentPage}
         total={pages.length}
