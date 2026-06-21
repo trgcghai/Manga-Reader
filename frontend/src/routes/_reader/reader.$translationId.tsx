@@ -1,11 +1,10 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
 import { useTranslation } from '#/hooks/useManga'
 import { useReaderStore } from '#/stores/rootStore'
 import { useReaderPages } from '#/hooks/useReaderPages'
 import { PageViewer } from '#/components/reader/PageViewer'
 import { useReaderKeyboard } from '#/hooks/useReaderKeyboard'
-import { Skeleton } from '#/components/ui/skeleton'
 import {
   ErrorDisplay,
   ErrorTitle,
@@ -13,6 +12,7 @@ import {
 } from '#/components/ui/error-display'
 import { Button } from '#/components/ui/button'
 import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
 
 export const Route = createFileRoute('/_reader/reader/$translationId')({
   component: ReaderPage,
@@ -26,10 +26,11 @@ function ReaderPage() {
     Number(translationId),
   )
 
-  const { currentPage, displayMode, totalPages } = useReaderStore()
+  const { currentPage, displayMode, totalPages, setCurrentPage } = useReaderStore()
   const nextPage = useReaderStore((s) => s.nextPage)
   const prevPage = useReaderStore((s) => s.prevPage)
   const navigate = useNavigate()
+  const pendingDirection = useRef<'next' | 'prev' | null>(null)
 
   const {
     pages,
@@ -41,6 +42,7 @@ function ReaderPage() {
     if (currentPage < totalPages - 1) {
       nextPage()
     } else if (data?.nextTranslationId) {
+      pendingDirection.current = 'next'
       navigate({
         to: '/reader/$translationId',
         params: { translationId: String(data.nextTranslationId) },
@@ -54,6 +56,7 @@ function ReaderPage() {
     if (currentPage > 0) {
       prevPage()
     } else if (data?.prevTranslationId) {
+      pendingDirection.current = 'prev'
       navigate({
         to: '/reader/$translationId',
         params: { translationId: String(data.prevTranslationId) },
@@ -62,6 +65,17 @@ function ReaderPage() {
       toast.info('This is the first chapter')
     }
   }, [currentPage, prevPage, data?.prevTranslationId, navigate])
+
+  useEffect(() => {
+    if (pages.length > 0 && pendingDirection.current) {
+      if (pendingDirection.current === 'next') {
+        setCurrentPage(0)
+      } else {
+        setCurrentPage(pages.length - 1)
+      }
+      pendingDirection.current = null
+    }
+  }, [pages])
 
   useReaderKeyboard({
     onNextPage: handleNextPage,
@@ -72,11 +86,7 @@ function ReaderPage() {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="space-y-4 w-96">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-72" />
-          <Skeleton className="h-96 w-full" />
-        </div>
+        <Loader2 className="animate-spin" size={48} />
       </div>
     )
   }
@@ -100,10 +110,7 @@ function ReaderPage() {
   if (pagesLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="space-y-4 w-96">
-          <Skeleton className="h-96 w-full" />
-          <p className="text-center text-zinc-500 text-sm">Loading pages...</p>
-        </div>
+        <Loader2 className="animate-spin" size={48} />
       </div>
     )
   }
