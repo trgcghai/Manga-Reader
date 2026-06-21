@@ -15,6 +15,7 @@ export function ScrollViewer({
 }: ScrollViewerProps) {
   const [errored, setErrored] = useState<Set<number>>(new Set())
   const containerRef = useRef<HTMLDivElement>(null)
+  const currentPage = useReaderStore((s) => s.currentPage)
 
   useEffect(() => {
     setErrored(new Set())
@@ -171,7 +172,7 @@ export function ScrollViewer({
         </div>
       </div>
       <PageIndicator
-        current={useReaderStore((s) => s.currentPage)}
+        current={currentPage}
         total={pages.length}
         displayMode={displayMode}
       />

@@ -1,15 +1,15 @@
 import { useEffect } from 'react'
 
 interface UseReaderKeyboardOptions {
-  onNextPage: () => void
-  onPrevPage: () => void
+  onNext: () => void
+  onPrev: () => void
   enabled: boolean
   readingMode: 'page' | 'scroll'
 }
 
 export function useReaderKeyboard({
-  onNextPage,
-  onPrevPage,
+  onNext,
+  onPrev,
   enabled,
   readingMode,
 }: UseReaderKeyboardOptions): void {
@@ -30,21 +30,21 @@ export function useReaderKeyboard({
       switch (e.key) {
         case 'ArrowLeft':
           e.preventDefault()
-          onPrevPage()
+          onPrev()
           break
         case 'ArrowRight':
           e.preventDefault()
-          onNextPage()
+          onNext()
           break
         case ' ':
           if (readingMode === 'scroll') break
           e.preventDefault()
-          onNextPage()
+          onNext()
           break
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onNextPage, onPrevPage, enabled, readingMode])
+  }, [onNext, onPrev, enabled, readingMode])
 }

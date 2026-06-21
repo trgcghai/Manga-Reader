@@ -73,6 +73,30 @@ function ReaderPage() {
     }
   }, [currentPage, prevPage, data?.prevTranslationId, navigate])
 
+  const handleNextChapter = useCallback(() => {
+    if (data?.nextTranslationId) {
+      pendingDirection.current = 'next'
+      navigate({
+        to: '/reader/$translationId',
+        params: { translationId: String(data.nextTranslationId) },
+      })
+    } else {
+      toast.info('This is the latest chapter')
+    }
+  }, [data?.nextTranslationId, navigate])
+
+  const handlePrevChapter = useCallback(() => {
+    if (data?.prevTranslationId) {
+      pendingDirection.current = 'prev'
+      navigate({
+        to: '/reader/$translationId',
+        params: { translationId: String(data.prevTranslationId) },
+      })
+    } else {
+      toast.info('This is the first chapter')
+    }
+  }, [data?.prevTranslationId, navigate])
+
   useEffect(() => {
     if (pages.length > 0 && pendingDirection.current) {
       if (pendingDirection.current === 'next') {
@@ -89,8 +113,8 @@ function ReaderPage() {
   }, [pages, displayMode])
 
   useReaderKeyboard({
-    onNextPage: handleNextPage,
-    onPrevPage: handlePrevPage,
+    onNext: readingMode === 'scroll' ? handleNextChapter : handleNextPage,
+    onPrev: readingMode === 'scroll' ? handlePrevChapter : handlePrevPage,
     enabled: pages.length > 0,
     readingMode,
   })
