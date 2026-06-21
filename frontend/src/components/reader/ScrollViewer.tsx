@@ -125,31 +125,31 @@ export function ScrollViewer({
         case 'ArrowUp':
           if (container.scrollTop > 0) {
             e.preventDefault()
-            container.scrollBy({ top: -(viewportHeight * 0.9), behavior: 'smooth' })
+            container.scrollBy({ top: -(viewportHeight * 0.9), behavior: 'auto' })
           }
           break
         case 'ArrowDown':
           if (container.scrollTop + viewportHeight < container.scrollHeight) {
             e.preventDefault()
-            container.scrollBy({ top: viewportHeight * 0.9, behavior: 'smooth' })
+            container.scrollBy({ top: viewportHeight * 0.9, behavior: 'auto' })
           }
           break
         case 'PageUp':
           if (container.scrollTop > 0) {
             e.preventDefault()
-            container.scrollBy({ top: -viewportHeight, behavior: 'smooth' })
+            container.scrollBy({ top: -viewportHeight, behavior: 'auto' })
           }
           break
         case 'PageDown':
           if (container.scrollTop + viewportHeight < container.scrollHeight) {
             e.preventDefault()
-            container.scrollBy({ top: viewportHeight, behavior: 'smooth' })
+            container.scrollBy({ top: viewportHeight, behavior: 'auto' })
           }
           break
         case ' ':
           if (container.scrollTop + viewportHeight < container.scrollHeight) {
             e.preventDefault()
-            container.scrollBy({ top: viewportHeight, behavior: 'smooth' })
+            container.scrollBy({ top: viewportHeight, behavior: 'auto' })
           }
           break
       }
