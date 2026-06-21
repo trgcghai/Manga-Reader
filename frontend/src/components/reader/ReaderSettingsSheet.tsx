@@ -42,8 +42,11 @@ export function ReaderSettingsSheet({ children }: ReaderSettingsSheetProps) {
             </h3>
             <ToggleGroup
               type="single"
+              aria-label="Display Mode"
               value={displayMode}
-              onValueChange={(v) => v && setDisplayMode(v as 'single' | 'double')}
+              onValueChange={(v) => {
+                if (v === 'single' || v === 'double') setDisplayMode(v)
+              }}
             >
               <ToggleGroupItem value="single" className="flex-1">Single</ToggleGroupItem>
               <ToggleGroupItem value="double" className="flex-1">Double</ToggleGroupItem>
@@ -56,8 +59,11 @@ export function ReaderSettingsSheet({ children }: ReaderSettingsSheetProps) {
             </h3>
             <ToggleGroup
               type="single"
+              aria-label="Reading Mode"
               value={readingMode}
-              onValueChange={(v) => v && setReadingMode(v as 'page' | 'scroll')}
+              onValueChange={(v) => {
+                if (v === 'page' || v === 'scroll') setReadingMode(v)
+              }}
             >
               <ToggleGroupItem value="page" className="flex-1">Page</ToggleGroupItem>
               <ToggleGroupItem value="scroll" className="flex-1">Scroll</ToggleGroupItem>
