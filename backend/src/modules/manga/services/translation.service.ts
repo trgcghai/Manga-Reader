@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { TranslationRepository } from 'src/modules/manga/repositories/translation.repository';
+import { ChapterRepository } from 'src/modules/manga/repositories/chapter.repository';
 import { LanguageService } from 'src/modules/language/language.service';
 import { TranslatorService } from 'src/modules/translator/translator.service';
 import { FileService } from 'src/modules/file/file.service';
@@ -17,6 +18,7 @@ import { extractKeyFromUrl } from 'src/common/utils/file-mime.util';
 export class TranslationService {
   constructor(
     private readonly translationRepo: TranslationRepository,
+    private readonly chapterRepo: ChapterRepository,
     private readonly languageService: LanguageService,
     private readonly translatorService: TranslatorService,
     private readonly fileService: FileService,
@@ -29,6 +31,43 @@ export class TranslationService {
     if (!translation) {
       throw new NotFoundException('Translation not found');
     }
+
+    const { manga, number: chapterNumber } = translation.chapter;
+    const translatorId = translation.translator.id;
+    const languageId = translation.language.id;
+
+    const resolveAdjacent = async (
+      direction: 'prev' | 'next',
+    ): Promise<number | null> => {
+      const adjacent = await this.chapterRepo.findAdjacent(
+        manga.id,
+        chapterNumber,
+        direction,
+      );
+      if (!adjacent) return null;
+      if (!adjacent.translations || adjacent.translations.length === 0) {
+        return null;
+      }
+
+      const exact = adjacent.translations.find(
+        (t) =>
+          t.translator.id === translatorId && t.language.id === languageId,
+      );
+      if (exact) return exact.id;
+
+      const langMatch = adjacent.translations.find(
+        (t) => t.language.id === languageId,
+      );
+      if (langMatch) return langMatch.id;
+
+      return adjacent.translations[0].id;
+    };
+
+    const [prevTranslationId, nextTranslationId] = await Promise.all([
+      resolveAdjacent('prev'),
+      resolveAdjacent('next'),
+    ]);
+
     return {
       id: translation.id,
       url: translation.url,
@@ -45,6 +84,8 @@ export class TranslationService {
           title: translation.chapter.manga.title,
         },
       },
+      prevTranslationId,
+      nextTranslationId,
     };
   };
 

@@ -8,6 +8,8 @@ import { FileService } from 'src/modules/file/file.service';
 import { Translation } from 'src/modules/manga/entities/translation.entity';
 import { Language } from 'src/modules/language/entities/language.entity';
 import { Translator } from 'src/modules/translator/entities/translator.entity';
+import { ChapterRepository } from 'src/modules/manga/repositories/chapter.repository';
+import { Chapter } from 'src/modules/manga/entities/chapter.entity';
 import type { UpdateTranslationDto } from 'src/modules/manga/dto/translation.dto';
 
 describe('TranslationService', () => {
@@ -32,6 +34,10 @@ describe('TranslationService', () => {
     endpoint: 'http://localhost:9000',
     bucket: 'manga-pages',
     delete: jest.fn().mockResolvedValue(undefined),
+  };
+
+  const mockChapterRepo = {
+    findAdjacent: jest.fn(),
   };
 
   const language = { id: 1, code: 'en', name: 'English' } as Language;
@@ -60,6 +66,7 @@ describe('TranslationService', () => {
         { provide: LanguageService, useValue: mockLanguageService },
         { provide: TranslatorService, useValue: mockTranslatorService },
         { provide: FileService, useValue: mockFileService },
+        { provide: ChapterRepository, useValue: mockChapterRepo },
       ],
     }).compile();
 
@@ -281,6 +288,8 @@ describe('TranslationService', () => {
           title: 'Chapter 1',
           manga: { id: 10, title: 'One Piece' },
         },
+        prevTranslationId: null,
+        nextTranslationId: null,
       });
     });
 
@@ -289,6 +298,190 @@ describe('TranslationService', () => {
 
       await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
       expect(mockTranslationRepo.findById).toHaveBeenCalledWith(999);
+    });
+
+    it('should set prevTranslationId and nextTranslationId to null when no adjacent chapters exist', async () => {
+      const baseTranslation = {
+        id: 1,
+        url: '/path',
+        note: 'v2',
+        createdAt: new Date('2026-01-01'),
+        language: { id: 1, code: 'en', name: 'English' },
+        translator: { id: 1, name: 'Translator A' },
+        chapter: {
+          id: 5,
+          number: 3,
+          title: 'Chapter 3',
+          manga: { id: 10, title: 'One Piece' },
+        },
+      } as unknown as Translation;
+      mockTranslationRepo.findById.mockResolvedValue(baseTranslation);
+      mockChapterRepo.findAdjacent.mockResolvedValue(null);
+
+      const result = await service.findOne(1);
+
+      expect(result.prevTranslationId).toBeNull();
+      expect(result.nextTranslationId).toBeNull();
+    });
+
+    it('should find prevTranslationId with exact translator+language match', async () => {
+      const baseTranslation = {
+        id: 1,
+        url: '/path',
+        note: 'v2',
+        createdAt: new Date('2026-01-01'),
+        language: { id: 1, code: 'en', name: 'English' },
+        translator: { id: 1, name: 'Translator A' },
+        chapter: {
+          id: 5,
+          number: 3,
+          title: 'Chapter 3',
+          manga: { id: 10, title: 'One Piece' },
+        },
+      } as unknown as Translation;
+      const exactTranslation = {
+        id: 100,
+        translator: { id: 1 },
+        language: { id: 1 },
+      } as Translation;
+      const chExact = { id: 4, translations: [exactTranslation] } as unknown as Chapter;
+
+      mockTranslationRepo.findById.mockResolvedValue(baseTranslation);
+      mockChapterRepo.findAdjacent
+        .mockResolvedValueOnce(chExact)
+        .mockResolvedValueOnce(null);
+
+      const result = await service.findOne(1);
+
+      expect(result.prevTranslationId).toBe(100);
+      expect(result.nextTranslationId).toBeNull();
+    });
+
+    it('should fall back to same language match when no exact translator match for prev', async () => {
+      const baseTranslation = {
+        id: 1,
+        url: '/path',
+        note: 'v2',
+        createdAt: new Date('2026-01-01'),
+        language: { id: 1, code: 'en', name: 'English' },
+        translator: { id: 1, name: 'Translator A' },
+        chapter: {
+          id: 5,
+          number: 3,
+          title: 'Chapter 3',
+          manga: { id: 10, title: 'One Piece' },
+        },
+      } as unknown as Translation;
+      const langFallbackTranslation = {
+        id: 101,
+        translator: { id: 2 },
+        language: { id: 1 },
+      } as Translation;
+      const chLangFallback = { id: 4, translations: [langFallbackTranslation] } as unknown as Chapter;
+
+      mockTranslationRepo.findById.mockResolvedValue(baseTranslation);
+      mockChapterRepo.findAdjacent
+        .mockResolvedValueOnce(chLangFallback)
+        .mockResolvedValueOnce(null);
+
+      const result = await service.findOne(1);
+
+      expect(result.prevTranslationId).toBe(101);
+      expect(result.nextTranslationId).toBeNull();
+    });
+
+    it('should fall back to first translation when no language match for prev', async () => {
+      const baseTranslation = {
+        id: 1,
+        url: '/path',
+        note: 'v2',
+        createdAt: new Date('2026-01-01'),
+        language: { id: 1, code: 'en', name: 'English' },
+        translator: { id: 1, name: 'Translator A' },
+        chapter: {
+          id: 5,
+          number: 3,
+          title: 'Chapter 3',
+          manga: { id: 10, title: 'One Piece' },
+        },
+      } as unknown as Translation;
+      const anyTranslation = {
+        id: 102,
+        translator: { id: 2 },
+        language: { id: 2 },
+      } as Translation;
+      const chAny = { id: 4, translations: [anyTranslation] } as unknown as Chapter;
+
+      mockTranslationRepo.findById.mockResolvedValue(baseTranslation);
+      mockChapterRepo.findAdjacent
+        .mockResolvedValueOnce(chAny)
+        .mockResolvedValueOnce(null);
+
+      const result = await service.findOne(1);
+
+      expect(result.prevTranslationId).toBe(102);
+      expect(result.nextTranslationId).toBeNull();
+    });
+
+    it('should set prevTranslationId to null when prev chapter has no translations', async () => {
+      const baseTranslation = {
+        id: 1,
+        url: '/path',
+        note: 'v2',
+        createdAt: new Date('2026-01-01'),
+        language: { id: 1, code: 'en', name: 'English' },
+        translator: { id: 1, name: 'Translator A' },
+        chapter: {
+          id: 5,
+          number: 3,
+          title: 'Chapter 3',
+          manga: { id: 10, title: 'One Piece' },
+        },
+      } as unknown as Translation;
+      const chEmpty = { id: 4, translations: [] } as unknown as Chapter;
+
+      mockTranslationRepo.findById.mockResolvedValue(baseTranslation);
+      mockChapterRepo.findAdjacent
+        .mockResolvedValueOnce(chEmpty)
+        .mockResolvedValueOnce(null);
+
+      const result = await service.findOne(1);
+
+      expect(result.prevTranslationId).toBeNull();
+      expect(result.nextTranslationId).toBeNull();
+    });
+
+    it('should set both prevTranslationId and nextTranslationId when both exist with exact matches', async () => {
+      const baseTranslation = {
+        id: 1,
+        url: '/path',
+        note: 'v2',
+        createdAt: new Date('2026-01-01'),
+        language: { id: 1, code: 'en', name: 'English' },
+        translator: { id: 1, name: 'Translator A' },
+        chapter: {
+          id: 5,
+          number: 3,
+          title: 'Chapter 3',
+          manga: { id: 10, title: 'One Piece' },
+        },
+      } as unknown as Translation;
+      const exactTranslation = {
+        id: 100,
+        translator: { id: 1 },
+        language: { id: 1 },
+      } as Translation;
+      const chExact = { id: 4, translations: [exactTranslation] } as unknown as Chapter;
+
+      mockTranslationRepo.findById.mockResolvedValue(baseTranslation);
+      mockChapterRepo.findAdjacent
+        .mockResolvedValueOnce(chExact)
+        .mockResolvedValueOnce(chExact);
+
+      const result = await service.findOne(1);
+
+      expect(result.prevTranslationId).toBe(100);
+      expect(result.nextTranslationId).toBe(100);
     });
   });
 
