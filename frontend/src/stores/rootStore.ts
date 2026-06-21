@@ -15,8 +15,10 @@ export interface TranslationSlice {
   totalPages: number
   readingMode: 'page' | 'scroll'
   displayMode: 'single' | 'double'
+  scrollPosition: number
 
   setCurrentTranslation: (t: TranslationDetailResponse) => void
+  setScrollPosition: (n: number) => void
   setCurrentPage: (n: number) => void
   setTotalPages: (n: number) => void
   setReadingMode: (mode: 'page' | 'scroll') => void
@@ -33,6 +35,7 @@ const initialState = {
   totalPages: 0,
   readingMode: 'page' as const,
   displayMode: 'single' as const,
+  scrollPosition: 0,
 }
 
 export const translationSlice: StateCreator<
@@ -62,6 +65,8 @@ export const translationSlice: StateCreator<
   setReadingMode: (mode) => set({ readingMode: mode }),
 
   setDisplayMode: (mode) => set({ displayMode: mode }),
+
+  setScrollPosition: (n) => set({ scrollPosition: n }),
 
   nextPage: () =>
     set((state) => ({

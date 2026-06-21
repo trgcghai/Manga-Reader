@@ -4,12 +4,14 @@ interface UseReaderKeyboardOptions {
   onNextPage: () => void
   onPrevPage: () => void
   enabled: boolean
+  readingMode: 'page' | 'scroll'
 }
 
 export function useReaderKeyboard({
   onNextPage,
   onPrevPage,
   enabled,
+  readingMode,
 }: UseReaderKeyboardOptions): void {
   useEffect(() => {
     if (!enabled) return
@@ -35,6 +37,7 @@ export function useReaderKeyboard({
           onNextPage()
           break
         case ' ':
+          if (readingMode === 'scroll') break
           e.preventDefault()
           onNextPage()
           break
@@ -43,5 +46,5 @@ export function useReaderKeyboard({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onNextPage, onPrevPage, enabled])
+  }, [onNextPage, onPrevPage, enabled, readingMode])
 }
