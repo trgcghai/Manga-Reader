@@ -44,7 +44,8 @@ function ReaderPage() {
   } = useReaderPages(data?.url)
 
   const handleNextPage = useCallback(() => {
-    if (currentPage < totalPages - 1) {
+    const step = displayMode === 'double' ? 2 : 1
+    if (currentPage < totalPages - step) {
       nextPage()
     } else if (data?.nextTranslationId) {
       pendingDirection.current = 'next'
@@ -55,7 +56,7 @@ function ReaderPage() {
     } else {
       toast.info('This is the latest chapter')
     }
-  }, [currentPage, totalPages, nextPage, data?.nextTranslationId, navigate])
+  }, [currentPage, totalPages, nextPage, data?.nextTranslationId, navigate, displayMode])
 
   const handlePrevPage = useCallback(() => {
     if (currentPage > 0) {
@@ -76,11 +77,15 @@ function ReaderPage() {
       if (pendingDirection.current === 'next') {
         setCurrentPage(0)
       } else {
-        setCurrentPage(pages.length - 1)
+        if (displayMode === 'double') {
+          setCurrentPage(pages.length - 2 >= 0 ? pages.length - 2 : 0)
+        } else {
+          setCurrentPage(pages.length - 1)
+        }
       }
       pendingDirection.current = null
     }
-  }, [pages])
+  }, [pages, displayMode])
 
   useReaderKeyboard({
     onNextPage: handleNextPage,
