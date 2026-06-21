@@ -9,7 +9,7 @@ import {
   SheetTrigger,
 } from '#/components/ui/sheet'
 import { Separator } from '#/components/ui/separator'
-import { ToggleGroup, ToggleGroupItem } from '#/components/ui/toggle-group'
+
 import { useReaderStore } from '#/stores/rootStore'
 
 interface ReaderSettingsSheetProps {
@@ -34,42 +34,44 @@ export function ReaderSettingsSheet({ children }: ReaderSettingsSheetProps) {
             <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Display Mode
             </h3>
-            <ToggleGroup
-              type="single"
-              aria-label="Display Mode"
-              value={displayMode}
-              onValueChange={(v) => {
-                if (v === 'single' || v === 'double') setDisplayMode(v)
-              }}
-            >
-              <ToggleGroupItem value="single" className="flex-1">
+            <div className="flex gap-0 -space-x-px" role="radiogroup" aria-label="Display Mode">
+              <Button
+                variant={displayMode === 'single' ? 'default' : 'outline'}
+                className="flex-1 rounded-r-none"
+                onClick={() => setDisplayMode('single')}
+              >
                 Single
-              </ToggleGroupItem>
-              <ToggleGroupItem value="double" className="flex-1">
+              </Button>
+              <Button
+                variant={displayMode === 'double' ? 'default' : 'outline'}
+                className="flex-1 rounded-l-none"
+                onClick={() => setDisplayMode('double')}
+              >
                 Double
-              </ToggleGroupItem>
-            </ToggleGroup>
+              </Button>
+            </div>
           </div>
           <Separator />
           <div className="flex flex-col gap-3">
             <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Reading Mode
             </h3>
-            <ToggleGroup
-              type="single"
-              aria-label="Reading Mode"
-              value={readingMode}
-              onValueChange={(v) => {
-                if (v === 'page' || v === 'scroll') setReadingMode(v)
-              }}
-            >
-              <ToggleGroupItem value="page" className="flex-1">
+            <div className="flex gap-0 -space-x-px" role="radiogroup" aria-label="Reading Mode">
+              <Button
+                variant={readingMode === 'page' ? 'default' : 'outline'}
+                className="flex-1 rounded-r-none"
+                onClick={() => setReadingMode('page')}
+              >
                 Page
-              </ToggleGroupItem>
-              <ToggleGroupItem value="scroll" className="flex-1">
+              </Button>
+              <Button
+                variant={readingMode === 'scroll' ? 'default' : 'outline'}
+                className="flex-1 rounded-l-none"
+                onClick={() => setReadingMode('scroll')}
+              >
                 Scroll
-              </ToggleGroupItem>
-            </ToggleGroup>
+              </Button>
+            </div>
           </div>
           <Separator />
           <div className="flex flex-col gap-3">
