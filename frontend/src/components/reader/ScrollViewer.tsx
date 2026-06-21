@@ -51,7 +51,7 @@ export function ScrollViewer({
   function renderContent() {
     if (displayMode === 'single') {
       return pages.map((_, i) => (
-        <div key={`page-${i}`} data-page-index={i}>
+        <div key={`page-${i}`} data-page-index={i} className="flex items-center justify-center">
           {renderPage(i)}
         </div>
       ))
@@ -168,7 +168,7 @@ export function ScrollViewer({
         className="h-full"
         data-testid="scroll-viewer-container"
       >
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-8xl">
           {renderContent()}
         </div>
       </ScrollArea>
