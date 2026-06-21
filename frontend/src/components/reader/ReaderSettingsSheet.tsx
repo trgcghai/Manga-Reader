@@ -16,6 +16,7 @@ import {
 } from '#/components/ui/sheet'
 import { Separator } from '#/components/ui/separator'
 
+import { ButtonGroup } from '#/components/ui/button-group'
 import { useReaderStore } from '#/stores/rootStore'
 
 interface ReaderSettingsSheetProps {
@@ -40,44 +41,44 @@ export function ReaderSettingsSheet({ children }: ReaderSettingsSheetProps) {
             <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Display Mode
             </h3>
-            <div className="flex gap-0 -space-x-px" role="radiogroup" aria-label="Display Mode">
+            <ButtonGroup className="w-full" role="radiogroup" aria-label="Display Mode">
               <Button
                 variant={displayMode === 'single' ? 'default' : 'outline'}
-                className="flex-1 rounded-r-none"
+                className="flex-1"
                 onClick={() => setDisplayMode('single')}
               >
                 Single
               </Button>
               <Button
                 variant={displayMode === 'double' ? 'default' : 'outline'}
-                className="flex-1 rounded-l-none"
+                className="flex-1"
                 onClick={() => setDisplayMode('double')}
               >
                 Double
               </Button>
-            </div>
+            </ButtonGroup>
           </div>
           <Separator />
           <div className="flex flex-col gap-3">
             <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Reading Mode
             </h3>
-            <div className="flex gap-0 -space-x-px" role="radiogroup" aria-label="Reading Mode">
+            <ButtonGroup className="w-full" role="radiogroup" aria-label="Reading Mode">
               <Button
                 variant={readingMode === 'page' ? 'default' : 'outline'}
-                className="flex-1 rounded-r-none"
+                className="flex-1"
                 onClick={() => setReadingMode('page')}
               >
                 Page
               </Button>
               <Button
                 variant={readingMode === 'scroll' ? 'default' : 'outline'}
-                className="flex-1 rounded-l-none"
+                className="flex-1"
                 onClick={() => setReadingMode('scroll')}
               >
                 Scroll
               </Button>
-            </div>
+            </ButtonGroup>
           </div>
           <Separator />
           <div className="flex flex-col gap-3">
