@@ -164,7 +164,7 @@ export function ScrollViewer({
     <div className="relative h-full">
       <div
         ref={containerRef}
-        className="h-full overflow-y-auto"
+        className="h-full overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full"
         data-testid="scroll-viewer-container"
       >
         <div className="mx-auto max-w-4xl">
