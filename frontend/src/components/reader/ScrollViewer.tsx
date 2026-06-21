@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useReaderStore } from '#/stores/rootStore'
-import { PageIndicator } from './PageIndicator'
 import { ScrollArea } from '#/components/ui/scroll-area'
+import { Button } from '#/components/ui/button'
+import { ButtonGroup, ButtonGroupSeparator } from '#/components/ui/button-group'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 
 interface ScrollViewerProps {
   pages: string[]
@@ -13,10 +15,11 @@ interface ScrollViewerProps {
 export function ScrollViewer({
   pages,
   displayMode,
+  onPrevChapter,
+  onNextChapter,
 }: ScrollViewerProps) {
   const [errored, setErrored] = useState<Set<number>>(new Set())
   const containerRef = useRef<HTMLDivElement>(null)
-  const currentPage = useReaderStore((s) => s.currentPage)
 
   useEffect(() => {
     setErrored(new Set())
@@ -51,7 +54,11 @@ export function ScrollViewer({
   function renderContent() {
     if (displayMode === 'single') {
       return pages.map((_, i) => (
-        <div key={`page-${i}`} data-page-index={i} className="flex items-center justify-center">
+        <div
+          key={`page-${i}`}
+          data-page-index={i}
+          className="flex items-center justify-center"
+        >
           {renderPage(i)}
         </div>
       ))
@@ -61,14 +68,22 @@ export function ScrollViewer({
     for (let i = 0; i < pages.length; i += 2) {
       if (i + 1 < pages.length) {
         spreads.push(
-          <div key={`spread-${i}`} data-page-index={i} className="flex items-center justify-center gap-1">
+          <div
+            key={`spread-${i}`}
+            data-page-index={i}
+            className="flex items-center justify-center gap-1"
+          >
             {renderPage(i)}
             {renderPage(i + 1)}
           </div>,
         )
       } else {
         spreads.push(
-          <div key={`spread-${i}`} data-page-index={i} className="flex items-center justify-center">
+          <div
+            key={`spread-${i}`}
+            data-page-index={i}
+            className="flex items-center justify-center"
+          >
             {renderPage(i, true)}
           </div>,
         )
@@ -81,7 +96,8 @@ export function ScrollViewer({
     const container = containerRef.current
     if (!container) return
 
-    const sentinels = container.querySelectorAll<HTMLElement>('[data-page-index]')
+    const sentinels =
+      container.querySelectorAll<HTMLElement>('[data-page-index]')
     if (sentinels.length === 0) return
 
     const observer = new IntersectionObserver(
@@ -94,7 +110,9 @@ export function ScrollViewer({
         )
 
         const target = intersecting[0]
-        const index = Number((target.target as HTMLElement).getAttribute('data-page-index'))
+        const index = Number(
+          (target.target as HTMLElement).getAttribute('data-page-index'),
+        )
         if (!isNaN(index)) {
           useReaderStore.getState().setCurrentPage(index)
         }
@@ -117,7 +135,12 @@ export function ScrollViewer({
       if (!container) return
 
       const tag = (e.target as HTMLElement).tagName
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement).isContentEditable) return
+      if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        (e.target as HTMLElement).isContentEditable
+      )
+        return
 
       const viewportHeight = container.clientHeight
 
@@ -125,7 +148,10 @@ export function ScrollViewer({
         case 'ArrowUp':
           if (container.scrollTop > 0) {
             e.preventDefault()
-            container.scrollBy({ top: -(viewportHeight * 0.9), behavior: 'auto' })
+            container.scrollBy({
+              top: -(viewportHeight * 0.9),
+              behavior: 'auto',
+            })
           }
           break
         case 'ArrowDown':
@@ -169,14 +195,35 @@ export function ScrollViewer({
         data-testid="scroll-viewer-container"
       >
         <div className="mx-auto max-w-8xl">
+          <div className="flex items-center justify-center gap-2 py-4">
+            <ButtonGroup>
+              <Button variant="default" className="border" size="sm" onClick={onPrevChapter}>
+                <ArrowLeft className="mr-1" />
+                Previous Chapter
+              </Button>
+              <ButtonGroupSeparator />
+              <Button variant="default" className="border" size="sm" onClick={onNextChapter}>
+                Next Chapter
+                <ArrowRight className="mr-1" />
+              </Button>
+            </ButtonGroup>
+          </div>
           {renderContent()}
+          <div className="flex items-center justify-center gap-2 py-4">
+            <ButtonGroup>
+              <Button variant="default" className="border" size="sm" onClick={onPrevChapter}>
+                <ArrowLeft className="mr-1" />
+                Previous Chapter
+              </Button>
+              <ButtonGroupSeparator />
+              <Button variant="default" className="border" size="sm" onClick={onNextChapter}>
+                Next Chapter
+                <ArrowRight className="mr-1" />
+              </Button>
+            </ButtonGroup>
+          </div>
         </div>
       </ScrollArea>
-      <PageIndicator
-        current={currentPage}
-        total={pages.length}
-        displayMode={displayMode}
-      />
     </div>
   )
 }
