@@ -6,7 +6,7 @@ import {
   CommandList,
   CommandShortcut,
 } from '#/components/ui/command'
-import { ArrowLeft, ArrowRight, Settings } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Settings } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import {
   Sheet,
@@ -101,25 +101,69 @@ export function ReaderSettingsSheet({ children, title }: ReaderSettingsSheetProp
             <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Navigation
             </h3>
-            <Command className="rounded-lg border-border">
-              <CommandList className="max-h-none overflow-visible">
-                <CommandGroup>
-                  <CommandItem>
-                    <span>Next Page</span>
-                    <CommandShortcut className="flex items-center gap-1">
-                      <ArrowRight className="size-4" />
-                      <span>/ Space</span>
-                    </CommandShortcut>
-                  </CommandItem>
-                  <CommandItem>
-                    <span>Prev Page</span>
-                    <CommandShortcut>
-                      <ArrowLeft className="size-4" />
-                    </CommandShortcut>
-                  </CommandItem>
-                </CommandGroup>
-              </CommandList>
-            </Command>
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-xs font-medium text-muted-foreground mb-2">
+                  Page Mode
+                </h4>
+                <Command className="rounded-lg border-border">
+                  <CommandList className="max-h-none overflow-visible">
+                    <CommandGroup>
+                      <CommandItem>
+                        <span>Next Page</span>
+                        <CommandShortcut className="flex items-center gap-1">
+                          <ArrowRight className="size-4" />
+                          <span>/ Space</span>
+                        </CommandShortcut>
+                      </CommandItem>
+                      <CommandItem>
+                        <span>Prev Page</span>
+                        <CommandShortcut>
+                          <ArrowLeft className="size-4" />
+                        </CommandShortcut>
+                      </CommandItem>
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </div>
+              <div>
+                <h4 className="text-xs font-medium text-muted-foreground mb-2">
+                  Scroll Mode
+                </h4>
+                <Command className="rounded-lg border-border">
+                  <CommandList className="max-h-none overflow-visible">
+                    <CommandGroup>
+                      <CommandItem>
+                        <span>Scroll Up</span>
+                        <CommandShortcut className="flex items-center gap-1">
+                          <ArrowUp className="size-4" />
+                          <span>/ PgUp</span>
+                        </CommandShortcut>
+                      </CommandItem>
+                      <CommandItem>
+                        <span>Scroll Down</span>
+                        <CommandShortcut className="flex items-center gap-1">
+                          <ArrowDown className="size-4" />
+                          <span>/ PgDn / Space</span>
+                        </CommandShortcut>
+                      </CommandItem>
+                      <CommandItem>
+                        <span>Prev Chapter</span>
+                        <CommandShortcut>
+                          <ArrowLeft className="size-4" />
+                        </CommandShortcut>
+                      </CommandItem>
+                      <CommandItem>
+                        <span>Next Chapter</span>
+                        <CommandShortcut>
+                          <ArrowRight className="size-4" />
+                        </CommandShortcut>
+                      </CommandItem>
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </div>
+            </div>
           </div>
         </div>
       </SheetContent>

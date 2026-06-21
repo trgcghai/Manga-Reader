@@ -4,6 +4,7 @@ import { useTranslation } from '#/hooks/useManga'
 import { useReaderStore } from '#/stores/rootStore'
 import { useReaderPages } from '#/hooks/useReaderPages'
 import { PageViewer } from '#/components/reader/PageViewer'
+import { ScrollViewer } from '#/components/reader/ScrollViewer'
 import { useReaderKeyboard } from '#/hooks/useReaderKeyboard'
 import {
   ErrorDisplay,
@@ -30,7 +31,7 @@ function ReaderPage() {
     Number(translationId),
   )
 
-  const { currentPage, displayMode, totalPages, setCurrentPage } =
+  const { currentPage, displayMode, totalPages, readingMode, setCurrentPage } =
     useReaderStore()
   const nextPage = useReaderStore((s) => s.nextPage)
   const prevPage = useReaderStore((s) => s.prevPage)
@@ -91,6 +92,7 @@ function ReaderPage() {
     onNextPage: handleNextPage,
     onPrevPage: handlePrevPage,
     enabled: pages.length > 0,
+    readingMode,
   })
 
   if (isLoading) {
@@ -142,13 +144,22 @@ function ReaderPage() {
   return (
     <ReaderSettingsSheet title={data?.chapter.manga.title}>
       <div className="relative h-screen">
-        <PageViewer
-          pages={pages}
-          displayMode={displayMode}
-          currentPage={currentPage}
-          onNextPage={handleNextPage}
-          onPrevPage={handlePrevPage}
-        />
+        {readingMode === 'scroll' ? (
+          <ScrollViewer
+            pages={pages}
+            displayMode={displayMode}
+            onPrevChapter={handlePrevPage}
+            onNextChapter={handleNextPage}
+          />
+        ) : (
+          <PageViewer
+            pages={pages}
+            displayMode={displayMode}
+            currentPage={currentPage}
+            onNextPage={handleNextPage}
+            onPrevPage={handlePrevPage}
+          />
+        )}
         <ReaderSettingsTrigger />
       </div>
     </ReaderSettingsSheet>
