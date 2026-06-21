@@ -68,7 +68,7 @@ export function ScrollViewer({
         )
       } else {
         spreads.push(
-          <div key={`spread-${i}`} data-page-index={i}>
+          <div key={`spread-${i}`} data-page-index={i} className="flex items-center justify-center">
             {renderPage(i, true)}
           </div>,
         )
