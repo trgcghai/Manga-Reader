@@ -1,5 +1,11 @@
 import type { ReactNode } from 'react'
-import { Settings } from 'lucide-react'
+import {
+  CommandGroup,
+  CommandItem,
+  CommandList,
+  CommandShortcut,
+} from '#/components/ui/command'
+import { ArrowLeft, ArrowRight, Settings } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import {
   Sheet,
@@ -78,26 +84,25 @@ export function ReaderSettingsSheet({ children }: ReaderSettingsSheetProps) {
             <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Navigation
             </h3>
-            <ul className="flex flex-col gap-1.5 text-sm text-muted-foreground">
-              <li className="flex justify-between">
-                <span>Next Page</span>
-                <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">
-                  →
-                </kbd>
-              </li>
-              <li className="flex justify-between">
-                <span>Prev Page</span>
-                <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">
-                  ←
-                </kbd>
-              </li>
-              <li className="flex justify-between">
-                <span>Next / Space</span>
-                <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">
-                  Space
-                </kbd>
-              </li>
-            </ul>
+            <CommandList className="max-h-none overflow-visible">
+              <CommandGroup>
+                <CommandItem>
+                  <ArrowRight className="size-4" />
+                  <span>Next Page</span>
+                  <CommandShortcut>→</CommandShortcut>
+                </CommandItem>
+                <CommandItem>
+                  <ArrowLeft className="size-4" />
+                  <span>Prev Page</span>
+                  <CommandShortcut>←</CommandShortcut>
+                </CommandItem>
+                <CommandItem>
+                  <ArrowRight className="size-4" />
+                  <span>Next / Space</span>
+                  <CommandShortcut>Space</CommandShortcut>
+                </CommandItem>
+              </CommandGroup>
+            </CommandList>
           </div>
         </div>
       </SheetContent>
