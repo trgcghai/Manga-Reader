@@ -9,10 +9,7 @@ import {
   SheetTrigger,
 } from '#/components/ui/sheet'
 import { Separator } from '#/components/ui/separator'
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from '#/components/ui/toggle-group'
+import { ToggleGroup, ToggleGroupItem } from '#/components/ui/toggle-group'
 import { useReaderStore } from '#/stores/rootStore'
 
 interface ReaderSettingsSheetProps {
@@ -28,10 +25,7 @@ export function ReaderSettingsSheet({ children }: ReaderSettingsSheetProps) {
   return (
     <Sheet>
       {children}
-      <SheetContent
-        side="right"
-        className="w-80 gap-6"
-      >
+      <SheetContent side="right" className="w-80 gap-6">
         <SheetHeader>
           <SheetTitle>Reader Settings</SheetTitle>
         </SheetHeader>
@@ -48,8 +42,12 @@ export function ReaderSettingsSheet({ children }: ReaderSettingsSheetProps) {
                 if (v === 'single' || v === 'double') setDisplayMode(v)
               }}
             >
-              <ToggleGroupItem value="single" className="flex-1">Single</ToggleGroupItem>
-              <ToggleGroupItem value="double" className="flex-1">Double</ToggleGroupItem>
+              <ToggleGroupItem value="single" className="flex-1">
+                Single
+              </ToggleGroupItem>
+              <ToggleGroupItem value="double" className="flex-1">
+                Double
+              </ToggleGroupItem>
             </ToggleGroup>
           </div>
           <Separator />
@@ -65,8 +63,12 @@ export function ReaderSettingsSheet({ children }: ReaderSettingsSheetProps) {
                 if (v === 'page' || v === 'scroll') setReadingMode(v)
               }}
             >
-              <ToggleGroupItem value="page" className="flex-1">Page</ToggleGroupItem>
-              <ToggleGroupItem value="scroll" className="flex-1">Scroll</ToggleGroupItem>
+              <ToggleGroupItem value="page" className="flex-1">
+                Page
+              </ToggleGroupItem>
+              <ToggleGroupItem value="scroll" className="flex-1">
+                Scroll
+              </ToggleGroupItem>
             </ToggleGroup>
           </div>
           <Separator />
@@ -77,15 +79,21 @@ export function ReaderSettingsSheet({ children }: ReaderSettingsSheetProps) {
             <ul className="flex flex-col gap-1.5 text-sm text-muted-foreground">
               <li className="flex justify-between">
                 <span>Next Page</span>
-                <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">→</kbd>
+                <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">
+                  →
+                </kbd>
               </li>
               <li className="flex justify-between">
                 <span>Prev Page</span>
-                <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">←</kbd>
+                <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">
+                  ←
+                </kbd>
               </li>
               <li className="flex justify-between">
                 <span>Next / Space</span>
-                <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">Space</kbd>
+                <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">
+                  Space
+                </kbd>
               </li>
             </ul>
           </div>
