@@ -17,8 +17,16 @@ beforeEach(() => {
 describe('FileDropzone', () => {
   describe('empty state', () => {
     it('renders default message when no file is selected', () => {
-      render(<FileDropzone accept={{ 'application/zip': ['.cbz'] }} value={null} onFileSelect={vi.fn()} />)
-      expect(screen.getByText('Drag and drop your file here, or click to browse')).toBeInTheDocument()
+      render(
+        <FileDropzone
+          accept={{ 'application/zip': ['.cbz'] }}
+          value={null}
+          onFileSelect={vi.fn()}
+        />,
+      )
+      expect(
+        screen.getByText('Drag and drop your file here, or click to browse'),
+      ).toBeInTheDocument()
     })
 
     it('renders custom message when provided', () => {
@@ -46,14 +54,25 @@ describe('FileDropzone', () => {
     })
 
     it('renders Browse Files button', () => {
-      render(<FileDropzone accept={{ 'application/zip': ['.cbz'] }} value={null} onFileSelect={vi.fn()} />)
-      expect(screen.getByRole('button', { name: /browse/i })).toBeInTheDocument()
+      render(
+        <FileDropzone
+          accept={{ 'application/zip': ['.cbz'] }}
+          value={null}
+          onFileSelect={vi.fn()}
+        />,
+      )
+      expect(
+        screen.getByRole('button', { name: /browse/i }),
+      ).toBeInTheDocument()
     })
 
     it('renders custom icon when provided', () => {
       render(
         <FileDropzone
-          accept={{ 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] }}
+          accept={{
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+              ['.xlsx'],
+          }}
           value={null}
           onFileSelect={vi.fn()}
           icon={<span data-testid="custom-icon">📄</span>}
@@ -64,7 +83,12 @@ describe('FileDropzone', () => {
 
     it('applies custom className to root', () => {
       const { container } = render(
-        <FileDropzone accept={{ 'application/zip': ['.cbz'] }} value={null} onFileSelect={vi.fn()} className="my-custom-class" />,
+        <FileDropzone
+          accept={{ 'application/zip': ['.cbz'] }}
+          value={null}
+          onFileSelect={vi.fn()}
+          className="my-custom-class"
+        />,
       )
       expect(container.firstChild).toHaveClass('my-custom-class')
     })
@@ -72,7 +96,13 @@ describe('FileDropzone', () => {
 
   describe('selected state — badge', () => {
     it('renders filename in a Badge when value is set and selectedDisplay is badge (default)', () => {
-      render(<FileDropzone accept={{ 'application/zip': ['.cbz'] }} value={mockFile} onFileSelect={vi.fn()} />)
+      render(
+        <FileDropzone
+          accept={{ 'application/zip': ['.cbz'] }}
+          value={mockFile}
+          onFileSelect={vi.fn()}
+        />,
+      )
       expect(screen.getByText('chapter-1.cbz')).toBeInTheDocument()
     })
   })
@@ -81,7 +111,10 @@ describe('FileDropzone', () => {
     it('renders custom icon and filename when selectedDisplay is icon', () => {
       render(
         <FileDropzone
-          accept={{ 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] }}
+          accept={{
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+              ['.xlsx'],
+          }}
           value={mockFile}
           onFileSelect={vi.fn()}
           selectedDisplay="icon"
@@ -96,11 +129,23 @@ describe('FileDropzone', () => {
   describe('null value', () => {
     it('shows empty state when value is null', () => {
       const { rerender } = render(
-        <FileDropzone accept={{ 'application/zip': ['.cbz'] }} value={mockFile} onFileSelect={vi.fn()} />,
+        <FileDropzone
+          accept={{ 'application/zip': ['.cbz'] }}
+          value={mockFile}
+          onFileSelect={vi.fn()}
+        />,
       )
       expect(screen.getByText('chapter-1.cbz')).toBeInTheDocument()
-      rerender(<FileDropzone accept={{ 'application/zip': ['.cbz'] }} value={null} onFileSelect={vi.fn()} />)
-      expect(screen.getByText('Drag and drop your file here, or click to browse')).toBeInTheDocument()
+      rerender(
+        <FileDropzone
+          accept={{ 'application/zip': ['.cbz'] }}
+          value={null}
+          onFileSelect={vi.fn()}
+        />,
+      )
+      expect(
+        screen.getByText('Drag and drop your file here, or click to browse'),
+      ).toBeInTheDocument()
     })
   })
 
@@ -128,7 +173,9 @@ describe('FileDropzone', () => {
           onRemove={vi.fn()}
         />,
       )
-      expect(screen.getByRole('button', { name: /remove/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /remove/i }),
+      ).toBeInTheDocument()
     })
 
     it('calls onRemove and onFileSelect(null) when remove button is clicked', async () => {
@@ -179,7 +226,11 @@ describe('FileDropzone', () => {
 
     it('does not render error when error prop is not set', () => {
       const { container } = render(
-        <FileDropzone accept={{ 'application/zip': ['.cbz'] }} value={null} onFileSelect={vi.fn()} />,
+        <FileDropzone
+          accept={{ 'application/zip': ['.cbz'] }}
+          value={null}
+          onFileSelect={vi.fn()}
+        />,
       )
       expect(container.querySelector('[role="alert"]')).not.toBeInTheDocument()
     })
@@ -206,7 +257,11 @@ describe('FileDropzone', () => {
       const onFileSelect = vi.fn()
       const file = new File([''], 'test.cbz', { type: 'application/zip' })
       const { container } = render(
-        <FileDropzone accept={{ 'application/zip': ['.cbz'] }} value={null} onFileSelect={onFileSelect} />,
+        <FileDropzone
+          accept={{ 'application/zip': ['.cbz'] }}
+          value={null}
+          onFileSelect={onFileSelect}
+        />,
       )
       const dropzone = container.firstChild?.firstChild as HTMLElement
       const dropEvent = new Event('drop', { bubbles: true })
@@ -225,7 +280,11 @@ describe('FileDropzone', () => {
       const onFileSelect = vi.fn()
       const invalidFile = new File([''], 'image.png', { type: 'image/png' })
       const { container } = render(
-        <FileDropzone accept={{ 'application/zip': ['.cbz'] }} value={null} onFileSelect={onFileSelect} />,
+        <FileDropzone
+          accept={{ 'application/zip': ['.cbz'] }}
+          value={null}
+          onFileSelect={onFileSelect}
+        />,
       )
       const dropzone = container.firstChild?.firstChild as HTMLElement
       const dropEvent = new Event('drop', { bubbles: true })

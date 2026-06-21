@@ -224,7 +224,8 @@ export default function EditTranslationDialog({
                   />
                   {translation.url && (
                     <div className="flex items-center gap-2">
-                      Current file: <Badge>{translation.url.split('/').pop()}</Badge>
+                      Current file:{' '}
+                      <Badge>{translation.url.split('/').pop()}</Badge>
                     </div>
                   )}
                 </UiField>

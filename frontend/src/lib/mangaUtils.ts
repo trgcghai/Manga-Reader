@@ -14,7 +14,6 @@ const addTag = (
 }
 
 const getStatusVariant = (status: string | undefined) => {
-
   switch (status) {
     case 'completed':
       return 'default'

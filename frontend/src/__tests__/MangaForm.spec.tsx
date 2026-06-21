@@ -27,14 +27,19 @@ describe('MangaForm cover field', () => {
         heading="Test"
       />,
     )
-    expect(screen.getByText('Drag & drop or click to upload')).toBeInTheDocument()
+    expect(
+      screen.getByText('Drag & drop or click to upload'),
+    ).toBeInTheDocument()
     expect(screen.getByText('Browse Files')).toBeInTheDocument()
   })
 
   it('shows preview when coverPath exists (edit mode)', () => {
     render(
       <MangaForm
-        defaultValues={{ ...defaultValues, coverPath: 'http://example.com/cover.jpg' }}
+        defaultValues={{
+          ...defaultValues,
+          coverPath: 'http://example.com/cover.jpg',
+        }}
         onSubmit={vi.fn()}
         isPending={false}
         submitLabel="Save"
@@ -52,7 +57,10 @@ describe('MangaForm cover field', () => {
 
     render(
       <MangaForm
-        defaultValues={{ ...defaultValues, coverPath: 'http://example.com/cover.jpg' }}
+        defaultValues={{
+          ...defaultValues,
+          coverPath: 'http://example.com/cover.jpg',
+        }}
         onSubmit={vi.fn()}
         isPending={false}
         submitLabel="Save"
@@ -67,6 +75,8 @@ describe('MangaForm cover field', () => {
     await user.click(screen.getByRole('button', { name: /remove/i }))
 
     expect(screen.queryByAltText('Preview')).not.toBeInTheDocument()
-    expect(screen.getByText('Drag & drop or click to upload')).toBeInTheDocument()
+    expect(
+      screen.getByText('Drag & drop or click to upload'),
+    ).toBeInTheDocument()
   })
 })

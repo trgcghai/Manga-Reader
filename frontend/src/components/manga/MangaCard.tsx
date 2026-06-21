@@ -1,10 +1,6 @@
 import type { MangaResponse } from '#/services/api/mangaApi'
 import { Badge } from '#/components/ui/badge'
-import {
-  Card,
-  CardContent,
-  CardTitle,
-} from '#/components/ui/card'
+import { Card, CardContent, CardTitle } from '#/components/ui/card'
 import { BookOpen } from 'lucide-react'
 import { getStatusVariant } from '#/lib/mangaUtils'
 
@@ -51,7 +47,9 @@ export function MangaCard({ manga }: MangaCardProps) {
       </div>
 
       <CardContent className="space-y-1 px-3 py-3">
-        <CardTitle className="text-sm line-clamp-2 font-medium text-gray-700 text-wrap">{manga.title}</CardTitle>
+        <CardTitle className="text-sm line-clamp-2 font-medium text-gray-700 text-wrap">
+          {manga.title}
+        </CardTitle>
       </CardContent>
     </Card>
   )

@@ -1,5 +1,4 @@
 import axiosInstance from '#/services/api/api'
-import type { TranslationDetailResponse } from '#/types/translation'
 
 export interface MangaResponse {
   id: number
@@ -69,6 +68,24 @@ export interface CreateChapterPayload {
   translatorId: number
   url: string
 }
+
+export interface TranslationDetailResponse {
+  id: number
+  url: string
+  note?: string
+  createdAt: string
+  language: { id: number; code: string; name: string }
+  translator: { id: number; name: string }
+  chapter: {
+    id: number
+    number: number
+    title?: string
+    manga: { id: number; title: string }
+  }
+  prevTranslationId: number | null
+  nextTranslationId: number | null
+}
+
 
 export async function getAllMangas(params: {
   page: number

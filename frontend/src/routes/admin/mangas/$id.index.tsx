@@ -179,7 +179,7 @@ function MangaDetailPage() {
                 Authors
               </p>
               <div className="flex flex-wrap gap-1.5 text-secondary-foreground text-sm">
-                {manga.authors.map(a => a.name).join(', ')}
+                {manga.authors.map((a) => a.name).join(', ')}
               </div>
             </div>
           </div>

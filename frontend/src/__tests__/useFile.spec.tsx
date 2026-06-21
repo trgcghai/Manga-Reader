@@ -12,7 +12,9 @@ function createWrapper() {
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   })
   return function Wrapper({ children }: { children: ReactNode }) {
-    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    return (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    )
   }
 }
 
@@ -22,12 +24,17 @@ describe('useCoverUpload', () => {
   })
 
   it('returns upload response on success', async () => {
-    const mockResponse = { key: 'manga/cover/uuid.jpg', url: 'http://localhost:9000/manga-pages/manga/cover/uuid.jpg' }
+    const mockResponse = {
+      key: 'manga/cover/uuid.jpg',
+      url: 'http://localhost:9000/manga-pages/manga/cover/uuid.jpg',
+    }
     const { uploadCover } = await import('#/services/api/fileApi')
     vi.mocked(uploadCover).mockResolvedValue(mockResponse)
 
     const { useCoverUpload } = await import('#/hooks/useFile')
-    const { result } = renderHook(() => useCoverUpload(), { wrapper: createWrapper() })
+    const { result } = renderHook(() => useCoverUpload(), {
+      wrapper: createWrapper(),
+    })
 
     const file = new File(['fake-content'], 'cover.jpg', { type: 'image/jpeg' })
     result.current.mutate(file)
@@ -41,7 +48,9 @@ describe('useCoverUpload', () => {
     vi.mocked(uploadCover).mockRejectedValue(new Error('Network error'))
 
     const { useCoverUpload } = await import('#/hooks/useFile')
-    const { result } = renderHook(() => useCoverUpload(), { wrapper: createWrapper() })
+    const { result } = renderHook(() => useCoverUpload(), {
+      wrapper: createWrapper(),
+    })
 
     const file = new File(['fake-content'], 'cover.jpg', { type: 'image/jpeg' })
     result.current.mutate(file)

@@ -13,7 +13,10 @@ describe('uploadCover', () => {
   })
 
   it('posts multipart form data to /files/upload/cover', async () => {
-    const mockResponse = { key: 'manga/cover/uuid.jpg', url: 'http://localhost:9000/manga-pages/manga/cover/uuid.jpg' }
+    const mockResponse = {
+      key: 'manga/cover/uuid.jpg',
+      url: 'http://localhost:9000/manga-pages/manga/cover/uuid.jpg',
+    }
     vi.mocked(axiosInstance.post).mockResolvedValue({ data: mockResponse })
 
     const { uploadCover } = await import('#/services/api/fileApi')

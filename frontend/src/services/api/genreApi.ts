@@ -32,7 +32,9 @@ export async function getGenres(
   const params: Record<string, string | number> = { page, limit }
   if (search) params.search = search
 
-  const { data } = await axiosInstance.get<PaginatedGenreResponse>('/genres', { params })
+  const { data } = await axiosInstance.get<PaginatedGenreResponse>('/genres', {
+    params,
+  })
   return data
 }
 

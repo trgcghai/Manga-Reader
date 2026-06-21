@@ -15,7 +15,9 @@ describe('useReaderKeyboard', () => {
   it('calls onPrevPage when ArrowLeft is pressed', () => {
     const onNextPage = vi.fn()
     const onPrevPage = vi.fn()
-    renderHook(() => useReaderKeyboard({ onNextPage, onPrevPage, enabled: true }))
+    renderHook(() =>
+      useReaderKeyboard({ onNextPage, onPrevPage, enabled: true }),
+    )
     dispatchKey('ArrowLeft')
     expect(onPrevPage).toHaveBeenCalledTimes(1)
     expect(onNextPage).not.toHaveBeenCalled()
@@ -24,7 +26,9 @@ describe('useReaderKeyboard', () => {
   it('calls onNextPage when ArrowRight is pressed', () => {
     const onNextPage = vi.fn()
     const onPrevPage = vi.fn()
-    renderHook(() => useReaderKeyboard({ onNextPage, onPrevPage, enabled: true }))
+    renderHook(() =>
+      useReaderKeyboard({ onNextPage, onPrevPage, enabled: true }),
+    )
     dispatchKey('ArrowRight')
     expect(onNextPage).toHaveBeenCalledTimes(1)
     expect(onPrevPage).not.toHaveBeenCalled()
@@ -33,7 +37,9 @@ describe('useReaderKeyboard', () => {
   it('calls onNextPage when Space is pressed', () => {
     const onNextPage = vi.fn()
     const onPrevPage = vi.fn()
-    renderHook(() => useReaderKeyboard({ onNextPage, onPrevPage, enabled: true }))
+    renderHook(() =>
+      useReaderKeyboard({ onNextPage, onPrevPage, enabled: true }),
+    )
     dispatchKey(' ')
     expect(onNextPage).toHaveBeenCalledTimes(1)
     expect(onPrevPage).not.toHaveBeenCalled()
@@ -42,7 +48,9 @@ describe('useReaderKeyboard', () => {
   it('does not call callbacks when enabled is false', () => {
     const onNextPage = vi.fn()
     const onPrevPage = vi.fn()
-    renderHook(() => useReaderKeyboard({ onNextPage, onPrevPage, enabled: false }))
+    renderHook(() =>
+      useReaderKeyboard({ onNextPage, onPrevPage, enabled: false }),
+    )
     dispatchKey('ArrowLeft')
     dispatchKey('ArrowRight')
     dispatchKey(' ')
@@ -53,7 +61,9 @@ describe('useReaderKeyboard', () => {
   it('suppresses keyboard events when focus is in an INPUT element', () => {
     const onNextPage = vi.fn()
     const onPrevPage = vi.fn()
-    renderHook(() => useReaderKeyboard({ onNextPage, onPrevPage, enabled: true }))
+    renderHook(() =>
+      useReaderKeyboard({ onNextPage, onPrevPage, enabled: true }),
+    )
     const input = document.createElement('input')
     document.body.appendChild(input)
     input.focus()
@@ -65,7 +75,9 @@ describe('useReaderKeyboard', () => {
   it('suppresses keyboard events when focus is in a TEXTAREA element', () => {
     const onNextPage = vi.fn()
     const onPrevPage = vi.fn()
-    renderHook(() => useReaderKeyboard({ onNextPage, onPrevPage, enabled: true }))
+    renderHook(() =>
+      useReaderKeyboard({ onNextPage, onPrevPage, enabled: true }),
+    )
     const textarea = document.createElement('textarea')
     document.body.appendChild(textarea)
     textarea.focus()
@@ -77,7 +89,9 @@ describe('useReaderKeyboard', () => {
   it('suppresses keyboard events when focus is in a contenteditable element', () => {
     const onNextPage = vi.fn()
     const onPrevPage = vi.fn()
-    renderHook(() => useReaderKeyboard({ onNextPage, onPrevPage, enabled: true }))
+    renderHook(() =>
+      useReaderKeyboard({ onNextPage, onPrevPage, enabled: true }),
+    )
     const div = document.createElement('div')
     div.contentEditable = 'true'
     document.body.appendChild(div)
@@ -89,7 +103,9 @@ describe('useReaderKeyboard', () => {
   it('removes event listener on unmount', () => {
     const onNextPage = vi.fn()
     const onPrevPage = vi.fn()
-    const { unmount } = renderHook(() => useReaderKeyboard({ onNextPage, onPrevPage, enabled: true }))
+    const { unmount } = renderHook(() =>
+      useReaderKeyboard({ onNextPage, onPrevPage, enabled: true }),
+    )
     unmount()
     dispatchKey('ArrowRight')
     expect(onNextPage).not.toHaveBeenCalled()

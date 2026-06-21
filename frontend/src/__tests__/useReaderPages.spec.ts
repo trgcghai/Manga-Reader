@@ -14,10 +14,14 @@ const mockSetTotalPages = vi.fn()
 vi.mock('#/stores/rootStore', () => ({
   useReaderStore: Object.assign(
     (selector?: (s: any) => any) => {
-      const state = { setTotalPages: mockSetTotalPages, currentPage: 0, totalPages: 0 }
+      const state = {
+        setTotalPages: mockSetTotalPages,
+        currentPage: 0,
+        totalPages: 0,
+      }
       return selector ? selector(state) : state
     },
-    { getState: () => ({ setTotalPages: mockSetTotalPages }) }
+    { getState: () => ({ setTotalPages: mockSetTotalPages }) },
   ),
 }))
 
@@ -36,7 +40,9 @@ describe('useReaderPages', () => {
     mockMutateAsync.mockImplementation(() => new Promise(() => {}))
 
     const { useReaderPages } = await import('#/hooks/useReaderPages')
-    const { result } = renderHook(() => useReaderPages('http://example.com/test.cbz'))
+    const { result } = renderHook(() =>
+      useReaderPages('http://example.com/test.cbz'),
+    )
 
     expect(result.current.isLoading).toBe(true)
     expect(result.current.pages).toEqual([])
@@ -53,15 +59,21 @@ describe('useReaderPages', () => {
   })
 
   it('returns pages and sets totalPages on success', async () => {
-    const { parseCbzPages, loadCbzAsObjectUrls } = await import('#/utils/cbzParser')
+    const { parseCbzPages, loadCbzAsObjectUrls } =
+      await import('#/utils/cbzParser')
 
     const fakeBlob = new Blob(['fake'], { type: 'image/jpeg' })
     mockMutateAsync.mockResolvedValue(new Blob(['cbz-data']))
     vi.mocked(parseCbzPages).mockResolvedValue([fakeBlob, fakeBlob])
-    vi.mocked(loadCbzAsObjectUrls).mockReturnValue(['blob:mock/0', 'blob:mock/1'])
+    vi.mocked(loadCbzAsObjectUrls).mockReturnValue([
+      'blob:mock/0',
+      'blob:mock/1',
+    ])
 
     const { useReaderPages } = await import('#/hooks/useReaderPages')
-    const { result } = renderHook(() => useReaderPages('http://example.com/test.cbz'))
+    const { result } = renderHook(() =>
+      useReaderPages('http://example.com/test.cbz'),
+    )
 
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     expect(result.current.pages).toHaveLength(2)
@@ -73,7 +85,9 @@ describe('useReaderPages', () => {
     mockMutateAsync.mockRejectedValue(new Error('Network error'))
 
     const { useReaderPages } = await import('#/hooks/useReaderPages')
-    const { result } = renderHook(() => useReaderPages('http://example.com/test.cbz'))
+    const { result } = renderHook(() =>
+      useReaderPages('http://example.com/test.cbz'),
+    )
 
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     expect(result.current.pages).toEqual([])

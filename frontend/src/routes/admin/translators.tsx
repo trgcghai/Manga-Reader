@@ -23,7 +23,11 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '#/components/ui/empty'
-import { ErrorDisplay, ErrorTitle, ErrorDescription } from '#/components/ui/error-display'
+import {
+  ErrorDisplay,
+  ErrorTitle,
+  ErrorDescription,
+} from '#/components/ui/error-display'
 import { Pencil, Plus, Trash2, Languages } from 'lucide-react'
 import AddTranslatorDialog from '#/components/translator/AddTranslatorDialog'
 import EditTranslatorDialog from '#/components/translator/EditTranslatorDialog'
@@ -92,9 +96,7 @@ function AdminTranslatorsPage() {
       {isError && (
         <ErrorDisplay className="mt-6">
           <ErrorTitle>Failed to Load Translators</ErrorTitle>
-          <ErrorDescription>
-            Make sure the backend is running.
-          </ErrorDescription>
+          <ErrorDescription>Make sure the backend is running.</ErrorDescription>
         </ErrorDisplay>
       )}
 

@@ -20,15 +20,27 @@ import type {
   UpdateMangaPayload,
   CreateChapterPayload,
   UpdateTranslationPayload,
+  TranslationDetailResponse,
 } from '#/services/api/mangaApi'
-import type { TranslationDetailResponse } from '#/types/translation'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 const mangaKeys = {
   all: ['mangas'] as const,
-  list: (params: { page: number; limit: number; search?: string; status?: string }) =>
-    [...mangaKeys.all, 'list', params.page, params.limit, params.search, params.status] as const,
+  list: (params: {
+    page: number
+    limit: number
+    search?: string
+    status?: string
+  }) =>
+    [
+      ...mangaKeys.all,
+      'list',
+      params.page,
+      params.limit,
+      params.search,
+      params.status,
+    ] as const,
   detail: (id: number) => [...mangaKeys.all, 'detail', id] as const,
 }
 

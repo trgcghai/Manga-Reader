@@ -4,13 +4,15 @@ import { PageViewer } from '#/components/reader/PageViewer'
 
 const mockPages = ['blob:1', 'blob:2', 'blob:3']
 
-function renderPageViewer(overrides: Partial<{
-  pages: string[]
-  displayMode: 'single' | 'double'
-  currentPage: number
-  onNextPage: () => void
-  onPrevPage: () => void
-}> = {}) {
+function renderPageViewer(
+  overrides: Partial<{
+    pages: string[]
+    displayMode: 'single' | 'double'
+    currentPage: number
+    onNextPage: () => void
+    onPrevPage: () => void
+  }> = {},
+) {
   const props = {
     pages: mockPages,
     displayMode: 'single' as const,
@@ -39,7 +41,13 @@ describe('PageViewer — single mode', () => {
 
   it('renders nothing when pages is empty', () => {
     const { container } = render(
-      <PageViewer pages={[]} displayMode="single" currentPage={0} onNextPage={vi.fn()} onPrevPage={vi.fn()} />
+      <PageViewer
+        pages={[]}
+        displayMode="single"
+        currentPage={0}
+        onNextPage={vi.fn()}
+        onPrevPage={vi.fn()}
+      />,
     )
     expect(container.innerHTML).toBe('')
   })
@@ -53,8 +61,14 @@ describe('PageViewer — single mode', () => {
     const { props, container } = renderPageViewer()
     const viewer = container.firstChild as HTMLElement
     vi.spyOn(viewer, 'getBoundingClientRect').mockReturnValue({
-      width: 900, left: 0, top: 0, height: 600,
-      right: 900, bottom: 600, x: 0, y: 0,
+      width: 900,
+      left: 0,
+      top: 0,
+      height: 600,
+      right: 900,
+      bottom: 600,
+      x: 0,
+      y: 0,
       toJSON: () => {},
     })
     fireEvent.click(viewer, { clientX: 100 })
@@ -65,8 +79,14 @@ describe('PageViewer — single mode', () => {
     const { props, container } = renderPageViewer()
     const viewer = container.firstChild as HTMLElement
     vi.spyOn(viewer, 'getBoundingClientRect').mockReturnValue({
-      width: 900, left: 0, top: 0, height: 600,
-      right: 900, bottom: 600, x: 0, y: 0,
+      width: 900,
+      left: 0,
+      top: 0,
+      height: 600,
+      right: 900,
+      bottom: 600,
+      x: 0,
+      y: 0,
       toJSON: () => {},
     })
     fireEvent.click(viewer, { clientX: 800 })
@@ -77,8 +97,14 @@ describe('PageViewer — single mode', () => {
     const { props, container } = renderPageViewer()
     const viewer = container.firstChild as HTMLElement
     vi.spyOn(viewer, 'getBoundingClientRect').mockReturnValue({
-      width: 900, left: 0, top: 0, height: 600,
-      right: 900, bottom: 600, x: 0, y: 0,
+      width: 900,
+      left: 0,
+      top: 0,
+      height: 600,
+      right: 900,
+      bottom: 600,
+      x: 0,
+      y: 0,
       toJSON: () => {},
     })
     fireEvent.click(viewer, { clientX: 450 })
@@ -97,7 +123,11 @@ describe('PageViewer — double mode', () => {
   })
 
   it('renders single image on last odd page', () => {
-    renderPageViewer({ displayMode: 'double', currentPage: 2, pages: ['b:1', 'b:2', 'b:3'] })
+    renderPageViewer({
+      displayMode: 'double',
+      currentPage: 2,
+      pages: ['b:1', 'b:2', 'b:3'],
+    })
     const imgs = screen.getAllByRole('img')
     expect(imgs).toHaveLength(1)
     expect(imgs[0]).toHaveAttribute('alt', 'Page 3')

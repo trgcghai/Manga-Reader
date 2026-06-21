@@ -38,7 +38,9 @@ export function useCreateAuthor() {
       toast.success(`Author "${author.name}" created`)
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : 'Failed to create author')
+      toast.error(
+        err instanceof Error ? err.message : 'Failed to create author',
+      )
     },
   })
 }
@@ -62,7 +64,9 @@ export function useUpdateAuthor() {
       toast.success(`Author "${author.name}" updated`)
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : 'Failed to update author')
+      toast.error(
+        err instanceof Error ? err.message : 'Failed to update author',
+      )
     },
   })
 }
@@ -77,7 +81,9 @@ export function useDeleteAuthor() {
       toast.success(`Author deleted`)
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : 'Failed to delete author')
+      toast.error(
+        err instanceof Error ? err.message : 'Failed to delete author',
+      )
     },
   })
 }

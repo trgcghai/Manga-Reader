@@ -42,7 +42,7 @@ function RootLayout({ children }: { children: React.ReactNode }) {
       <body>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>{children}</TooltipProvider>
-          <Toaster position='top-center' />
+          <Toaster position="top-center" />
         </QueryClientProvider>
         <TanStackDevtools
           config={{

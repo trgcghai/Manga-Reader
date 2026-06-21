@@ -13,7 +13,10 @@ import {
 import { Button } from '#/components/ui/button'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
-import { ReaderSettingsSheet, ReaderSettingsTrigger } from '#/components/reader/ReaderSettingsSheet'
+import {
+  ReaderSettingsSheet,
+  ReaderSettingsTrigger,
+} from '#/components/reader/ReaderSettingsSheet'
 
 export const Route = createFileRoute('/_reader/reader/$translationId')({
   component: ReaderPage,

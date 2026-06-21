@@ -33,8 +33,8 @@ export function DeleteConfirmDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete <strong>{entityName}</strong>?
-            This action cannot be undone.
+            Are you sure you want to delete <strong>{entityName}</strong>? This
+            action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

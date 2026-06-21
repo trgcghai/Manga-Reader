@@ -62,13 +62,20 @@ export function ImportDialog({ open, onOpenChange }: ImportDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <Button type="button" variant="outline" onClick={handleDownloadTemplate}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleDownloadTemplate}
+        >
           <Download className="size-4" />
           Download template
         </Button>
 
         <FileDropzone
-          accept={{ 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] }}
+          accept={{
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+              ['.xlsx'],
+          }}
           value={file}
           onFileSelect={(f) => setFile(f)}
           message="Drag and drop your .xlsx file here, or click to browse"

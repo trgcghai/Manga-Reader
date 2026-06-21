@@ -131,7 +131,9 @@ export function MangaForm({
                           ? coverPreview || form.getFieldValue('coverPath')
                           : undefined
                       }
-                      onRemove={showCoverPreview ? handleRemoveCover : undefined}
+                      onRemove={
+                        showCoverPreview ? handleRemoveCover : undefined
+                      }
                       aspectRatio="aspect-3/4"
                     />
                   </UiField>

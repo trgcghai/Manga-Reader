@@ -1,6 +1,6 @@
+import type { TranslationDetailResponse } from '#/services/api/mangaApi'
 import { create } from 'zustand'
 import type { StateCreator } from 'zustand'
-import type { TranslationDetailResponse } from '#/types/translation'
 
 export interface TranslationSlice {
   currentTranslation: TranslationDetailResponse | null
@@ -35,7 +35,12 @@ const initialState = {
   displayMode: 'single' as const,
 }
 
-export const translationSlice: StateCreator<TranslationSlice, [], [], TranslationSlice> = (set) => ({
+export const translationSlice: StateCreator<
+  TranslationSlice,
+  [],
+  [],
+  TranslationSlice
+> = (set) => ({
   ...initialState,
 
   setCurrentTranslation: (t) =>

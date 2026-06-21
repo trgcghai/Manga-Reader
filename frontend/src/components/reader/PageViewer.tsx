@@ -16,7 +16,13 @@ function PageIndicator({ current, total }: { current: number; total: number }) {
   )
 }
 
-export function PageViewer({ pages, displayMode, currentPage, onNextPage, onPrevPage }: PageViewerProps) {
+export function PageViewer({
+  pages,
+  displayMode,
+  currentPage,
+  onNextPage,
+  onPrevPage,
+}: PageViewerProps) {
   const [errored, setErrored] = useState<Set<number>>(new Set())
 
   useEffect(() => {
@@ -40,7 +46,7 @@ export function PageViewer({ pages, displayMode, currentPage, onNextPage, onPrev
   }
 
   function handleImgError(index: number) {
-    setErrored(prev => new Set(prev).add(index))
+    setErrored((prev) => new Set(prev).add(index))
   }
 
   function renderImage(index: number) {
@@ -60,7 +66,11 @@ export function PageViewer({ pages, displayMode, currentPage, onNextPage, onPrev
         key={`img-${index}`}
         src={pages[index]}
         alt={`Page ${index + 1}`}
-        className={displayMode === 'single' ? 'max-h-screen max-w-full object-contain' : 'max-h-screen max-w-[50vw] object-contain'}
+        className={
+          displayMode === 'single'
+            ? 'max-h-screen max-w-full object-contain'
+            : 'max-h-screen max-w-[50vw] object-contain'
+        }
         onError={() => handleImgError(index)}
       />
     )
@@ -77,7 +87,11 @@ export function PageViewer({ pages, displayMode, currentPage, onNextPage, onPrev
       ) : (
         <div className="flex items-center justify-center gap-1 h-full">
           {renderImage(clampedPage)}
-          {clampedPage + 1 < pages.length ? renderImage(clampedPage + 1) : <div className="w-[50vw]" />}
+          {clampedPage + 1 < pages.length ? (
+            renderImage(clampedPage + 1)
+          ) : (
+            <div className="w-[50vw]" />
+          )}
         </div>
       )}
       <PageIndicator current={clampedPage} total={pages.length} />

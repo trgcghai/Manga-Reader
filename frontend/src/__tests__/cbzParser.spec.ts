@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import JSZip from 'jszip'
 
 describe('parseCbzPages', () => {
-  async function createMockCbz(files: Record<string, string>): Promise<ArrayBuffer> {
+  async function createMockCbz(
+    files: Record<string, string>,
+  ): Promise<ArrayBuffer> {
     const zip = new JSZip()
     for (const [name, content] of Object.entries(files)) {
       zip.file(name, content)
@@ -47,21 +49,25 @@ describe('parseCbzPages', () => {
       'page20.jpg': '20',
     })
     const result = await parseCbzPages(buffer)
-    const names = result.map(b => b.size)
+    const names = result.map((b) => b.size)
     expect(names).toEqual([1, 1, 2, 2])
   })
 
   it('throws if no image files found', async () => {
     const { parseCbzPages } = await import('#/utils/cbzParser')
     const buffer = await createMockCbz({ 'readme.txt': 'hello' })
-    await expect(parseCbzPages(buffer)).rejects.toThrow('No valid page images found in CBZ file')
+    await expect(parseCbzPages(buffer)).rejects.toThrow(
+      'No valid page images found in CBZ file',
+    )
   })
 
   it('handles empty CBZ', async () => {
     const { parseCbzPages } = await import('#/utils/cbzParser')
     const zip = new JSZip()
     const buffer = await zip.generateAsync({ type: 'arraybuffer' })
-    await expect(parseCbzPages(buffer)).rejects.toThrow('No valid page images found in CBZ file')
+    await expect(parseCbzPages(buffer)).rejects.toThrow(
+      'No valid page images found in CBZ file',
+    )
   })
 })
 
