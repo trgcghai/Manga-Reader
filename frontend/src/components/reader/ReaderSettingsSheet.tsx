@@ -37,6 +37,24 @@ import { useReaderChapters } from '#/hooks/useManga'
 import { useReaderStore } from '#/stores/rootStore'
 import { useNavigate } from '@tanstack/react-router'
 
+function getPageItems(displayMode: 'single' | 'double', totalPages: number) {
+  if (displayMode === 'single') {
+    return Array.from({ length: totalPages }, (_, i) => ({
+      value: String(i),
+      label: String(i + 1),
+    }))
+  }
+  const items: { value: string; label: string }[] = []
+  for (let i = 0; i < totalPages; i += 2) {
+    const end = Math.min(i + 2, totalPages)
+    items.push({
+      value: String(i),
+      label: end - i === 2 ? `${i + 1}-${end}` : String(i + 1),
+    })
+  }
+  return items
+}
+
 interface ReaderSettingsSheetProps {
   children?: ReactNode
   title?: string
@@ -53,6 +71,9 @@ export function ReaderSettingsSheet({
     currentTranslation,
     setDisplayMode,
     setReadingMode,
+    currentPage,
+    totalPages,
+    setCurrentPage,
   } = useReaderStore()
 
   const navigate = useNavigate()
@@ -63,7 +84,6 @@ export function ReaderSettingsSheet({
     currentTranslation?.language.code,
   )
 
-  console.log("chapters", chapters);
   
 
   const handleJumpChapter = useCallback(
@@ -123,6 +143,30 @@ export function ReaderSettingsSheet({
                         }
                       >
                         {`Chapter ${Number(ch.number)}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
+          {readingMode === 'page' && totalPages > 0 && (
+            <>
+              <div className="flex flex-col gap-3">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Jump to Page
+                </h3>
+                <Select
+                  value={String(displayMode === 'double' ? currentPage - (currentPage % 2) : currentPage)}
+                  onValueChange={(v) => setCurrentPage(Number(v))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getPageItems(displayMode, totalPages).map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
