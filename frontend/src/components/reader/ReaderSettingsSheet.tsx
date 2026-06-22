@@ -1,4 +1,5 @@
-import { useCallback, type ReactNode } from 'react'
+import { useCallback } from 'react'
+import type { ReactNode } from 'react'
 import {
   Command,
   CommandGroup,
@@ -6,7 +7,14 @@ import {
   CommandList,
   CommandShortcut,
 } from '#/components/ui/command'
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Loader2, Settings } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  Loader2,
+  Settings,
+} from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import {
   Sheet,
@@ -30,37 +38,46 @@ import { useReaderStore } from '#/stores/rootStore'
 import { useNavigate } from '@tanstack/react-router'
 
 interface ReaderSettingsSheetProps {
-  children?: ReactNode;
-  title?: string;
+  children?: ReactNode
+  title?: string
 }
 
-export function ReaderSettingsSheet({ children, title }: ReaderSettingsSheetProps) {
-  const displayMode = useReaderStore((s) => s.displayMode)
-  const readingMode = useReaderStore((s) => s.readingMode)
-  const setDisplayMode = useReaderStore((s) => s.setDisplayMode)
-  const setReadingMode = useReaderStore((s) => s.setReadingMode)
-  const currentChapter = useReaderStore((s) => s.currentChapter)
-  const currentTranslation = useReaderStore((s) => s.currentTranslation)
+export function ReaderSettingsSheet({
+  children,
+  title,
+}: ReaderSettingsSheetProps) {
+  const {
+    displayMode,
+    readingMode,
+    currentChapter,
+    currentTranslation,
+    setDisplayMode,
+    setReadingMode,
+  } = useReaderStore()
+
   const navigate = useNavigate()
 
-  const {
-    data: chapters,
-    isLoading: chaptersLoading,
-  } = useReaderChapters(
+  const { data: chapters, isLoading: chaptersLoading } = useReaderChapters(
     currentChapter?.mangaId,
     currentTranslation?.translator.id,
     currentTranslation?.language.code,
   )
 
-  const handleJumpChapter = useCallback((chapterId: string) => {
-    const chapter = chapters?.find((c) => c.chapterId === Number(chapterId))
-    if (chapter?.translationId) {
-      navigate({
-        to: '/reader/$translationId',
-        params: { translationId: String(chapter.translationId) },
-      })
-    }
-  }, [chapters, navigate])
+  console.log("chapters", chapters);
+  
+
+  const handleJumpChapter = useCallback(
+    (chapterId: string) => {
+      const chapter = chapters?.find((c) => c.chapterId === Number(chapterId))
+      if (chapter?.translationId) {
+        navigate({
+          to: '/reader/$translationId',
+          params: { translationId: String(chapter.translationId) },
+        })
+      }
+    },
+    [chapters, navigate],
+  )
 
   return (
     <Sheet>
@@ -75,8 +92,9 @@ export function ReaderSettingsSheet({ children, title }: ReaderSettingsSheetProp
               {title}
             </h3>
           </div>
-          {currentChapter && (
+          {currentChapter && readingMode === 'page' && (
             <>
+              <Separator />
               <div className="flex flex-col gap-3">
                 <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Jump to Chapter
@@ -85,11 +103,10 @@ export function ReaderSettingsSheet({ children, title }: ReaderSettingsSheetProp
                   value={String(currentChapter.id)}
                   onValueChange={handleJumpChapter}
                 >
-                  <SelectTrigger disabled={chaptersLoading}>
+                  <SelectTrigger disabled={chaptersLoading} className="w-full">
                     {chaptersLoading ? (
                       <span className="flex items-center gap-2">
                         <Loader2 className="size-3 animate-spin" />
-                        Loading...
                       </span>
                     ) : (
                       <SelectValue placeholder="Jump to chapter..." />
@@ -105,13 +122,12 @@ export function ReaderSettingsSheet({ children, title }: ReaderSettingsSheetProp
                           ch.chapterId === currentChapter.id
                         }
                       >
-                        {ch.title ?? `Chapter ${ch.chapterId}`}
+                        {`Chapter ${Number(ch.number)}`}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <Separator />
             </>
           )}
           <Separator />
@@ -244,11 +260,7 @@ export function ReaderSettingsSheet({ children, title }: ReaderSettingsSheetProp
 export function ReaderSettingsTrigger() {
   return (
     <SheetTrigger asChild>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-2 right-2"
-      >
+      <Button variant="ghost" size="icon" className="absolute top-2 right-2">
         <Settings className="size-5" />
       </Button>
     </SheetTrigger>

@@ -31,11 +31,16 @@ function ReaderPage() {
     Number(translationId),
   )
 
-  const { currentPage, displayMode, totalPages, readingMode, setCurrentPage } =
-    useReaderStore()
-  const nextPage = useReaderStore((s) => s.nextPage)
-  const prevPage = useReaderStore((s) => s.prevPage)
-  const setCurrentTranslation = useReaderStore((s) => s.setCurrentTranslation)
+  const {
+    currentPage,
+    displayMode,
+    totalPages,
+    readingMode,
+    setCurrentPage,
+    nextPage,
+    prevPage,
+    setCurrentTranslation,
+  } = useReaderStore()
   const navigate = useNavigate()
   const pendingDirection = useRef<'next' | 'prev' | null>(null)
 

@@ -173,6 +173,7 @@ export interface UpdateTranslationPayload {
 
 export interface ReaderChapterItem {
   chapterId: number
+  number: number
   title: string | null
   translationId: number | null
   isFirstChapter: boolean

@@ -113,6 +113,7 @@ export class ChapterService {
 
     return chapters.map((chapter, index) => ({
       chapterId: chapter.id,
+      number: chapter.number,
       title: chapter.title ?? null,
       translationId: ChapterService.findBestTranslationId(
         chapter.translations ?? [],

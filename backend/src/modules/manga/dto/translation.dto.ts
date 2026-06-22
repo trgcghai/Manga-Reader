@@ -34,6 +34,7 @@ export class TranslationDetailResponse {
 
 export class ReaderChapterItem {
   chapterId: number;
+  number: number;
   title: string | null;
   translationId: number | null;
   isFirstChapter: boolean;

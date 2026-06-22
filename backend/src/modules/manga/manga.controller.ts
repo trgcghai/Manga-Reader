@@ -29,7 +29,10 @@ import {
 import { ChapterService } from './services/chapter.service';
 import { TranslationService } from './services/translation.service';
 import { CreateChapterDto } from 'src/modules/manga/dto/chapter.dto';
-import { UpdateTranslationDto, ReaderChapterItem } from 'src/modules/manga/dto/translation.dto';
+import {
+  UpdateTranslationDto,
+  ReaderChapterItem,
+} from 'src/modules/manga/dto/translation.dto';
 
 @Controller('mangas')
 export class MangaController {
