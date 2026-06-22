@@ -171,6 +171,14 @@ export interface UpdateTranslationPayload {
   url?: string
 }
 
+export interface ReaderChapterItem {
+  chapterId: number
+  title: string | null
+  translationId: number | null
+  isFirstChapter: boolean
+  isLatestChapter: boolean
+}
+
 export async function updateTranslation(
   mangaId: number,
   chapterId: number,
@@ -199,5 +207,16 @@ export async function getTranslation(
   const res = await axiosInstance.get<TranslationDetailResponse>(
     `/mangas/translations/${id}`,
   )
+  return res.data
+}
+
+export async function getReaderChapters(
+  mangaId: number,
+  translatorId: number,
+  language: string,
+): Promise<ReaderChapterItem[]> {
+  const res = await axiosInstance.get<ReaderChapterItem[]>('/mangas/reader/chapters', {
+    params: { mangaId, translatorId, language },
+  })
   return res.data
 }

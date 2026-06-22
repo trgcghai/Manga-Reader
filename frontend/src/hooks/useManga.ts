@@ -10,6 +10,7 @@ import {
   updateTranslation,
   deleteTranslation,
   getTranslation,
+  getReaderChapters,
 } from '#/services/api/mangaApi'
 import type {
   CreateMangaPayload,
@@ -21,6 +22,7 @@ import type {
   CreateChapterPayload,
   UpdateTranslationPayload,
   TranslationDetailResponse,
+  ReaderChapterItem,
 } from '#/services/api/mangaApi'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -156,6 +158,18 @@ export function useCreateChapterForManga(mangaId: number) {
         err instanceof Error ? err.message : 'Failed to create chapter',
       )
     },
+  })
+}
+
+export function useReaderChapters(
+  mangaId: number | undefined,
+  translatorId: number | undefined,
+  language: string | undefined,
+) {
+  return useQuery<ReaderChapterItem[]>({
+    queryKey: ['manga', 'reader', 'chapters', mangaId, translatorId, language],
+    queryFn: () => getReaderChapters(mangaId!, translatorId!, language!),
+    enabled: !!mangaId && !!translatorId && !!language,
   })
 }
 

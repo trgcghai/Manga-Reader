@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useCallback, type ReactNode } from 'react'
 import {
   Command,
   CommandGroup,
@@ -6,7 +6,7 @@ import {
   CommandList,
   CommandShortcut,
 } from '#/components/ui/command'
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Settings } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Loader2, Settings } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import {
   Sheet,
@@ -18,7 +18,16 @@ import {
 import { Separator } from '#/components/ui/separator'
 
 import { ButtonGroup } from '#/components/ui/button-group'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '#/components/ui/select'
+import { useReaderChapters } from '#/hooks/useManga'
 import { useReaderStore } from '#/stores/rootStore'
+import { useNavigate } from '@tanstack/react-router'
 
 interface ReaderSettingsSheetProps {
   children?: ReactNode;
@@ -30,6 +39,28 @@ export function ReaderSettingsSheet({ children, title }: ReaderSettingsSheetProp
   const readingMode = useReaderStore((s) => s.readingMode)
   const setDisplayMode = useReaderStore((s) => s.setDisplayMode)
   const setReadingMode = useReaderStore((s) => s.setReadingMode)
+  const currentChapter = useReaderStore((s) => s.currentChapter)
+  const currentTranslation = useReaderStore((s) => s.currentTranslation)
+  const navigate = useNavigate()
+
+  const {
+    data: chapters,
+    isLoading: chaptersLoading,
+  } = useReaderChapters(
+    currentChapter?.mangaId,
+    currentTranslation?.translator.id,
+    currentTranslation?.language.code,
+  )
+
+  const handleJumpChapter = useCallback((chapterId: string) => {
+    const chapter = chapters?.find((c) => c.chapterId === Number(chapterId))
+    if (chapter?.translationId) {
+      navigate({
+        to: '/reader/$translationId',
+        params: { translationId: String(chapter.translationId) },
+      })
+    }
+  }, [chapters, navigate])
 
   return (
     <Sheet>
@@ -44,6 +75,45 @@ export function ReaderSettingsSheet({ children, title }: ReaderSettingsSheetProp
               {title}
             </h3>
           </div>
+          {currentChapter && (
+            <>
+              <div className="flex flex-col gap-3">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Jump to Chapter
+                </h3>
+                <Select
+                  value={String(currentChapter.id)}
+                  onValueChange={handleJumpChapter}
+                >
+                  <SelectTrigger disabled={chaptersLoading}>
+                    {chaptersLoading ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="size-3 animate-spin" />
+                        Loading...
+                      </span>
+                    ) : (
+                      <SelectValue placeholder="Jump to chapter..." />
+                    )}
+                  </SelectTrigger>
+                  <SelectContent>
+                    {chapters?.map((ch) => (
+                      <SelectItem
+                        key={ch.chapterId}
+                        value={String(ch.chapterId)}
+                        disabled={
+                          !ch.translationId ||
+                          ch.chapterId === currentChapter.id
+                        }
+                      >
+                        {ch.title ?? `Chapter ${ch.chapterId}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Separator />
+            </>
+          )}
           <Separator />
           <div className="flex flex-col gap-3">
             <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">

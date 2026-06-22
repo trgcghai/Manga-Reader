@@ -35,12 +35,12 @@ function ReaderPage() {
     useReaderStore()
   const nextPage = useReaderStore((s) => s.nextPage)
   const prevPage = useReaderStore((s) => s.prevPage)
+  const setCurrentTranslation = useReaderStore((s) => s.setCurrentTranslation)
   const navigate = useNavigate()
   const pendingDirection = useRef<'next' | 'prev' | null>(null)
 
   useEffect(() => {
     if (data?.chapter.number) {
-
       const chapterTitle = data.chapter.title && ` - ${data.chapter.title}`
 
       toast.message(`Chapter ${Number(data.chapter.number)}${chapterTitle}`, {
@@ -48,6 +48,12 @@ function ReaderPage() {
       })
     }
   }, [data?.chapter.number])
+
+  useEffect(() => {
+    if (data) {
+      setCurrentTranslation(data)
+    }
+  }, [data, setCurrentTranslation])
 
   const {
     pages,
@@ -68,7 +74,14 @@ function ReaderPage() {
     } else {
       toast.info('This is the latest chapter')
     }
-  }, [currentPage, totalPages, nextPage, data?.nextTranslationId, navigate, displayMode])
+  }, [
+    currentPage,
+    totalPages,
+    nextPage,
+    data?.nextTranslationId,
+    navigate,
+    displayMode,
+  ])
 
   const handlePrevPage = useCallback(() => {
     if (currentPage > 0) {
