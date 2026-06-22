@@ -1,6 +1,7 @@
 import type { TranslationDetailResponse } from '#/services/api/mangaApi'
 import { create } from 'zustand'
 import type { StateCreator } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
 export interface TranslationSlice {
   currentTranslation: TranslationDetailResponse | null
@@ -27,6 +28,26 @@ export interface TranslationSlice {
   prevPage: () => void
   reset: () => void
 }
+
+const createStorage = () => ({
+  getItem: (name: string): string | null => {
+    try {
+      return localStorage.getItem(name)
+    } catch {
+      return null
+    }
+  },
+  setItem: (name: string, value: string): void => {
+    try {
+      localStorage.setItem(name, value)
+    } catch {}
+  },
+  removeItem: (name: string): void => {
+    try {
+      localStorage.removeItem(name)
+    } catch {}
+  },
+})
 
 const initialState = {
   currentTranslation: null,
@@ -90,4 +111,19 @@ export const translationSlice: StateCreator<
   reset: () => set({ ...initialState }),
 })
 
-export const useReaderStore = create<TranslationSlice>()(translationSlice)
+export const useReaderStore = create<TranslationSlice>()(
+  persist(translationSlice, {
+    name: 'manga-reader-store',
+    version: 1,
+    storage: createJSONStorage(() => createStorage()),
+    partialize: (state) => ({
+      currentTranslation: state.currentTranslation,
+      currentChapter: state.currentChapter,
+      currentPage: state.currentPage,
+      totalPages: state.totalPages,
+      readingMode: state.readingMode,
+      displayMode: state.displayMode,
+      scrollPosition: state.scrollPosition,
+    }),
+  }),
+)
