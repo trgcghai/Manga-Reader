@@ -44,4 +44,16 @@ export class ChapterRepository {
       ],
     });
   };
+
+  findAllByMangaId = async (mangaId: number): Promise<Chapter[]> => {
+    return await this.repo.find({
+      where: { manga: { id: mangaId } },
+      order: { number: 'ASC' },
+      relations: [
+        'translations',
+        'translations.language',
+        'translations.translator',
+      ],
+    });
+  };
 }

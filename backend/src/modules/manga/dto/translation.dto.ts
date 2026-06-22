@@ -31,3 +31,11 @@ export class TranslationDetailResponse {
   prevTranslationId: number | null;
   nextTranslationId: number | null;
 }
+
+export class ReaderChapterItem {
+  chapterId: number;
+  title: string | null;
+  translationId: number | null;
+  isFirstChapter: boolean;
+  isLatestChapter: boolean;
+}

@@ -29,7 +29,7 @@ import {
 import { ChapterService } from './services/chapter.service';
 import { TranslationService } from './services/translation.service';
 import { CreateChapterDto } from 'src/modules/manga/dto/chapter.dto';
-import { UpdateTranslationDto } from 'src/modules/manga/dto/translation.dto';
+import { UpdateTranslationDto, ReaderChapterItem } from 'src/modules/manga/dto/translation.dto';
 
 @Controller('mangas')
 export class MangaController {
@@ -148,5 +148,14 @@ export class MangaController {
     @Param('translationId', ParseIntPipe) translationId: number,
   ) {
     return this.translationService.delete(mangaId, chapterId, translationId);
+  }
+
+  @Get('reader/chapters')
+  getReaderChapters(
+    @Query('mangaId', ParseIntPipe) mangaId: number,
+    @Query('translatorId', ParseIntPipe) translatorId: number,
+    @Query('language') language: string,
+  ): Promise<ReaderChapterItem[]> {
+    return this.chapterService.getChapterList(mangaId, translatorId, language);
   }
 }

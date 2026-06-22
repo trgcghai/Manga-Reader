@@ -53,6 +53,7 @@ describe('MangaController', () => {
           provide: ChapterService,
           useValue: {
             create: jest.fn(),
+            getChapterList: jest.fn(),
           },
         },
         {
@@ -362,6 +363,30 @@ describe('MangaController', () => {
       await expect(controller.getTranslation(999)).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  describe('getReaderChapters', () => {
+    it('should call ChapterService.getChapterList with correct params', async () => {
+      const expected = [
+        { chapterId: 1, title: 'Ch 1', translationId: 10, isFirstChapter: true, isLatestChapter: false },
+      ];
+      chapterService.getChapterList.mockResolvedValue(expected as any);
+
+      const result = await controller.getReaderChapters(1, 1, 'en');
+
+      expect(chapterService.getChapterList).toHaveBeenCalledWith(1, 1, 'en');
+      expect(result).toEqual(expected);
+    });
+
+    it('should propagate NotFoundException from ChapterService', async () => {
+      chapterService.getChapterList.mockRejectedValue(
+        new NotFoundException('Manga #999 not found'),
+      );
+
+      await expect(
+        controller.getReaderChapters(999, 1, 'en'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });
