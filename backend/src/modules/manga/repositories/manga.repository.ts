@@ -13,6 +13,8 @@ export class MangaRepository {
     limit: number,
     search?: string,
     status?: string,
+    authors?: string[],
+    genres?: string[],
   ): Promise<{
     data: Manga[];
     total: number;
@@ -38,6 +40,28 @@ export class MangaRepository {
 
     if (status) {
       query.andWhere('manga.status = :status', { status });
+    }
+
+    if (authors && authors.length > 0) {
+      const conditions = authors.map(
+        (_, i) => `LOWER(author.name) LIKE LOWER(:author_${i})`,
+      );
+      const params = authors.reduce(
+        (acc, name, i) => ({ ...acc, [`author_${i}`]: `%${name}%` }),
+        {} as Record<string, string>,
+      );
+      query.andWhere(`(${conditions.join(' OR ')})`, params);
+    }
+
+    if (genres && genres.length > 0) {
+      const conditions = genres.map(
+        (_, i) => `LOWER(genre.name) LIKE LOWER(:genre_${i})`,
+      );
+      const params = genres.reduce(
+        (acc, name, i) => ({ ...acc, [`genre_${i}`]: `%${name}%` }),
+        {} as Record<string, string>,
+      );
+      query.andWhere(`(${conditions.join(' OR ')})`, params);
     }
 
     query

@@ -91,7 +91,7 @@ describe('MangaController', () => {
 
       const result = await controller.findAll();
 
-      expect(service.findAll).toHaveBeenCalledWith(1, 20, undefined, undefined);
+      expect(service.findAll).toHaveBeenCalledWith(1, 20, undefined, undefined, undefined, undefined);
       expect(result).toEqual(paginatedResult);
     });
 
@@ -107,7 +107,7 @@ describe('MangaController', () => {
 
       const result = await controller.findAll('1', '20');
 
-      expect(service.findAll).toHaveBeenCalledWith(1, 20, undefined, undefined);
+      expect(service.findAll).toHaveBeenCalledWith(1, 20, undefined, undefined, undefined, undefined);
       expect(result).toEqual(paginatedResult);
     });
 
@@ -123,7 +123,7 @@ describe('MangaController', () => {
 
       const result = await controller.findAll('1', '20', 'naruto', 'ongoing');
 
-      expect(service.findAll).toHaveBeenCalledWith(1, 20, 'naruto', 'ongoing');
+      expect(service.findAll).toHaveBeenCalledWith(1, 20, 'naruto', 'ongoing', undefined, undefined);
       expect(result).toEqual(paginatedResult);
     });
   });

@@ -82,6 +82,8 @@ describe('MangaService', () => {
         20,
         undefined,
         undefined,
+        undefined,
+        undefined,
       );
     });
 
@@ -103,6 +105,54 @@ describe('MangaService', () => {
         20,
         'naruto',
         'ongoing',
+        undefined,
+        undefined,
+      );
+    });
+
+    it('should forward authors filter to repository', async () => {
+      const paginatedResult = {
+        data: [{ id: 1, title: 'Naruto' } as Manga],
+        total: 1,
+        page: 1,
+        limit: 20,
+        totalPages: 1,
+      };
+      mockMangaRepository.findAll.mockResolvedValue(paginatedResult);
+
+      const result = await service.findAll(1, 20, undefined, undefined, ['oda', 'miura']);
+
+      expect(result).toEqual(paginatedResult);
+      expect(mockMangaRepository.findAll).toHaveBeenCalledWith(
+        1,
+        20,
+        undefined,
+        undefined,
+        ['oda', 'miura'],
+        undefined,
+      );
+    });
+
+    it('should forward genres filter to repository', async () => {
+      const paginatedResult = {
+        data: [{ id: 1, title: 'Naruto' } as Manga],
+        total: 1,
+        page: 1,
+        limit: 20,
+        totalPages: 1,
+      };
+      mockMangaRepository.findAll.mockResolvedValue(paginatedResult);
+
+      const result = await service.findAll(1, 20, undefined, undefined, undefined, ['action', 'adventure']);
+
+      expect(result).toEqual(paginatedResult);
+      expect(mockMangaRepository.findAll).toHaveBeenCalledWith(
+        1,
+        20,
+        undefined,
+        undefined,
+        undefined,
+        ['action', 'adventure'],
       );
     });
   });

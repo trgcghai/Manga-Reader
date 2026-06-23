@@ -92,6 +92,8 @@ export async function getAllMangas(params: {
   limit: number
   search?: string
   status?: string
+  authors?: string
+  genres?: string
 }): Promise<PaginatedResponse<MangaResponse>> {
   const queryParams: Record<string, string | number> = {
     page: params.page,
@@ -99,6 +101,8 @@ export async function getAllMangas(params: {
   }
   if (params.search) queryParams.search = params.search
   if (params.status) queryParams.status = params.status
+  if (params.authors) queryParams.authors = params.authors
+  if (params.genres) queryParams.genres = params.genres
 
   const res = await axiosInstance.get<PaginatedResponse<MangaResponse>>(
     '/mangas',

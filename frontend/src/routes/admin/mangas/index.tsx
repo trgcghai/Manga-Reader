@@ -17,14 +17,22 @@ import {
 } from '#/components/ui/table'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
+import { Input } from '#/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import {
   ErrorDisplay,
   ErrorTitle,
   ErrorDescription,
 } from '#/components/ui/error-display'
-import { useState } from 'react'
-import { BookOpenText, Plus, Upload } from 'lucide-react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { BookOpenText, Plus, Upload, X } from 'lucide-react'
 import { ImportDialog } from '#/components/manga/ImportDialog'
 import { Pagination } from '#/components/ui/pagination'
 import {
@@ -104,22 +112,94 @@ const columns = [
   }),
 ]
 
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(timer)
+  }, [value, delay])
+
+  return debounced
+}
+
+interface MangaListSearch {
+  search?: string
+  status?: string
+  authors?: string
+  genres?: string
+}
+
 export const Route = createFileRoute('/admin/mangas/')({
+  validateSearch: (search: Record<string, string | undefined>): MangaListSearch => ({
+    search: search.search || undefined,
+    status: search.status || undefined,
+    authors: search.authors || undefined,
+    genres: search.genres || undefined,
+  }),
   component: MangaListPage,
 })
 
 function MangaListPage() {
+  const navigate = useNavigate()
+  const { search, status, authors, genres } = Route.useSearch()
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [importOpen, setImportOpen] = useState(false)
-  const navigate = useNavigate()
-  const { data, isLoading, isError } = useMangaList({ page, limit: pageSize })
+
+  const [searchInput, setSearchInput] = useState(search ?? '')
+  const [authorsInput, setAuthorsInput] = useState(authors ?? '')
+  const [genresInput, setGenresInput] = useState(genres ?? '')
+  const [statusInput, setStatusInput] = useState(status ?? '')
+
+  const debouncedSearch = useDebounce(searchInput, 300)
+  const debouncedAuthors = useDebounce(authorsInput, 300)
+  const debouncedGenres = useDebounce(genresInput, 300)
+
+  const isFirstRender = useRef(true)
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    setPage(1)
+    navigate({
+      to: '/admin/mangas',
+      search: {
+        search: debouncedSearch || undefined,
+        authors: debouncedAuthors || undefined,
+        genres: debouncedGenres || undefined,
+        status: statusInput && statusInput !== 'all' ? statusInput : undefined,
+      },
+    })
+  }, [debouncedSearch, debouncedAuthors, debouncedGenres, statusInput, navigate])
+
+  const { data, isLoading, isError } = useMangaList({
+    page,
+    limit: pageSize,
+    search: debouncedSearch || undefined,
+    status: statusInput && statusInput !== 'all' ? statusInput : undefined,
+    authors: debouncedAuthors || undefined,
+    genres: debouncedGenres || undefined,
+  })
 
   const table = useReactTable({
     data: data?.data ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
+
+  const clearFilters = useCallback(() => {
+    setSearchInput('')
+    setAuthorsInput('')
+    setGenresInput('')
+    setStatusInput('')
+    setPage(1)
+    navigate({ to: '/admin/mangas', search: {} })
+  }, [navigate])
+
+  const hasFilters = searchInput || authorsInput || genresInput || statusInput
 
   if (isLoading) {
     return (
@@ -161,6 +241,40 @@ function MangaListPage() {
         </div>
       </div>
 
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <Input
+          placeholder="Search title..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+        />
+        <Input
+          placeholder="Authors (comma-separated)"
+          value={authorsInput}
+          onChange={(e) => setAuthorsInput(e.target.value)}
+        />
+        <Input
+          placeholder="Genres (comma-separated)"
+          value={genresInput}
+          onChange={(e) => setGenresInput(e.target.value)}
+        />
+        <Select value={statusInput} onValueChange={setStatusInput}>
+          <SelectTrigger>
+            <SelectValue placeholder="All statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="ongoing">Ongoing</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+          </SelectContent>
+        </Select>
+        {hasFilters && (
+          <Button variant="ghost" onClick={clearFilters}>
+            <X className="h-4 w-4" />
+            Clear
+          </Button>
+        )}
+      </div>
+
       {!data?.data.length && (
         <Empty>
           <EmptyHeader>
@@ -169,7 +283,9 @@ function MangaListPage() {
             </EmptyMedia>
             <EmptyTitle>No Mangas Found</EmptyTitle>
             <EmptyDescription>
-              No mangas available at the moment.
+              {hasFilters
+                ? 'No mangas match the current filters.'
+                : 'No mangas available at the moment.'}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
