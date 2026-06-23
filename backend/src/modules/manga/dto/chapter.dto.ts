@@ -14,10 +14,10 @@ export class CreateChapterDto {
   @Min(0)
   number: number;
 
-  @ApiProperty({ example: 'Chapter 1' })
+  @ApiPropertyOptional({ example: 'Chapter 1' })
+  @IsOptional()
   @IsString()
-  @MinLength(1)
-  title: string;
+  title?: string;
 
   @ApiProperty({ example: 1 })
   @IsNumber()

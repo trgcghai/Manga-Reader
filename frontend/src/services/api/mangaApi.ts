@@ -63,7 +63,7 @@ export interface ImportResult {
 
 export interface CreateChapterPayload {
   number: number
-  title: string
+  title?: string
   languageId: number
   translatorId: number
   url: string

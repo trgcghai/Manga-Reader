@@ -32,7 +32,7 @@ import { FileDropzone } from '#/components/ui/file-dropzone'
 
 const chapterSchema = z.object({
   number: z.number().min(0, 'Number is required'),
-  title: z.string().min(1, 'Title is required'),
+  title: z.string().optional(),
   languageId: z.number().refine((n) => n > 0, 'Language is required'),
   translatorId: z.number().refine((n) => n > 0, 'Translator is required'),
   file: z.instanceof(File, { message: 'CBZ file is required' }),
@@ -144,11 +144,12 @@ export default function AddChapterDialog({
             <form.Field name="title">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="chapter-title" required>
+                  <FieldLabel htmlFor="chapter-title">
                     Title
                   </FieldLabel>
                   <Input
                     id="chapter-title"
+                    placeholder="Chapter title"
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
                     aria-invalid={

@@ -37,8 +37,6 @@ export class MangaService {
     limit: number = 20,
     search?: string,
     status?: string,
-    authors?: string[],
-    genres?: string[],
   ): Promise<{
     data: Manga[];
     total: number;
@@ -46,9 +44,7 @@ export class MangaService {
     limit: number;
     totalPages: number;
   }> => {
-    return await this.mangaRepository.findAll(
-      page, limit, search, status, authors, genres,
-    );
+    return await this.mangaRepository.findAll(page, limit, search, status);
   };
 
   findOne = async (
