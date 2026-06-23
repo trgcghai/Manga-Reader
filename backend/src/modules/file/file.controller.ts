@@ -21,10 +21,19 @@ import { UploadTranslationFileDto } from './dto/uploadTranslationFile.dto';
 import { extractKeyFromUrl } from 'src/common/utils/file-mime.util';
 import { ALLOWED_MIME_TYPES } from 'src/common/constants/chapter.constant';
 import { TRANSLATION_ALLOWED_MIME_TYPES } from 'src/common/constants/translation.constant';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiQuery,
+  ApiParam,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_TRANSLATION_FILE_SIZE = 100 * 1024 * 1024;
 
+@ApiTags('Files')
 @Controller('files')
 export class FileController {
   private readonly logger = new Logger(FileController.name);
@@ -33,6 +42,16 @@ export class FileController {
 
   @Post('upload/cover')
   @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Upload a cover image' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
   async uploadCover(
     @UploadedFile(
       new ParseFilePipe({
@@ -51,6 +70,16 @@ export class FileController {
 
   @Post('upload/translation')
   @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Upload a translation file (CBZ/ZIP)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
   async uploadTranslation(
     @UploadedFile(
       new ParseFilePipe({
@@ -73,6 +102,8 @@ export class FileController {
   }
 
   @Get('download')
+  @ApiOperation({ summary: 'Download a file by MinIO URL' })
+  @ApiQuery({ name: 'url', required: true, description: 'MinIO object URL' })
   async download(@Query('url') url: string): Promise<StreamableFile> {
     if (!url) {
       throw new BadRequestException('url query parameter is required');
@@ -91,6 +122,8 @@ export class FileController {
   }
 
   @Delete('*key')
+  @ApiOperation({ summary: 'Delete a file by key' })
+  @ApiParam({ name: 'key', description: 'MinIO object key' })
   async delete(@Param('key') key: string) {
     await this.fileService.delete(key);
   }
