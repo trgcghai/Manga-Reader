@@ -195,7 +195,13 @@ function ReaderPage() {
   }
 
   return (
-    <ReaderSettingsSheet title={data?.chapter.manga.title}>
+    <ReaderSettingsSheet
+      title={data?.chapter.manga.title}
+      onPrevChapter={handlePrevChapter}
+      onNextChapter={handleNextChapter}
+      onNextPage={handleNextPage}
+      onPrevPage={handlePrevPage}
+    >
       <div className="relative h-screen">
         {readingMode === 'scroll' ? (
           <ScrollViewer

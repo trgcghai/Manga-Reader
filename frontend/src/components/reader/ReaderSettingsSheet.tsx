@@ -12,6 +12,8 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
+  ChevronLeft,
+  ChevronRight,
   Loader2,
   Settings,
 } from 'lucide-react'
@@ -58,11 +60,19 @@ function getPageItems(displayMode: 'single' | 'double', totalPages: number) {
 interface ReaderSettingsSheetProps {
   children?: ReactNode
   title?: string
+  onPrevChapter: () => void
+  onNextChapter: () => void
+  onPrevPage: () => void
+  onNextPage: () => void
 }
 
 export function ReaderSettingsSheet({
   children,
   title,
+  onPrevChapter,
+  onNextChapter,
+  onPrevPage,
+  onNextPage,
 }: ReaderSettingsSheetProps) {
   const {
     displayMode,
@@ -83,8 +93,6 @@ export function ReaderSettingsSheet({
     currentTranslation?.translator.id,
     currentTranslation?.language.code,
   )
-
-  
 
   const handleJumpChapter = useCallback(
     (chapterId: string) => {
@@ -117,36 +125,47 @@ export function ReaderSettingsSheet({
               <Separator />
               <div className="flex flex-col gap-3">
                 <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Jump to Chapter
+                  Chapter
                 </h3>
-                <Select
-                  value={String(currentChapter.id)}
-                  onValueChange={handleJumpChapter}
-                >
-                  <SelectTrigger disabled={chaptersLoading} className="w-full">
-                    {chaptersLoading ? (
-                      <span className="flex items-center gap-2">
-                        <Loader2 className="size-3 animate-spin" />
-                      </span>
-                    ) : (
-                      <SelectValue placeholder="Jump to chapter..." />
-                    )}
-                  </SelectTrigger>
-                  <SelectContent>
-                    {chapters?.map((ch) => (
-                      <SelectItem
-                        key={ch.chapterId}
-                        value={String(ch.chapterId)}
-                        disabled={
-                          !ch.translationId ||
-                          ch.chapterId === currentChapter.id
-                        }
-                      >
-                        {`Chapter ${Number(ch.number)}`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-1">
+                  <Button variant="outline" size="icon" onClick={onPrevChapter}>
+                    <ChevronLeft className="size-4" />
+                  </Button>
+                  <Select
+                    value={String(currentChapter.id)}
+                    onValueChange={handleJumpChapter}
+                  >
+                    <SelectTrigger
+                      disabled={chaptersLoading}
+                      className="w-full"
+                    >
+                      {chaptersLoading ? (
+                        <span className="flex items-center gap-2">
+                          <Loader2 className="size-3 animate-spin" />
+                        </span>
+                      ) : (
+                        <SelectValue placeholder="Jump to chapter..." />
+                      )}
+                    </SelectTrigger>
+                    <SelectContent>
+                      {chapters?.map((ch) => (
+                        <SelectItem
+                          key={ch.chapterId}
+                          value={String(ch.chapterId)}
+                          disabled={
+                            !ch.translationId ||
+                            ch.chapterId === currentChapter.id
+                          }
+                        >
+                          {`Chapter ${Number(ch.number)}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="icon" onClick={onNextChapter}>
+                    <ChevronRight className="size-4" />
+                  </Button>
+                </div>
               </div>
             </>
           )}
@@ -154,23 +173,35 @@ export function ReaderSettingsSheet({
             <>
               <div className="flex flex-col gap-3">
                 <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Jump to Page
+                  Page
                 </h3>
-                <Select
-                  value={String(displayMode === 'double' ? currentPage - (currentPage % 2) : currentPage)}
-                  onValueChange={(v) => setCurrentPage(Number(v))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {getPageItems(displayMode, totalPages).map((item) => (
-                      <SelectItem key={item.value} value={item.value}>
-                        {item.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-1">
+                  <Button variant="outline" size="icon" onClick={onPrevPage}>
+                    <ChevronLeft className="size-4" />
+                  </Button>
+                  <Select
+                    value={String(
+                      displayMode === 'double'
+                        ? currentPage - (currentPage % 2)
+                        : currentPage,
+                    )}
+                    onValueChange={(v) => setCurrentPage(Number(v))}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getPageItems(displayMode, totalPages).map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="icon" onClick={onNextPage}>
+                    <ChevronRight className="size-4" />
+                  </Button>
+                </div>
               </div>
             </>
           )}
