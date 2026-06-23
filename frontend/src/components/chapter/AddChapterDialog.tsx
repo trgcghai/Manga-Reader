@@ -1,8 +1,8 @@
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
 import { useLanguageList } from '#/hooks/useLanguages'
-import { useTranslatorList } from '#/hooks/useTranslators'
 import { useTranslationFileUpload } from '#/hooks/useFile'
+import { TranslatorCombobox } from '#/components/translator/TranslatorCombobox'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import {
@@ -62,8 +62,6 @@ export default function AddChapterDialog({
   const createMutation = useCreateChapterForManga(mangaId)
   const uploadMutation = useTranslationFileUpload(mangaId)
   const { data: languages, isLoading: languagesLoading } = useLanguageList()
-  const { data: translatorsData, isLoading: translatorsLoading } =
-    useTranslatorList(1, 100)
 
   useEffect(() => {
     if (!open) {
@@ -207,32 +205,12 @@ export default function AddChapterDialog({
                   <FieldLabel htmlFor="chapter-translator" required>
                     Translator
                   </FieldLabel>
-                  <Select
-                    value={String(field.state.value || '')}
-                    onValueChange={(v) => field.handleChange(Number(v))}
-                  >
-                    <SelectTrigger
-                      id="chapter-translator"
-                      aria-invalid={
-                        field.state.meta.errors.length > 0 || undefined
-                      }
-                    >
-                      <SelectValue
-                        placeholder={
-                          translatorsLoading
-                            ? 'Loading...'
-                            : 'Select translator'
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {translatorsData?.data.map((tr) => (
-                        <SelectItem key={tr.id} value={String(tr.id)}>
-                          {tr.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <TranslatorCombobox
+                    id="chapter-translator"
+                    value={field.state.value}
+                    onChange={(id) => field.handleChange(id)}
+                    invalid={field.state.meta.errors.length > 0 || undefined}
+                  />
                   {field.state.meta.errors.length > 0 && (
                     <UiFieldError errors={field.state.meta.errors} />
                   )}
