@@ -34,9 +34,7 @@ export class FileService {
     configService: ConfigService,
   ) {
     this.bucket = configService.get<string>('MINIO_BUCKET')!;
-    this.endpoint = configService
-      .get<string>('MINIO_ENDPOINT', '')
-      .replace(/\/+$/, '');
+    this.endpoint = 'http://localhost:9000';
   }
 
   async upload(

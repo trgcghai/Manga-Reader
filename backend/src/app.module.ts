@@ -38,7 +38,7 @@ import { LanguageModule } from './modules/language/language.module';
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         migrationsRun: true,
         migrations: [RenameFolderPathToUrl],
-        synchronize: false,
+        synchronize: true,
       }),
       inject: [ConfigService],
     }),
