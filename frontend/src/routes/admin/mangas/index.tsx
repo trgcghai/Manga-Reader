@@ -152,9 +152,9 @@ function MangaListPage() {
   const [genresInput, setGenresInput] = useState(genres ?? '')
   const [statusInput, setStatusInput] = useState(status ?? '')
 
-  const debouncedSearch = useDebounce(searchInput, 300)
-  const debouncedAuthors = useDebounce(authorsInput, 300)
-  const debouncedGenres = useDebounce(genresInput, 300)
+  const debouncedSearch = useDebounce(searchInput, 700)
+  const debouncedAuthors = useDebounce(authorsInput, 700)
+  const debouncedGenres = useDebounce(genresInput, 700)
 
   const isFirstRender = useRef(true)
 
