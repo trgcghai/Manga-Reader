@@ -82,8 +82,6 @@ describe('MangaService', () => {
         20,
         undefined,
         undefined,
-        undefined,
-        undefined,
       );
     });
 
@@ -105,8 +103,6 @@ describe('MangaService', () => {
         20,
         'naruto',
         'ongoing',
-        undefined,
-        undefined,
       );
     });
 
@@ -120,15 +116,13 @@ describe('MangaService', () => {
       };
       mockMangaRepository.findAll.mockResolvedValue(paginatedResult);
 
-      const result = await service.findAll(1, 20, undefined, undefined, ['oda', 'miura']);
+      const result = await service.findAll(1, 20, undefined, undefined);
 
       expect(result).toEqual(paginatedResult);
       expect(mockMangaRepository.findAll).toHaveBeenCalledWith(
         1,
         20,
         undefined,
-        undefined,
-        ['oda', 'miura'],
         undefined,
       );
     });
@@ -143,7 +137,7 @@ describe('MangaService', () => {
       };
       mockMangaRepository.findAll.mockResolvedValue(paginatedResult);
 
-      const result = await service.findAll(1, 20, undefined, undefined, undefined, ['action', 'adventure']);
+      const result = await service.findAll(1, 20, undefined, undefined);
 
       expect(result).toEqual(paginatedResult);
       expect(mockMangaRepository.findAll).toHaveBeenCalledWith(
@@ -151,8 +145,6 @@ describe('MangaService', () => {
         20,
         undefined,
         undefined,
-        undefined,
-        ['action', 'adventure'],
       );
     });
   });
