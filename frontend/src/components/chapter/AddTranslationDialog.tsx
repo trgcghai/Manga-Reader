@@ -3,7 +3,6 @@ import { z } from 'zod'
 import { useLanguageList } from '#/hooks/useLanguages'
 import { useTranslatorList } from '#/hooks/useTranslators'
 import { Button } from '#/components/ui/button'
-import { Input } from '#/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -27,11 +26,13 @@ import {
 import { Loader2 } from 'lucide-react'
 import { useEffect } from 'react'
 import { useCreateChapterForManga } from '#/hooks/useManga'
+import { useTranslationFileUpload } from '#/hooks/useFile'
+import { FileDropzone } from '#/components/ui/file-dropzone'
 
 const translationSchema = z.object({
   languageId: z.number().refine((n) => n > 0, 'Language is required'),
   translatorId: z.number().refine((n) => n > 0, 'Translator is required'),
-  folderPath: z.string().min(1, 'Folder path is required'),
+  file: z.instanceof(File, { message: 'CBZ file is required' }),
 })
 
 type FormValues = z.infer<typeof translationSchema>
@@ -39,7 +40,7 @@ type FormValues = z.infer<typeof translationSchema>
 const defaultValues: FormValues = {
   languageId: 0,
   translatorId: 0,
-  folderPath: '',
+  file: null as unknown as File,
 }
 
 interface AddTranslationDialogProps {
@@ -58,6 +59,7 @@ export default function AddTranslationDialog({
   chapterTitle,
 }: AddTranslationDialogProps) {
   const createMutation = useCreateChapterForManga(mangaId)
+  const uploadMutation = useTranslationFileUpload(mangaId)
   const { data: languages, isLoading: languagesLoading } = useLanguageList()
   const { data: translatorsData, isLoading: translatorsLoading } =
     useTranslatorList(1, 100)
@@ -66,21 +68,29 @@ export default function AddTranslationDialog({
     validators: { onSubmit: translationSchema },
     defaultValues,
     onSubmit: async (values) => {
-      createMutation.mutate(
-        {
-          number: parseFloat(chapterNumber),
-          title: chapterTitle ?? '',
-          languageId: values.value.languageId,
-          translatorId: values.value.translatorId,
-          folderPath: values.value.folderPath,
-        },
-        {
-          onSuccess: () => {
-            onOpenChange(false)
-            form.reset()
+      try {
+        const { url } = await uploadMutation.mutateAsync({
+          file: values.value.file,
+          chapterNumber: parseFloat(chapterNumber),
+        })
+        createMutation.mutate(
+          {
+            number: parseFloat(chapterNumber),
+            title: chapterTitle ?? '',
+            languageId: values.value.languageId,
+            translatorId: values.value.translatorId,
+            url,
           },
-        },
-      )
+          {
+            onSuccess: () => {
+              onOpenChange(false)
+              form.reset()
+            },
+          },
+        )
+      } catch {
+        // error displayed via uploadMutation.error
+      }
     },
   })
 
@@ -185,24 +195,19 @@ export default function AddTranslationDialog({
               )}
             </form.Field>
 
-            <form.Field name="folderPath">
+            <form.Field name="file">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="translation-folder-path" required>
-                    Folder Path
-                  </FieldLabel>
-                  <Input
-                    id="translation-folder-path"
+                  <FieldLabel required>CBZ File</FieldLabel>
+                  <FileDropzone
+                    accept={{ 'application/zip': ['.zip'] }}
                     value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="/chapters/volume-1/chapter-1"
-                    aria-invalid={
-                      field.state.meta.errors.length > 0 || undefined
-                    }
+                    onFileSelect={(file) => field.handleChange(file!)}
+                    error={field.state.meta.errors[0]?.message}
+                    message="Drag and drop your CBZ file here, or click to browse"
+                    hint="CBZ, ZIP"
+                    selectedDisplay="badge"
                   />
-                  {field.state.meta.errors.length > 0 && (
-                    <UiFieldError errors={field.state.meta.errors} />
-                  )}
                 </UiField>
               )}
             </form.Field>
@@ -215,15 +220,18 @@ export default function AddTranslationDialog({
                   type="button"
                   variant="outline"
                   onClick={() => onOpenChange(false)}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || uploadMutation.isPending}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || uploadMutation.isPending}
+                >
+                  {isSubmitting || uploadMutation.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Adding...
+                      {uploadMutation.isPending ? 'Uploading...' : 'Adding...'}
                     </>
                   ) : (
                     'Add Translation'
@@ -233,14 +241,6 @@ export default function AddTranslationDialog({
             )}
           </form.Subscribe>
         </form>
-
-        {createMutation.error && (
-          <p className="px-6 pb-2 text-sm text-destructive">
-            {createMutation.error instanceof Error
-              ? createMutation.error.message
-              : 'Failed to add translation'}
-          </p>
-        )}
       </DialogContent>
     </Dialog>
   )

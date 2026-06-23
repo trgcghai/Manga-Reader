@@ -19,6 +19,13 @@ export const SUPPORTED_IMAGE_EXTENSIONS = new Set<ImageExtension>([
   'gif',
 ]);
 
+export const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+] as const;
+
 export const filenameCollator = new Intl.Collator(undefined, {
   numeric: true,
   sensitivity: 'base',

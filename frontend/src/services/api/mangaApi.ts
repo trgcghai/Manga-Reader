@@ -35,7 +35,7 @@ export interface CreateMangaPayload {
 
 export interface TranslationDetail {
   id: number
-  folderPath: string
+  url: string
   note?: string
   createdAt: string
   language: { id: number; code: string; name: string }
@@ -66,20 +66,44 @@ export interface CreateChapterPayload {
   title: string
   languageId: number
   translatorId: number
-  folderPath: string
+  url: string
 }
 
-export async function getAllMangas(
-  page: number,
-  limit: number,
-): Promise<PaginatedResponse<MangaResponse>> {
+export interface TranslationDetailResponse {
+  id: number
+  url: string
+  note?: string
+  createdAt: string
+  language: { id: number; code: string; name: string }
+  translator: { id: number; name: string }
+  chapter: {
+    id: number
+    number: number
+    title?: string
+    manga: { id: number; title: string }
+  }
+  prevTranslationId: number | null
+  nextTranslationId: number | null
+}
+
+
+export async function getAllMangas(params: {
+  page: number
+  limit: number
+  search?: string
+  status?: string
+}): Promise<PaginatedResponse<MangaResponse>> {
+  const queryParams: Record<string, string | number> = {
+    page: params.page,
+    limit: params.limit,
+  }
+  if (params.search) queryParams.search = params.search
+  if (params.status) queryParams.status = params.status
+
   const res = await axiosInstance.get<PaginatedResponse<MangaResponse>>(
     '/mangas',
-    {
-      params: { page, limit },
-    },
+    { params: queryParams },
   )
-
   return res.data
 }
 
@@ -144,7 +168,16 @@ export async function createChapter(
 export interface UpdateTranslationPayload {
   languageId?: number
   translatorId?: number
-  folderPath?: string
+  url?: string
+}
+
+export interface ReaderChapterItem {
+  chapterId: number
+  number: number
+  title: string | null
+  translationId: number | null
+  isFirstChapter: boolean
+  isLatestChapter: boolean
 }
 
 export async function updateTranslation(
@@ -167,4 +200,24 @@ export async function deleteTranslation(
   await axiosInstance.delete(
     `/mangas/${mangaId}/chapter/${chapterId}/translations/${translationId}`,
   )
+}
+
+export async function getTranslation(
+  id: number,
+): Promise<TranslationDetailResponse> {
+  const res = await axiosInstance.get<TranslationDetailResponse>(
+    `/mangas/translations/${id}`,
+  )
+  return res.data
+}
+
+export async function getReaderChapters(
+  mangaId: number,
+  translatorId: number,
+  language: string,
+): Promise<ReaderChapterItem[]> {
+  const res = await axiosInstance.get<ReaderChapterItem[]>('/mangas/reader/chapters', {
+    params: { mangaId, translatorId, language },
+  })
+  return res.data
 }

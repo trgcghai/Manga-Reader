@@ -33,7 +33,7 @@ export class MangaResponse {
 
 export class ChapterTranslationResponse {
   id: number;
-  folderPath: string;
+  url: string;
   note?: string;
   createdAt: string;
   language: { id: number; code: string; name: string };

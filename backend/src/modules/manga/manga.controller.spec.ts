@@ -53,11 +53,13 @@ describe('MangaController', () => {
           provide: ChapterService,
           useValue: {
             create: jest.fn(),
+            getChapterList: jest.fn(),
           },
         },
         {
           provide: TranslationService,
           useValue: {
+            findOne: jest.fn(),
             update: jest.fn(),
             delete: jest.fn(),
           },
@@ -89,7 +91,7 @@ describe('MangaController', () => {
 
       const result = await controller.findAll();
 
-      expect(service.findAll).toHaveBeenCalledWith(1, 20);
+      expect(service.findAll).toHaveBeenCalledWith(1, 20, undefined, undefined);
       expect(result).toEqual(paginatedResult);
     });
 
@@ -105,7 +107,23 @@ describe('MangaController', () => {
 
       const result = await controller.findAll('1', '20');
 
-      expect(service.findAll).toHaveBeenCalledWith(1, 20);
+      expect(service.findAll).toHaveBeenCalledWith(1, 20, undefined, undefined);
+      expect(result).toEqual(paginatedResult);
+    });
+
+    it('should pass search and status query params to service', async () => {
+      const paginatedResult = {
+        data: [],
+        total: 0,
+        page: 1,
+        limit: 20,
+        totalPages: 0,
+      };
+      service.findAll.mockResolvedValue(paginatedResult);
+
+      const result = await controller.findAll('1', '20', 'naruto', 'ongoing');
+
+      expect(service.findAll).toHaveBeenCalledWith(1, 20, 'naruto', 'ongoing');
       expect(result).toEqual(paginatedResult);
     });
   });
@@ -276,7 +294,7 @@ describe('MangaController', () => {
       title: 'Chapter 1',
       languageId: 1,
       translatorId: 1,
-      folderPath: '/chapters/1',
+      url: '/chapters/1',
     };
 
     it('should call ChapterService.create and return 201', async () => {
@@ -309,6 +327,66 @@ describe('MangaController', () => {
       await expect(
         controller.createChapter(1, chapterDto as any),
       ).rejects.toThrow(ConflictException);
+    });
+  });
+
+  describe('getTranslation', () => {
+    const mockResponse = {
+      id: 1,
+      url: '/path/to/file.cbz',
+      note: null,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      language: { id: 1, code: 'en', name: 'English' },
+      translator: { id: 1, name: 'Translator A' },
+      chapter: {
+        id: 5,
+        number: 1,
+        title: 'Chapter 1',
+        manga: { id: 10, title: 'One Piece' },
+      },
+    };
+
+    it('should return translation when found', async () => {
+      translationService.findOne.mockResolvedValue(mockResponse);
+
+      const result = await controller.getTranslation(1);
+
+      expect(translationService.findOne).toHaveBeenCalledWith(1);
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should throw NotFoundException when translation not found', async () => {
+      translationService.findOne.mockRejectedValue(
+        new NotFoundException('Translation not found'),
+      );
+
+      await expect(controller.getTranslation(999)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+
+  describe('getReaderChapters', () => {
+    it('should call ChapterService.getChapterList with correct params', async () => {
+      const expected = [
+        { chapterId: 1, title: 'Ch 1', translationId: 10, isFirstChapter: true, isLatestChapter: false },
+      ];
+      chapterService.getChapterList.mockResolvedValue(expected as any);
+
+      const result = await controller.getReaderChapters(1, 1, 'en');
+
+      expect(chapterService.getChapterList).toHaveBeenCalledWith(1, 1, 'en');
+      expect(result).toEqual(expected);
+    });
+
+    it('should propagate NotFoundException from ChapterService', async () => {
+      chapterService.getChapterList.mockRejectedValue(
+        new NotFoundException('Manga #999 not found'),
+      );
+
+      await expect(
+        controller.getReaderChapters(999, 1, 'en'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

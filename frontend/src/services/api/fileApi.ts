@@ -1,0 +1,46 @@
+import axiosInstance from '#/services/api/api'
+
+export type UploadFileResponse = {
+  key: string
+  url: string
+}
+
+export async function uploadCover(file: File): Promise<UploadFileResponse> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const res = await axiosInstance.post<UploadFileResponse>(
+    '/files/upload/cover',
+    formData,
+    {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    },
+  )
+  return res.data
+}
+
+export async function uploadTranslation(
+  file: File,
+  mangaId: number,
+  chapterNumber: number,
+): Promise<UploadFileResponse> {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('mangaId', String(mangaId))
+  formData.append('chapterNumber', String(chapterNumber))
+  const res = await axiosInstance.post<UploadFileResponse>(
+    '/files/upload/translation',
+    formData,
+    {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    },
+  )
+  return res.data
+}
+
+export async function downloadFile(url: string): Promise<Blob> {
+  const res = await axiosInstance.get('/files/download', {
+    params: { url },
+    responseType: 'blob',
+  })
+  return res.data
+}

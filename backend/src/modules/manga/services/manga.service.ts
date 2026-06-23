@@ -17,18 +17,26 @@ import { AuthorService } from 'src/modules/author/author.service';
 import { GenreService } from 'src/modules/genre/genre.service';
 import { Author } from 'src/modules/author/entities/author.entity';
 import { Genre } from 'src/modules/genre/entities/genre.entity';
+import { FileService } from 'src/modules/file/file.service';
+import { extractKeyFromUrl } from 'src/common/utils/file-mime.util';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class MangaService {
+  private readonly logger = new Logger(MangaService.name);
+
   constructor(
     private readonly mangaRepository: MangaRepository,
     private readonly authorService: AuthorService,
     private readonly genreService: GenreService,
+    private readonly fileService: FileService,
   ) {}
 
   findAll = async (
     page: number = 1,
     limit: number = 20,
+    search?: string,
+    status?: string,
   ): Promise<{
     data: Manga[];
     total: number;
@@ -36,7 +44,7 @@ export class MangaService {
     limit: number;
     totalPages: number;
   }> => {
-    return await this.mangaRepository.findAll(page, limit);
+    return await this.mangaRepository.findAll(page, limit, search, status);
   };
 
   findOne = async (
@@ -91,7 +99,7 @@ export class MangaService {
             translations:
               ch.translations?.map((tr) => ({
                 id: tr.id,
-                folderPath: tr.folderPath,
+                url: tr.url,
                 note: tr.note ?? undefined,
                 createdAt: tr.createdAt.toISOString(),
                 language: {
@@ -158,7 +166,19 @@ export class MangaService {
       if (dto.description) updateData.description = dto.description;
       if (dto.alternativeTitles)
         updateData.alternativeTitles = dto.alternativeTitles;
-      if (dto.coverPath) updateData.coverPath = dto.coverPath;
+      if (dto.coverPath !== undefined) {
+        if (existing.coverPath && existing.coverPath !== dto.coverPath) {
+          const key = extractKeyFromUrl(
+            existing.coverPath,
+            this.fileService.endpoint,
+            this.fileService.bucket,
+          );
+          if (key) {
+            await this.fileService.delete(key);
+          }
+        }
+        updateData.coverPath = dto.coverPath;
+      }
 
       if (dto.authors) {
         const authors = await Promise.all(
@@ -204,6 +224,18 @@ export class MangaService {
       if (!existing) {
         throw new NotFoundException(`Manga with ID ${id} not found`);
       }
+
+      if (existing.coverPath) {
+        const key = extractKeyFromUrl(
+          existing.coverPath,
+          this.fileService.endpoint,
+          this.fileService.bucket,
+        );
+        if (key) {
+          await this.fileService.delete(key);
+        }
+      }
+
       await this.mangaRepository.delete(id);
     } catch (error) {
       if (error instanceof NotFoundException) {

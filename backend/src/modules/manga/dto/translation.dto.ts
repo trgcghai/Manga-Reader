@@ -12,5 +12,31 @@ export class UpdateTranslationDto {
   @IsOptional()
   @IsString()
   @MinLength(1)
-  folderPath?: string;
+  url?: string;
+}
+
+export class TranslationDetailResponse {
+  id: number;
+  url: string;
+  note?: string;
+  createdAt: string;
+  language: { id: number; code: string; name: string };
+  translator: { id: number; name: string };
+  chapter: {
+    id: number;
+    number: number;
+    title?: string;
+    manga: { id: number; title: string };
+  };
+  prevTranslationId: number | null;
+  nextTranslationId: number | null;
+}
+
+export class ReaderChapterItem {
+  chapterId: number;
+  number: number;
+  title: string | null;
+  translationId: number | null;
+  isFirstChapter: boolean;
+  isLatestChapter: boolean;
 }

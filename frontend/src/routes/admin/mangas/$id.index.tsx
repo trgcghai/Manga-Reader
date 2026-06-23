@@ -53,6 +53,7 @@ import AddTranslationDialog from '#/components/chapter/AddTranslationDialog'
 import EditTranslationDialog from '#/components/chapter/EditTranslationDialog'
 import { DeleteConfirmDialog } from '#/components/common/DeleteConfirmDialog'
 import { useDeleteTranslation, useManga } from '#/hooks/useManga'
+import { getStatusVariant } from '#/lib/mangaUtils'
 
 export const Route = createFileRoute('/admin/mangas/$id/')({
   component: MangaDetailPage,
@@ -68,12 +69,7 @@ function MangaDetailPage() {
   })
   const manga = data as MangaDetailResponse | undefined
 
-  const badgeVariant =
-    manga?.status === 'completed'
-      ? 'default'
-      : manga?.status === 'ongoing'
-        ? 'outline'
-        : 'destructive'
+  const variant = getStatusVariant(manga?.status)
 
   if (isLoading) {
     return (
@@ -104,79 +100,103 @@ function MangaDetailPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" asChild>
-            <Link to="/admin/mangas">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <h1 className="text-2xl font-bold">{manga.title}</h1>
-          <Badge variant={badgeVariant} className="capitalize">
-            {manga.status}
-          </Badge>
-        </div>
-        <Button
-          onClick={() =>
-            navigate({ to: '/admin/mangas/$id/edit', params: { id } })
-          }
-        >
-          <Pencil className="mr-2 h-4 w-4" />
-          Edit Manga
-        </Button>
-      </div>
+      <Button
+        variant="link"
+        size="sm"
+        asChild
+        className="mb-6 px-0 text-muted-foreground"
+      >
+        <Link to="/admin/mangas">
+          <ArrowLeft className="mr-1 size-4" />
+          All Mangas
+        </Link>
+      </Button>
 
-      <div className="mb-8 rounded-lg border p-6">
-        <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {manga.description && (
-            <div className="sm:col-span-2">
-              <dt className="text-sm text-muted-foreground">Description</dt>
-              <dd className="mt-1">{manga.description}</dd>
+      <div className="mb-10 flex flex-col gap-8 sm:flex-row sm:items-start sm:gap-8">
+        <div className="shrink-0 self-center sm:self-start">
+          {manga.coverPath ? (
+            <div className="relative aspect-3/4 w-60 overflow-hidden rounded-md border bg-muted shadow-sm">
+              <img
+                src={manga.coverPath}
+                alt={`${manga.title} cover`}
+                className="size-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="flex aspect-3/4 w-60 items-center justify-center rounded-md border bg-muted">
+              <BookOpen className="size-14 text-muted-foreground/25" />
             </div>
           )}
-          <div>
-            <dt className="text-sm text-muted-foreground">
-              Alternative Titles
-            </dt>
-            <dd className="mt-1">
-              {manga.alternativeTitles.length
-                ? manga.alternativeTitles.join(', ')
-                : '-'}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-sm text-muted-foreground">Cover Path</dt>
-            <dd className="mt-1 font-mono text-sm">{manga.coverPath || '-'}</dd>
-          </div>
-          <div>
-            <dt className="text-sm text-muted-foreground">Authors</dt>
-            <dd className="mt-1 flex flex-wrap gap-1">
-              {manga.authors.map((a) => (
-                <Badge key={a.id} variant="secondary">
-                  {a.name}
+        </div>
+
+        <div className="min-w-0 flex-1 space-y-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold tracking-tight">
+                  {manga.title}
+                </h1>
+                <Badge variant={variant} className="capitalize">
+                  {manga.status}
                 </Badge>
-              ))}
-            </dd>
+              </div>
+              <div className="flex items-center gap-3">
+                {manga.genres.map((g) => (
+                  <Badge
+                    key={g.id}
+                    variant="secondary"
+                    className="text-secondary-foreground"
+                  >
+                    {g.name}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="default"
+              onClick={() =>
+                navigate({ to: '/admin/mangas/$id/edit', params: { id } })
+              }
+            >
+              <Pencil className="mr-1.5 size-3.5" />
+              Edit
+            </Button>
           </div>
-          <div>
-            <dt className="text-sm text-muted-foreground">Genres</dt>
-            <dd className="mt-1 flex flex-wrap gap-1">
-              {manga.genres.map((g) => (
-                <Badge key={g.id} variant="secondary">
-                  {g.name}
-                </Badge>
-              ))}
-            </dd>
+
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p className="mb-1.5 text-xs font-medium text-muted-foreground capitalize tracking-wider">
+              Description
+            </p>
+            <p className="max-w-prose text-sm leading-relaxed text-secondary-foreground">
+              {manga.description || 'No description provided.'}
+            </p>
           </div>
-          <div>
-            <dt className="text-sm text-muted-foreground">Created</dt>
-            <dd className="mt-1">{formatDateTime(manga.createdAt)}</dd>
+
+          <div className="space-y-4 text-sm text-muted-foreground">
+            <div>
+              <p className="mb-1.5 text-xs font-medium text-muted-foreground capitalize tracking-wider">
+                Authors
+              </p>
+              <div className="flex flex-wrap gap-1.5 text-secondary-foreground text-sm">
+                {manga.authors.map((a) => a.name).join(', ')}
+              </div>
+            </div>
           </div>
-          <div>
-            <dt className="text-sm text-muted-foreground">Updated</dt>
-            <dd className="mt-1">{formatDateTime(manga.updatedAt)}</dd>
+
+          <div className="space-y-2 text-sm text-muted-foreground">
+            {manga.alternativeTitles.length > 0 && (
+              <div>
+                <p className="mb-1.5 text-xs font-medium text-muted-foreground capitalize tracking-wider">
+                  Also
+                </p>
+                <p className="flex flex-wrap gap-1.5 text-secondary-foreground text-sm">
+                  {manga.alternativeTitles.join(', ')}
+                </p>
+              </div>
+            )}
           </div>
-        </dl>
+        </div>
       </div>
 
       <div className="mb-4 flex items-center justify-between">
@@ -297,7 +317,7 @@ function ChapterRow({
                             {formatDateTime(tr.createdAt)}
                           </TableCell>
                           <TableCell className="font-mono text-sm w-1/2 truncate">
-                            {tr.folderPath}
+                            {tr.url.split('/').pop()}
                           </TableCell>
                           <TableCell className="w-20">
                             <div className="flex gap-1">
@@ -330,6 +350,7 @@ function ChapterRow({
                           }
                           mangaId={Number(mangaId)}
                           chapterId={chapter.id}
+                          chapterNumber={chapter.number}
                           translation={tr}
                         />
 

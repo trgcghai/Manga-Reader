@@ -9,6 +9,8 @@ import {
   createChapter,
   updateTranslation,
   deleteTranslation,
+  getTranslation,
+  getReaderChapters,
 } from '#/services/api/mangaApi'
 import type {
   CreateMangaPayload,
@@ -19,21 +21,40 @@ import type {
   UpdateMangaPayload,
   CreateChapterPayload,
   UpdateTranslationPayload,
+  TranslationDetailResponse,
+  ReaderChapterItem,
 } from '#/services/api/mangaApi'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 const mangaKeys = {
   all: ['mangas'] as const,
-  list: (page: number, limit: number) =>
-    [...mangaKeys.all, 'list', page, limit] as const,
+  list: (params: {
+    page: number
+    limit: number
+    search?: string
+    status?: string
+  }) =>
+    [
+      ...mangaKeys.all,
+      'list',
+      params.page,
+      params.limit,
+      params.search,
+      params.status,
+    ] as const,
   detail: (id: number) => [...mangaKeys.all, 'detail', id] as const,
 }
 
-export function useMangaList(page: number, limit: number) {
+export function useMangaList(params: {
+  page: number
+  limit: number
+  search?: string
+  status?: string
+}) {
   return useQuery<PaginatedResponse<MangaResponse>>({
-    queryKey: mangaKeys.list(page, limit),
-    queryFn: () => getAllMangas(page, limit),
+    queryKey: mangaKeys.list(params),
+    queryFn: () => getAllMangas(params),
   })
 }
 
@@ -140,6 +161,18 @@ export function useCreateChapterForManga(mangaId: number) {
   })
 }
 
+export function useReaderChapters(
+  mangaId: number | undefined,
+  translatorId: number | undefined,
+  language: string | undefined,
+) {
+  return useQuery<ReaderChapterItem[]>({
+    queryKey: ['manga', 'reader', 'chapters', mangaId, translatorId, language],
+    queryFn: () => getReaderChapters(mangaId!, translatorId!, language!),
+    enabled: !!mangaId && !!translatorId && !!language,
+  })
+}
+
 export function useUpdateTranslation(mangaId: number, chapterId: number) {
   const queryClient = useQueryClient()
 
@@ -178,5 +211,13 @@ export function useDeleteTranslation(mangaId: number, chapterId: number) {
         err instanceof Error ? err.message : 'Failed to delete translation',
       )
     },
+  })
+}
+
+export function useTranslation(id: number) {
+  return useQuery<TranslationDetailResponse>({
+    queryKey: ['manga', 'translations', id],
+    queryFn: () => getTranslation(id),
+    enabled: !!id,
   })
 }

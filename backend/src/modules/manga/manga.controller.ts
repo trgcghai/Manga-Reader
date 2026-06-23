@@ -7,7 +7,6 @@ import {
   Query,
   Patch,
   Delete,
-  Header,
   HttpCode,
   HttpStatus,
   StreamableFile,
@@ -30,7 +29,10 @@ import {
 import { ChapterService } from './services/chapter.service';
 import { TranslationService } from './services/translation.service';
 import { CreateChapterDto } from 'src/modules/manga/dto/chapter.dto';
-import { UpdateTranslationDto } from 'src/modules/manga/dto/translation.dto';
+import {
+  UpdateTranslationDto,
+  ReaderChapterItem,
+} from 'src/modules/manga/dto/translation.dto';
 
 @Controller('mangas')
 export class MangaController {
@@ -50,8 +52,15 @@ export class MangaController {
   findAll(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
+    @Query('search') search?: string,
+    @Query('status') status?: string,
   ) {
-    return this.mangaService.findAll(parseInt(page), parseInt(limit));
+    return this.mangaService.findAll(
+      parseInt(page),
+      parseInt(limit),
+      search,
+      status,
+    );
   }
 
   @Post('import')
@@ -66,14 +75,6 @@ export class MangaController {
   }
 
   @Get('import-template')
-  @Header(
-    'Content-Type',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  )
-  @Header(
-    'Content-Disposition',
-    'attachment; filename="manga-import-template.xlsx"',
-  )
   downloadTemplate(): StreamableFile {
     const workbook = XLSX.utils.book_new();
     const headerRow = [
@@ -92,7 +93,10 @@ export class MangaController {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    return new StreamableFile(buffer);
+    return new StreamableFile(buffer, {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      disposition: 'attachment; filename="manga-import-template.xlsx"',
+    });
   }
 
   @Get(':id')
@@ -126,7 +130,17 @@ export class MangaController {
     @Param('translationId', ParseIntPipe) translationId: number,
     @Body() dto: UpdateTranslationDto,
   ) {
-    return this.translationService.update(mangaId, chapterId, translationId, dto)
+    return this.translationService.update(
+      mangaId,
+      chapterId,
+      translationId,
+      dto,
+    );
+  }
+
+  @Get('translations/:translationId')
+  getTranslation(@Param('translationId', ParseIntPipe) translationId: number) {
+    return this.translationService.findOne(translationId);
   }
 
   @Delete(':mangaId/chapter/:chapterId/translations/:translationId')
@@ -136,6 +150,15 @@ export class MangaController {
     @Param('chapterId', ParseIntPipe) chapterId: number,
     @Param('translationId', ParseIntPipe) translationId: number,
   ) {
-    return this.translationService.delete(mangaId, chapterId, translationId)
+    return this.translationService.delete(mangaId, chapterId, translationId);
+  }
+
+  @Get('reader/chapters')
+  getReaderChapters(
+    @Query('mangaId', ParseIntPipe) mangaId: number,
+    @Query('translatorId', ParseIntPipe) translatorId: number,
+    @Query('language') language: string,
+  ): Promise<ReaderChapterItem[]> {
+    return this.chapterService.getChapterList(mangaId, translatorId, language);
   }
 }

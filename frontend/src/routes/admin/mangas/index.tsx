@@ -37,6 +37,7 @@ import {
 } from '#/components/ui/empty'
 import { formatDateTime } from '#/lib/dateTimeFormatter'
 import ActionsCell from '#/components/manga/ActionCell'
+import { getStatusVariant } from '#/lib/mangaUtils'
 
 const columnHelper = createColumnHelper<MangaResponse>()
 
@@ -48,12 +49,7 @@ const columns = [
   columnHelper.accessor('status', {
     header: 'Status',
     cell: (info) => {
-      const variant =
-        info.getValue() === 'completed'
-          ? 'default'
-          : info.getValue() === 'ongoing'
-            ? 'outline'
-            : 'destructive'
+      const variant = getStatusVariant(info.getValue())
       return (
         <Badge variant={variant} className="capitalize">
           {info.getValue()}
@@ -117,7 +113,7 @@ function MangaListPage() {
   const [pageSize, setPageSize] = useState(20)
   const [importOpen, setImportOpen] = useState(false)
   const navigate = useNavigate()
-  const { data, isLoading, isError } = useMangaList(page, pageSize)
+  const { data, isLoading, isError } = useMangaList({ page, limit: pageSize })
 
   const table = useReactTable({
     data: data?.data ?? [],
@@ -220,7 +216,12 @@ function MangaListPage() {
                   }
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      onClick={(e) => {
+                        if (cell.column.id === 'actions') e.stopPropagation()
+                      }}
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),

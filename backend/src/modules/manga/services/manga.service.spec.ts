@@ -12,6 +12,7 @@ import {
 import { MangaStatus } from 'src/common/constants/manga.constant';
 import { GenreService } from 'src/modules/genre/genre.service';
 import { AuthorService } from 'src/modules/author/author.service';
+import { FileService } from 'src/modules/file/file.service';
 
 describe('MangaService', () => {
   let service: MangaService;
@@ -34,6 +35,12 @@ describe('MangaService', () => {
     findOrCreate: jest.fn(),
   };
 
+  const mockFileService = {
+    endpoint: 'http://localhost:9000',
+    bucket: 'manga-pages',
+    delete: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -41,6 +48,7 @@ describe('MangaService', () => {
         { provide: MangaRepository, useValue: mockMangaRepository },
         { provide: AuthorService, useValue: mockAuthorService },
         { provide: GenreService, useValue: mockGenreService },
+        { provide: FileService, useValue: mockFileService },
       ],
     }).compile();
 
@@ -69,7 +77,33 @@ describe('MangaService', () => {
       const result = await service.findAll(1, 20);
 
       expect(result).toEqual(paginatedResult);
-      expect(mockMangaRepository.findAll).toHaveBeenCalledWith(1, 20);
+      expect(mockMangaRepository.findAll).toHaveBeenCalledWith(
+        1,
+        20,
+        undefined,
+        undefined,
+      );
+    });
+
+    it('should forward search and status to repository', async () => {
+      const paginatedResult = {
+        data: [{ id: 1, title: 'Naruto' } as Manga],
+        total: 1,
+        page: 1,
+        limit: 20,
+        totalPages: 1,
+      };
+      mockMangaRepository.findAll.mockResolvedValue(paginatedResult);
+
+      const result = await service.findAll(1, 20, 'naruto', 'ongoing');
+
+      expect(result).toEqual(paginatedResult);
+      expect(mockMangaRepository.findAll).toHaveBeenCalledWith(
+        1,
+        20,
+        'naruto',
+        'ongoing',
+      );
     });
   });
 
@@ -117,7 +151,7 @@ describe('MangaService', () => {
             translations: [
               {
                 id: 1,
-                folderPath: '/path',
+                url: '/path',
                 note: null,
                 createdAt: new Date('2024-01-01'),
                 language: { id: 1, code: 'en', name: 'English' },

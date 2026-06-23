@@ -46,7 +46,7 @@ describe('TranslationRepository', () => {
 
   describe('create', () => {
     it('should save and return a new translation', async () => {
-      const data = { folderPath: '/chapters/1' } as Partial<Translation>;
+      const data = { url: '/chapters/1' } as Partial<Translation>;
       const saved = { id: 1, ...data } as Translation;
       mockRepo.save.mockResolvedValue(saved);
       const result = await repo.create(data);
@@ -80,13 +80,13 @@ describe('TranslationRepository', () => {
   describe('update', () => {
     it('should update and return the translation', async () => {
       const id = 1;
-      const data = { folderPath: '/new/path' };
+      const data = { url: '/new/path' };
       const updated = {
         id,
-        folderPath: '/new/path',
+        url: '/new/path',
         chapter: { id: 1 },
       } as Translation;
-      (mockRepo.update as jest.Mock).mockResolvedValue({ affected: 1 });
+      mockRepo.update.mockResolvedValue({ affected: 1 });
       mockRepo.findOne.mockResolvedValue(updated);
       const result = await repo.update(id, data);
       expect(mockRepo.update).toHaveBeenCalledWith(id, data);
@@ -96,7 +96,7 @@ describe('TranslationRepository', () => {
 
   describe('delete', () => {
     it('should delete translation by id', async () => {
-      (mockRepo.delete as jest.Mock).mockResolvedValue({ affected: 1 });
+      mockRepo.delete.mockResolvedValue({ affected: 1 });
       await repo.delete(1);
       expect(mockRepo.delete).toHaveBeenCalledWith(1);
     });

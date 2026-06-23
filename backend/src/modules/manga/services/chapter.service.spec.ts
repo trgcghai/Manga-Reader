@@ -31,6 +31,7 @@ describe('ChapterService', () => {
   const mockChapterRepo = {
     findByMangaAndNumber: jest.fn(),
     create: jest.fn(),
+    findAllByMangaId: jest.fn(),
   };
 
   const mockTranslationRepo = {
@@ -68,7 +69,7 @@ describe('ChapterService', () => {
     chapter,
     language,
     translator,
-    folderPath: '/path',
+    url: '/path',
   } as unknown as Translation;
 
   const dto: CreateChapterDto = {
@@ -76,7 +77,7 @@ describe('ChapterService', () => {
     title: 'Ch 5',
     languageId: 1,
     translatorId: 1,
-    folderPath: '/chapters/5',
+    url: '/chapters/5',
   };
 
   beforeEach(async () => {
@@ -155,7 +156,7 @@ describe('ChapterService', () => {
         chapter,
         language,
         translator,
-        folderPath: dto.folderPath,
+        url: dto.url,
       });
       expect(result).toEqual(chapter);
     });
@@ -177,9 +178,146 @@ describe('ChapterService', () => {
         chapter,
         language,
         translator,
-        folderPath: dto.folderPath,
+        url: dto.url,
       });
       expect(result).toEqual(chapter);
+    });
+  });
+
+  describe('getChapterList', () => {
+    const viLang = { id: 2, code: 'vi', name: 'Vietnamese' } as Language;
+    const translatorB = { id: 2, name: 'Translator B' } as Translator;
+
+    it('should return exact match translationId when translator and language match', async () => {
+      mockMangaRepo.findOneById.mockResolvedValue(manga);
+      const chapters = [
+        {
+          id: 1,
+          number: 1,
+          title: 'Chapter 1',
+          translations: [
+            { id: 10, language, translator, url: '/path' },
+            { id: 11, language: viLang, translator: translatorB, url: '/path2' },
+          ],
+        },
+      ] as unknown as Chapter[];
+      mockChapterRepo.findAllByMangaId.mockResolvedValue(chapters);
+
+      const result = await service.getChapterList(1, 1, 'en');
+
+      expect(result).toHaveLength(1);
+      expect(result[0].translationId).toBe(10);
+    });
+
+    it('should fallback to language match when no exact match', async () => {
+      mockMangaRepo.findOneById.mockResolvedValue(manga);
+      const chapters = [
+        {
+          id: 1,
+          number: 1,
+          title: 'Chapter 1',
+          translations: [
+            { id: 20, language, translator: translatorB, url: '/path' },
+          ],
+        },
+      ] as unknown as Chapter[];
+      mockChapterRepo.findAllByMangaId.mockResolvedValue(chapters);
+
+      const result = await service.getChapterList(1, 1, 'en');
+
+      expect(result[0].translationId).toBe(20);
+    });
+
+    it('should return null when no translation matches', async () => {
+      mockMangaRepo.findOneById.mockResolvedValue(manga);
+      const chapters = [
+        {
+          id: 1,
+          number: 1,
+          title: 'Chapter 1',
+          translations: [
+            { id: 30, language: viLang, translator: translatorB, url: '/path' },
+          ],
+        },
+      ] as unknown as Chapter[];
+      mockChapterRepo.findAllByMangaId.mockResolvedValue(chapters);
+
+      const result = await service.getChapterList(1, 1, 'en');
+
+      expect(result[0].translationId).toBeNull();
+    });
+
+    it('should set isFirstChapter and isLatestChapter correctly for multiple chapters', async () => {
+      mockMangaRepo.findOneById.mockResolvedValue(manga);
+      const chapters = [
+        { id: 1, number: 1, title: 'Ch 1', translations: [] },
+        { id: 2, number: 2, title: 'Ch 2', translations: [] },
+        { id: 3, number: 3, title: 'Ch 3', translations: [] },
+      ] as unknown as Chapter[];
+      mockChapterRepo.findAllByMangaId.mockResolvedValue(chapters);
+
+      const result = await service.getChapterList(1, 1, 'en');
+
+      expect(result[0].isFirstChapter).toBe(true);
+      expect(result[0].isLatestChapter).toBe(false);
+      expect(result[1].isFirstChapter).toBe(false);
+      expect(result[1].isLatestChapter).toBe(false);
+      expect(result[2].isFirstChapter).toBe(false);
+      expect(result[2].isLatestChapter).toBe(true);
+    });
+
+    it('should set both flags to true for a single chapter', async () => {
+      mockMangaRepo.findOneById.mockResolvedValue(manga);
+      const chapters = [
+        { id: 1, number: 1, title: 'Ch 1', translations: [] },
+      ] as unknown as Chapter[];
+      mockChapterRepo.findAllByMangaId.mockResolvedValue(chapters);
+
+      const result = await service.getChapterList(1, 1, 'en');
+
+      expect(result[0].isFirstChapter).toBe(true);
+      expect(result[0].isLatestChapter).toBe(true);
+    });
+
+    it('should return empty array when manga has no chapters', async () => {
+      mockMangaRepo.findOneById.mockResolvedValue(manga);
+      mockChapterRepo.findAllByMangaId.mockResolvedValue([]);
+
+      const result = await service.getChapterList(1, 1, 'en');
+
+      expect(result).toEqual([]);
+    });
+
+    it('should throw NotFoundException when manga does not exist', async () => {
+      mockMangaRepo.findOneById.mockResolvedValue(null);
+
+      await expect(service.getChapterList(999, 1, 'en')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('should preserve null title', async () => {
+      mockMangaRepo.findOneById.mockResolvedValue(manga);
+      const chapters = [
+        { id: 1, number: 1, title: null, translations: [] },
+      ] as unknown as Chapter[];
+      mockChapterRepo.findAllByMangaId.mockResolvedValue(chapters);
+
+      const result = await service.getChapterList(1, 1, 'en');
+
+      expect(result[0].title).toBeNull();
+    });
+
+    it('should handle undefined translations gracefully', async () => {
+      mockMangaRepo.findOneById.mockResolvedValue(manga);
+      const chapters = [
+        { id: 1, number: 1, title: 'Ch 1' },
+      ] as unknown as Chapter[];
+      mockChapterRepo.findAllByMangaId.mockResolvedValue(chapters);
+
+      const result = await service.getChapterList(1, 1, 'en');
+
+      expect(result[0].translationId).toBeNull();
     });
   });
 });

@@ -2,9 +2,11 @@ import { Module } from '@nestjs/common';
 import { HealthController } from './health.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RenameFolderPathToUrl } from './common/migrations/RenameFolderPathToUrl';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CacheModule } from '@nestjs/cache-manager';
 import KeyvRedis from '@keyv/redis';
+import { FileModule } from 'src/modules/file/file.module';
 import { MangaModule } from 'src/modules/manga/manga.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
@@ -34,7 +36,9 @@ import { LanguageModule } from './modules/language/language.module';
         password: configService.get<string>('DB_PASSWORD')!,
         database: configService.get<string>('DB_NAME')!,
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
+        migrationsRun: true,
+        migrations: [RenameFolderPathToUrl],
+        synchronize: false,
       }),
       inject: [ConfigService],
     }),
@@ -54,6 +58,7 @@ import { LanguageModule } from './modules/language/language.module';
       },
       inject: [ConfigService],
     }),
+    FileModule,
     MangaModule,
     TranslatorModule,
     LanguageModule,

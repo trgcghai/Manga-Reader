@@ -1,11 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
+import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useManga, useUpdateManga } from '#/hooks/useManga'
+import { useCoverUpload } from '#/hooks/useFile'
 import type { UpdateMangaPayload } from '#/services/api/mangaApi'
 import { MangaForm } from '#/components/manga/MangaForm'
 import { Save } from 'lucide-react'
 import { Skeleton } from '#/components/ui/skeleton'
-import { ErrorDisplay, ErrorTitle, ErrorDescription } from '#/components/ui/error-display'
+import {
+  ErrorDisplay,
+  ErrorTitle,
+  ErrorDescription,
+} from '#/components/ui/error-display'
 
 export const Route = createFileRoute('/admin/mangas/$id/edit')({
   component: EditMangaPage,
@@ -15,7 +21,9 @@ function EditMangaPage() {
   const { id } = Route.useParams()
   const navigate = useNavigate()
   const { data: manga, isLoading, isError } = useManga(Number(id))
-  const mutation = useUpdateManga()
+  const updateMutation = useUpdateManga()
+  const uploadMutation = useCoverUpload()
+  const [formError, setFormError] = useState<string | null>(null)
 
   if (isLoading) {
     return (
@@ -50,30 +58,66 @@ function EditMangaPage() {
         description: manga.description ?? '',
         alternativeTitles: manga.alternativeTitles ?? [],
         coverPath: manga.coverPath ?? '',
+        coverFile: null,
         authors: manga.authors.map((a) => a.name),
         genres: manga.genres.map((g) => g.name),
       }}
-      onSubmit={(value) => {
-        const payload: UpdateMangaPayload = {
-          title: value.title,
-          status: value.status,
-          description: value.description || undefined,
-          alternativeTitles:
+      onSubmit={async (value, coverRemoved) => {
+        setFormError(null)
+        let coverPath: string | undefined
+        if (value.coverFile) {
+          try {
+            const { url } = await uploadMutation.mutateAsync(value.coverFile)
+            coverPath = url
+          } catch {
+            setFormError('Failed to upload cover image')
+            return
+          }
+        } else if (coverRemoved) {
+          coverPath = ''
+        }
+        const payload: UpdateMangaPayload = {}
+        if (value.title !== manga.title) payload.title = value.title
+        if (value.status !== manga.status) payload.status = value.status
+        if (value.description !== (manga.description ?? '')) {
+          payload.description = value.description || undefined
+        }
+        if (coverPath !== undefined) payload.coverPath = coverPath
+        if (
+          JSON.stringify(value.alternativeTitles) !==
+          JSON.stringify(manga.alternativeTitles)
+        ) {
+          payload.alternativeTitles =
             value.alternativeTitles.length > 0
               ? value.alternativeTitles
-              : undefined,
-          coverPath: value.coverPath || undefined,
-          authors: value.authors,
-          genres: value.genres,
+              : undefined
         }
-        mutation.mutate(
+        if (
+          JSON.stringify(value.authors) !==
+          JSON.stringify(manga.authors.map((a) => a.name))
+        ) {
+          payload.authors = value.authors
+        }
+        if (
+          JSON.stringify(value.genres) !==
+          JSON.stringify(manga.genres.map((g) => g.name))
+        ) {
+          payload.genres = value.genres
+        }
+        updateMutation.mutate(
           { id: Number(id), data: payload },
           { onSuccess: () => navigate({ to: '/admin/mangas' }) },
         )
       }}
-      isPending={mutation.isPending}
-      error={mutation.error?.message || null}
-      submitLabel="Save Changes"
+      isPending={updateMutation.isPending || uploadMutation.isPending}
+      error={formError || updateMutation.error?.message || null}
+      submitLabel={
+        uploadMutation.isPending
+          ? 'Uploading...'
+          : updateMutation.isPending
+            ? 'Saving...'
+            : 'Save Changes'
+      }
       submitIcon={<Save className="size-4" />}
       cancelLabel="Cancel"
       cancelAction={() => navigate({ to: '/admin/mangas' })}

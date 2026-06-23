@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useCreateManga } from '#/hooks/useManga'
+import { useCoverUpload } from '#/hooks/useFile'
 import type { CreateMangaPayload } from '#/services/api/mangaApi'
 import { MangaForm } from '#/components/manga/MangaForm'
 import { Plus } from 'lucide-react'
@@ -10,7 +12,9 @@ export const Route = createFileRoute('/admin/mangas/new')({
 
 function CreateMangaPage() {
   const navigate = useNavigate()
-  const mutation = useCreateManga()
+  const createMutation = useCreateManga()
+  const uploadMutation = useCoverUpload()
+  const [formError, setFormError] = useState<string | null>(null)
 
   return (
     <MangaForm
@@ -21,10 +25,22 @@ function CreateMangaPage() {
         description: '',
         alternativeTitles: [],
         coverPath: '',
+        coverFile: null,
         authors: [],
         genres: [],
       }}
-      onSubmit={(value) => {
+      onSubmit={async (value, _) => {
+        setFormError(null)
+        let coverPath: string | undefined
+        if (value.coverFile) {
+          try {
+            const { url } = await uploadMutation.mutateAsync(value.coverFile)
+            coverPath = url
+          } catch {
+            setFormError('Failed to upload cover image')
+            return
+          }
+        }
         const payload: CreateMangaPayload = {
           title: value.title,
           status: value.status,
@@ -33,17 +49,23 @@ function CreateMangaPage() {
             value.alternativeTitles.length > 0
               ? value.alternativeTitles
               : undefined,
-          coverPath: value.coverPath || undefined,
+          coverPath,
           authors: value.authors,
           genres: value.genres,
         }
-        mutation.mutate(payload, {
+        createMutation.mutate(payload, {
           onSuccess: () => navigate({ to: '/admin/mangas' }),
         })
       }}
-      isPending={mutation.isPending}
-      error={mutation.error?.message || null}
-      submitLabel="Create Manga"
+      isPending={createMutation.isPending || uploadMutation.isPending}
+      error={formError || createMutation.error?.message || null}
+      submitLabel={
+        uploadMutation.isPending
+          ? 'Uploading...'
+          : createMutation.isPending
+            ? 'Saving...'
+            : 'Create Manga'
+      }
       submitIcon={<Plus className="size-4" />}
       cancelLabel="Reset"
       resetOnCancel

@@ -3,7 +3,6 @@ import { z } from 'zod'
 import { useLanguageList } from '#/hooks/useLanguages'
 import { useTranslatorList } from '#/hooks/useTranslators'
 import { Button } from '#/components/ui/button'
-import { Input } from '#/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -27,12 +26,18 @@ import {
 import { Loader2 } from 'lucide-react'
 import { useEffect } from 'react'
 import { useUpdateTranslation } from '#/hooks/useManga'
-import type { TranslationDetail } from '#/services/api/mangaApi'
+import { useTranslationFileUpload } from '#/hooks/useFile'
+import type {
+  TranslationDetail,
+  UpdateTranslationPayload,
+} from '#/services/api/mangaApi'
+import { Badge } from '#/components/ui/badge'
+import { FileDropzone } from '#/components/ui/file-dropzone'
 
 const translationSchema = z.object({
-  languageId: z.number().refine((n) => n > 0, 'Language is required'),
-  translatorId: z.number().refine((n) => n > 0, 'Translator is required'),
-  folderPath: z.string().min(1, 'Folder path is required'),
+  languageId: z.number().optional(),
+  translatorId: z.number().optional(),
+  file: z.instanceof(File).optional(),
 })
 
 type FormValues = z.infer<typeof translationSchema>
@@ -42,6 +47,7 @@ interface EditTranslationDialogProps {
   onOpenChange: (open: boolean) => void
   mangaId: number
   chapterId: number
+  chapterNumber: number
   translation: TranslationDetail
 }
 
@@ -50,9 +56,11 @@ export default function EditTranslationDialog({
   onOpenChange,
   mangaId,
   chapterId,
+  chapterNumber,
   translation,
 }: EditTranslationDialogProps) {
   const updateMutation = useUpdateTranslation(mangaId, chapterId)
+  const uploadMutation = useTranslationFileUpload(mangaId)
   const { data: languages, isLoading: languagesLoading } = useLanguageList()
   const { data: translatorsData, isLoading: translatorsLoading } =
     useTranslatorList(1, 100)
@@ -60,28 +68,43 @@ export default function EditTranslationDialog({
   const defaultValues: FormValues = {
     languageId: translation.language.id,
     translatorId: translation.translator.id,
-    folderPath: translation.folderPath,
   }
 
   const form = useForm({
     validators: { onSubmit: translationSchema },
     defaultValues,
     onSubmit: async (values) => {
-      updateMutation.mutate(
-        {
-          translationId: translation.id,
-          data: {
-            languageId: values.value.languageId,
-            translatorId: values.value.translatorId,
-            folderPath: values.value.folderPath,
+      try {
+        const payload: UpdateTranslationPayload = {}
+
+        if (values.value.languageId) {
+          payload.languageId = values.value.languageId
+        }
+        if (values.value.translatorId) {
+          payload.translatorId = values.value.translatorId
+        }
+        if (values.value.file) {
+          const { url } = await uploadMutation.mutateAsync({
+            file: values.value.file,
+            chapterNumber,
+          })
+          payload.url = url
+        }
+
+        updateMutation.mutate(
+          {
+            translationId: translation.id,
+            data: payload,
           },
-        },
-        {
-          onSuccess: () => {
-            onOpenChange(false)
+          {
+            onSuccess: () => {
+              onOpenChange(false)
+            },
           },
-        },
-      )
+        )
+      } catch {
+        // error displayed via uploadMutation.error
+      }
     },
   })
 
@@ -113,7 +136,7 @@ export default function EditTranslationDialog({
             <form.Field name="languageId">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="edit-translation-language" required>
+                  <FieldLabel htmlFor="edit-translation-language">
                     Language
                   </FieldLabel>
                   <Select
@@ -150,7 +173,7 @@ export default function EditTranslationDialog({
             <form.Field name="translatorId">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="edit-translation-translator" required>
+                  <FieldLabel htmlFor="edit-translation-translator">
                     Translator
                   </FieldLabel>
                   <Select
@@ -186,23 +209,24 @@ export default function EditTranslationDialog({
               )}
             </form.Field>
 
-            <form.Field name="folderPath">
+            <form.Field name="file">
               {(field) => (
                 <UiField>
-                  <FieldLabel htmlFor="edit-translation-folder-path" required>
-                    Folder Path
-                  </FieldLabel>
-                  <Input
-                    id="edit-translation-folder-path"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="/chapters/volume-1/chapter-1"
-                    aria-invalid={
-                      field.state.meta.errors.length > 0 || undefined
-                    }
+                  <FieldLabel>CBZ File</FieldLabel>
+                  <FileDropzone
+                    accept={{ 'application/zip': ['.zip'] }}
+                    value={field.state.value as File | null}
+                    onFileSelect={(file) => field.handleChange(file!)}
+                    error={field.state.meta.errors[0]?.message}
+                    message="Drag and drop a new CBZ file here, or click to browse"
+                    hint="CBZ, ZIP"
+                    selectedDisplay="badge"
                   />
-                  {field.state.meta.errors.length > 0 && (
-                    <UiFieldError errors={field.state.meta.errors} />
+                  {translation.url && (
+                    <div className="flex items-center gap-2">
+                      Current file:{' '}
+                      <Badge>{translation.url.split('/').pop()}</Badge>
+                    </div>
                   )}
                 </UiField>
               )}
@@ -216,15 +240,18 @@ export default function EditTranslationDialog({
                   type="button"
                   variant="outline"
                   onClick={() => onOpenChange(false)}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || uploadMutation.isPending}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || uploadMutation.isPending}
+                >
+                  {isSubmitting || uploadMutation.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
+                      {uploadMutation.isPending ? 'Uploading...' : 'Saving...'}
                     </>
                   ) : (
                     'Save'
@@ -234,14 +261,6 @@ export default function EditTranslationDialog({
             )}
           </form.Subscribe>
         </form>
-
-        {updateMutation.error && (
-          <p className="px-6 pb-2 text-sm text-destructive">
-            {updateMutation.error instanceof Error
-              ? updateMutation.error.message
-              : 'Failed to update translation'}
-          </p>
-        )}
       </DialogContent>
     </Dialog>
   )

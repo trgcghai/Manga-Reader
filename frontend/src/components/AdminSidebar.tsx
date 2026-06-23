@@ -11,6 +11,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from '#/components/ui/sidebar.tsx'
+import { Link } from '@tanstack/react-router'
 
 const data = {
   navMain: [
@@ -65,7 +66,14 @@ export function AdminSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <p className="text-2xl font-bold text-center">MangaReader</p>
+        <Link to="/" className="flex items-center gap-2.5">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-foreground text-background">
+            <BookOpen className="size-5" />
+          </div>
+          <span className="font-heading text-lg font-semibold tracking-tight">
+            Manga Reader
+          </span>
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />

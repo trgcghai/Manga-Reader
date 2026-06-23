@@ -23,7 +23,11 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '#/components/ui/empty'
-import { ErrorDisplay, ErrorTitle, ErrorDescription } from '#/components/ui/error-display'
+import {
+  ErrorDisplay,
+  ErrorTitle,
+  ErrorDescription,
+} from '#/components/ui/error-display'
 import { Pencil, Plus, Trash2, Users } from 'lucide-react'
 import AddAuthorDialog from '#/components/author/AddAuthorDialog'
 import EditAuthorDialog from '#/components/author/EditAuthorDialog'
@@ -90,9 +94,7 @@ function AdminAuthorsPage() {
       {isError && (
         <ErrorDisplay className="mt-6">
           <ErrorTitle>Failed to Load Authors</ErrorTitle>
-          <ErrorDescription>
-            Make sure the backend is running.
-          </ErrorDescription>
+          <ErrorDescription>Make sure the backend is running.</ErrorDescription>
         </ErrorDisplay>
       )}
 
