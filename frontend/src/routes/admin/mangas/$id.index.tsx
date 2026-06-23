@@ -44,6 +44,7 @@ import {
   ArrowLeft,
   Plus,
   Trash2,
+  Download,
 } from 'lucide-react'
 import * as React from 'react'
 import { useState } from 'react'
@@ -54,6 +55,7 @@ import EditTranslationDialog from '#/components/chapter/EditTranslationDialog'
 import { DeleteConfirmDialog } from '#/components/common/DeleteConfirmDialog'
 import { useDeleteTranslation, useManga } from '#/hooks/useManga'
 import { getStatusVariant } from '#/lib/mangaUtils'
+import { useFileDownload } from '#/hooks/useFile'
 
 export const Route = createFileRoute('/admin/mangas/$id/')({
   component: MangaDetailPage,
@@ -261,6 +263,23 @@ function ChapterRow({
   const [editDialogId, setEditDialogId] = useState<number | null>(null)
   const [deleteDialogId, setDeleteDialogId] = useState<number | null>(null)
   const deleteMutation = useDeleteTranslation(Number(mangaId), chapter.id)
+  const downloadFile = useFileDownload()
+
+  const handleDownload = async (url: string) => {
+    try {
+      const blob = await downloadFile.mutateAsync(url)
+      const objectUrl = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = objectUrl
+      link.download = url.split('/').pop() || 'translation_file'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(objectUrl)
+    } catch (error) {
+      console.error('Error downloading translation file:', error)
+    }
+  }
 
   return (
     <Collapsible open={open} onOpenChange={setOpen} asChild>
@@ -321,6 +340,16 @@ function ChapterRow({
                           </TableCell>
                           <TableCell className="w-20">
                             <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => handleDownload(tr.url)}
+                                disabled={downloadFile.isPending}
+                                title="Download translation"
+                              >
+                                <Download className="h-3 w-3" />
+                              </Button>
                               <Button
                                 variant="ghost"
                                 size="icon"
