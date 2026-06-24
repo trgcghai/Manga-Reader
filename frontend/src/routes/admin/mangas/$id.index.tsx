@@ -45,6 +45,7 @@ import {
   Plus,
   Trash2,
   Download,
+  Upload,
 } from 'lucide-react'
 import * as React from 'react'
 import { useState } from 'react'
@@ -207,6 +208,7 @@ function MangaDetailPage() {
         <h2 className="text-xl font-semibold">Chapters</h2>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setBatchDialogOpen(true)}>
+            <Upload className="mr-2 h-4 w-4" />
             Batch Import
           </Button>
           <Button onClick={() => setChapterDialogOpen(true)}>
