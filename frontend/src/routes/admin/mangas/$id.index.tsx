@@ -50,6 +50,7 @@ import * as React from 'react'
 import { useState } from 'react'
 import { formatDateTime } from '#/lib/dateTimeFormatter'
 import AddChapterDialog from '#/components/chapter/AddChapterDialog'
+import { BatchImportDialog } from '#/components/chapter/BatchImportDialog'
 import AddTranslationDialog from '#/components/chapter/AddTranslationDialog'
 import EditTranslationDialog from '#/components/chapter/EditTranslationDialog'
 import { DeleteConfirmDialog } from '#/components/common/DeleteConfirmDialog'
@@ -66,6 +67,7 @@ function MangaDetailPage() {
   const navigate = useNavigate()
   const mangaId = Number(id)
   const [chapterDialogOpen, setChapterDialogOpen] = useState(false)
+  const [batchDialogOpen, setBatchDialogOpen] = useState(false)
   const { data, isLoading, isError } = useManga(mangaId, {
     include: 'chapters,translations',
   })
@@ -203,10 +205,18 @@ function MangaDetailPage() {
 
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold">Chapters</h2>
-        <Button onClick={() => setChapterDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Chapter
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setBatchDialogOpen(true)}
+          >
+            Batch Import
+          </Button>
+          <Button onClick={() => setChapterDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Chapter
+          </Button>
+        </div>
       </div>
 
       {manga.chapters.length === 0 ? (
@@ -242,6 +252,11 @@ function MangaDetailPage() {
         </Table>
       )}
 
+      <BatchImportDialog
+        open={batchDialogOpen}
+        onOpenChange={setBatchDialogOpen}
+        mangaId={mangaId}
+      />
       <AddChapterDialog
         open={chapterDialogOpen}
         onOpenChange={setChapterDialogOpen}
