@@ -9,6 +9,7 @@ const TOAST_ID = 'batch-import'
 interface ParsedFile {
   file: File
   chapterNumber: number | null
+  title: string | null
 }
 
 interface Progress {
@@ -51,7 +52,7 @@ export function useBatchImport(mangaId: number) {
       let completed = 0
       let failed = 0
 
-      for (const { file, chapterNumber } of files) {
+      for (const { file, chapterNumber, title } of files) {
         if (chapterNumber === null) {
           failed++
           setProgress({ total, completed, failed })
@@ -66,6 +67,7 @@ export function useBatchImport(mangaId: number) {
           const { url } = await uploadTranslation(file, mangaId, chapterNumber)
           await createChapter(mangaId, {
             number: chapterNumber,
+            title: title ?? undefined,
             languageId: importOptions.languageId,
             translatorId: importOptions.translatorId,
             url,
