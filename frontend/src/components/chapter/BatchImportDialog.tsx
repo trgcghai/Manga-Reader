@@ -73,11 +73,12 @@ export function BatchImportDialog({
     inputRef.current?.click()
   }
 
-  const canSubmit = parsedFiles.length > 0 && languageId > 0 && translatorId > 0
+  const canSubmit =
+    parsedFiles.length > 0 && languageId > 0 && translatorId > 0 && !batchImport.isRunning
 
   const handleSubmit = () => {
-    const files = parsedFiles.map((p) => p.file)
-    batchImport.mutate(files, { languageId, translatorId })
+    if (batchImport.isRunning) return
+    batchImport.mutate(parsedFiles, { languageId, translatorId })
     onOpenChange(false)
   }
 

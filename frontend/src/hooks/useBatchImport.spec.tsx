@@ -61,10 +61,17 @@ describe('useBatchImport', () => {
     expect(result.current.isRunning).toBe(false)
   })
 
+  function makeParsed(
+    name: string,
+    chapterNumber: number | null,
+  ): { file: File; chapterNumber: number | null } {
+    return { file: new File([''], name, { type: 'application/zip' }), chapterNumber }
+  }
+
   it('processes files sequentially', async () => {
     const files = [
-      new File([''], 'ch1.cbz', { type: 'application/zip' }),
-      new File([''], 'ch2.cbz', { type: 'application/zip' }),
+      makeParsed('ch1.cbz', 1),
+      makeParsed('ch2.cbz', 2),
     ]
     const { result } = renderHook(() => useBatchImport(1), {
       wrapper: createWrapper(),
@@ -77,15 +84,14 @@ describe('useBatchImport', () => {
     await waitFor(() => expect(result.current.progress.completed).toBe(2))
     expect(uploadTranslation).toHaveBeenCalledTimes(2)
     expect(createChapter).toHaveBeenCalledTimes(2)
-    // Verify order: first upload and create complete before second starts
-    expect((uploadTranslation as Mock).mock.calls[0][1]).toBe(1) // mangaId
-    expect((createChapter as Mock).mock.calls[0][0]).toBe(1) // mangaId
+    expect((uploadTranslation as Mock).mock.calls[0][1]).toBe(1)
+    expect((createChapter as Mock).mock.calls[0][0]).toBe(1)
   })
 
   it('updates progress on each successful file', async () => {
     const files = [
-      new File([''], 'ch1.cbz', { type: 'application/zip' }),
-      new File([''], 'ch2.cbz', { type: 'application/zip' }),
+      makeParsed('ch1.cbz', 1),
+      makeParsed('ch2.cbz', 2),
     ]
     const { result } = renderHook(() => useBatchImport(1), {
       wrapper: createWrapper(),
@@ -102,8 +108,8 @@ describe('useBatchImport', () => {
 
   it('skips files with unparseable filenames', async () => {
     const files = [
-      new File([''], 'ch1.cbz', { type: 'application/zip' }),
-      new File([''], 'readme.txt', { type: 'text/plain' }),
+      makeParsed('ch1.cbz', 1),
+      makeParsed('readme.txt', null),
     ]
     const { result } = renderHook(() => useBatchImport(1), {
       wrapper: createWrapper(),
@@ -127,8 +133,8 @@ describe('useBatchImport', () => {
       .mockRejectedValueOnce(new Error('Upload failed'))
       .mockResolvedValueOnce({ key: 'k', url: 'http://minio/test' })
     const files = [
-      new File([''], 'ch1.cbz', { type: 'application/zip' }),
-      new File([''], 'ch2.cbz', { type: 'application/zip' }),
+      makeParsed('ch1.cbz', 1),
+      makeParsed('ch2.cbz', 2),
     ]
     const { result } = renderHook(() => useBatchImport(1), {
       wrapper: createWrapper(),
@@ -147,8 +153,8 @@ describe('useBatchImport', () => {
       .mockRejectedValueOnce(new Error('Duplicate'))
       .mockResolvedValueOnce(undefined)
     const files = [
-      new File([''], 'ch1.cbz', { type: 'application/zip' }),
-      new File([''], 'ch2.cbz', { type: 'application/zip' }),
+      makeParsed('ch1.cbz', 1),
+      makeParsed('ch2.cbz', 2),
     ]
     const { result } = renderHook(() => useBatchImport(1), {
       wrapper: createWrapper(),
@@ -160,7 +166,6 @@ describe('useBatchImport', () => {
 
     await waitFor(() => expect(result.current.progress.completed).toBe(1))
     expect(result.current.progress.failed).toBe(1)
-    // upload was still called for both
     expect(uploadTranslation).toHaveBeenCalledTimes(2)
   })
 
@@ -186,7 +191,7 @@ describe('useBatchImport', () => {
           setTimeout(() => resolve({ key: 'k', url: 'u' }), 50),
         ),
     )
-    const files = [new File([''], 'ch1.cbz', { type: 'application/zip' })]
+    const files = [makeParsed('ch1.cbz', 1)]
     const { result } = renderHook(() => useBatchImport(1), {
       wrapper: createWrapper(),
     })
@@ -199,12 +204,11 @@ describe('useBatchImport', () => {
     })
 
     await waitFor(() => expect(result.current.progress.completed).toBe(1))
-    // Only one set of files processed
     expect(uploadTranslation).toHaveBeenCalledTimes(1)
   })
 
   it('shows loading toast at start and final summary toast at end', async () => {
-    const files = [new File([''], 'ch1.cbz', { type: 'application/zip' })]
+    const files = [makeParsed('ch1.cbz', 1)]
     const { result } = renderHook(() => useBatchImport(1), {
       wrapper: createWrapper(),
     })
@@ -225,7 +229,7 @@ describe('useBatchImport', () => {
   })
 
   it('isRunning is true while processing and false after completion', async () => {
-    const files = [new File([''], 'ch1.cbz', { type: 'application/zip' })]
+    const files = [makeParsed('ch1.cbz', 1)]
     const { result } = renderHook(() => useBatchImport(1), {
       wrapper: createWrapper(),
     })

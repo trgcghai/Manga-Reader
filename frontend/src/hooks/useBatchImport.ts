@@ -3,9 +3,13 @@ import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { uploadTranslation } from '#/services/api/fileApi'
 import { createChapter } from '#/services/api/mangaApi'
-import { parseChapterNumberFromFilename } from '#/utils/parseChapterNumber'
 
 const TOAST_ID = 'batch-import'
+
+interface ParsedFile {
+  file: File
+  chapterNumber: number | null
+}
 
 interface Progress {
   total: number
@@ -18,10 +22,7 @@ interface ImportOptions {
   translatorId: number
 }
 
-export function useBatchImport(
-  mangaId: number,
-  options?: { filenamePattern?: RegExp },
-) {
+export function useBatchImport(mangaId: number) {
   const queryClient = useQueryClient()
   const isRunningRef = useRef(false)
   const [progress, setProgress] = useState<Progress>({
@@ -32,7 +33,7 @@ export function useBatchImport(
   const [isRunning, setIsRunning] = useState(false)
 
   const mutate = useCallback(
-    async (files: File[], importOptions: ImportOptions) => {
+    async (files: ParsedFile[], importOptions: ImportOptions) => {
       if (isRunningRef.current) return
 
       if (files.length === 0) {
@@ -50,12 +51,7 @@ export function useBatchImport(
       let completed = 0
       let failed = 0
 
-      for (const file of files) {
-        const chapterNumber = parseChapterNumberFromFilename(
-          file.name,
-          options?.filenamePattern,
-        )
-
+      for (const { file, chapterNumber } of files) {
         if (chapterNumber === null) {
           failed++
           setProgress({ total, completed, failed })
@@ -105,7 +101,7 @@ export function useBatchImport(
 
       queryClient.invalidateQueries({ queryKey: ['mangas', 'detail', mangaId] })
     },
-    [mangaId, options?.filenamePattern, queryClient],
+    [mangaId, queryClient],
   )
 
   return { mutate, progress, isRunning }

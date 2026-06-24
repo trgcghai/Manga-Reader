@@ -8,11 +8,15 @@ global.ResizeObserver = class ResizeObserver {
 }
 
 Element.prototype.scrollIntoView = vi.fn()
+Element.prototype.hasPointerCapture = vi.fn()
 
 /* eslint-disable import/first */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import type { Mock } from 'vitest'
+import { getTranslators } from '#/services/api/translatorApi'
+import { useBatchImport } from '#/hooks/useBatchImport'
 import { BatchImportDialog } from './BatchImportDialog'
 /* eslint-enable import/first */
 
@@ -32,6 +36,10 @@ vi.mock('#/hooks/useLanguages', () => ({
     ],
     isLoading: false,
   })),
+}))
+
+vi.mock('#/services/api/translatorApi', () => ({
+  getTranslators: vi.fn(),
 }))
 
 URL.createObjectURL = vi.fn(() => 'blob:mock')
@@ -200,5 +208,64 @@ describe('BatchImportDialog', () => {
     await user.upload(input, [badFile])
 
     expect(screen.getByText('?')).toBeInTheDocument()
+  })
+
+  it('calls mutate and closes dialog on submit', async () => {
+    const onOpenChange = vi.fn()
+    const mockMutate = vi.fn()
+
+    ;(useBatchImport as Mock).mockReturnValue({
+      mutate: mockMutate,
+      progress: { total: 0, completed: 0, failed: 0 },
+      isRunning: false,
+    })
+
+    ;(getTranslators as Mock).mockResolvedValue({
+      data: [
+        { id: 1, name: 'Test Group', note: null, createdAt: '', updatedAt: '' },
+      ],
+      total: 1,
+      page: 1,
+      limit: 50,
+      totalPages: 1,
+    })
+
+    const user = userEvent.setup()
+    render(
+      <BatchImportDialog
+        open={true}
+        onOpenChange={onOpenChange}
+        mangaId={1}
+      />,
+      { wrapper: createWrapper() },
+    )
+
+    // Select folder
+    const file = new File([''], 'ch01.zip', { type: 'application/zip' })
+    const input = screen.getByTestId('folder-input') as HTMLInputElement
+    await user.upload(input, [file])
+
+    // Select language
+    const languageTrigger = screen.getByRole('combobox', { name: /language/i })
+    await user.click(languageTrigger)
+    const englishOption = await screen.findByRole('option', { name: 'English' })
+    await user.click(englishOption)
+
+    // Select translator
+    const translatorTrigger = screen.getByRole('combobox', { name: /translator/i })
+    await user.click(translatorTrigger)
+    const translatorOption = await screen.findByText('Test Group')
+    await user.click(translatorOption)
+
+    // Click submit
+    const submitBtn = screen.getByRole('button', { name: /import 1 file/i })
+    await user.click(submitBtn)
+
+    expect(mockMutate).toHaveBeenCalledTimes(1)
+    expect(mockMutate).toHaveBeenCalledWith(
+      [{ file, chapterNumber: 1 }],
+      { languageId: 1, translatorId: 1 },
+    )
+    expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 })
