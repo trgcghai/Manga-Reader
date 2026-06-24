@@ -116,6 +116,49 @@ describe('BatchImportDialog', () => {
     expect(screen.getByText('ch02.zip')).toBeInTheDocument()
   })
 
+  it('renders table headers after folder selection', async () => {
+    const user = userEvent.setup()
+    render(<BatchImportDialog {...defaultProps} />, {
+      wrapper: createWrapper(),
+    })
+
+    const file = new File([''], 'ch01.zip', { type: 'application/zip' })
+    const input = screen.getByTestId('folder-input')
+    await user.upload(input, [file])
+
+    expect(screen.getByText('#')).toBeInTheDocument()
+    expect(screen.getByText('Chapter')).toBeInTheDocument()
+    expect(screen.getByText('File Name')).toBeInTheDocument()
+    expect(screen.getByText('Title')).toBeInTheDocument()
+    expect(screen.getByText('Status')).toBeInTheDocument()
+  })
+
+  it('shows Ready status for parseable files', async () => {
+    const user = userEvent.setup()
+    render(<BatchImportDialog {...defaultProps} />, {
+      wrapper: createWrapper(),
+    })
+
+    const file = new File([''], 'chapter12.zip', { type: 'application/zip' })
+    const input = screen.getByTestId('folder-input')
+    await user.upload(input, [file])
+
+    expect(screen.getByText('Ready')).toBeInTheDocument()
+  })
+
+  it('shows Unparseable status for unparseable files', async () => {
+    const user = userEvent.setup()
+    render(<BatchImportDialog {...defaultProps} />, {
+      wrapper: createWrapper(),
+    })
+
+    const badFile = new File([''], 'random.zip', { type: 'application/zip' })
+    const input = screen.getByTestId('folder-input')
+    await user.upload(input, [badFile])
+
+    expect(screen.getByText('Unparseable')).toBeInTheDocument()
+  })
+
   it('shows error when no .zip files found', async () => {
     render(<BatchImportDialog {...defaultProps} />, {
       wrapper: createWrapper(),
@@ -195,19 +238,6 @@ describe('BatchImportDialog', () => {
     await user.upload(input, [file])
 
     expect(screen.getByText('5')).toBeInTheDocument()
-  })
-
-  it('shows warning indicator for unparseable filenames', async () => {
-    const user = userEvent.setup()
-    render(<BatchImportDialog {...defaultProps} />, {
-      wrapper: createWrapper(),
-    })
-
-    const badFile = new File([''], 'random.zip', { type: 'application/zip' })
-    const input = screen.getByTestId('folder-input')
-    await user.upload(input, [badFile])
-
-    expect(screen.getByText('?')).toBeInTheDocument()
   })
 
   it('calls mutate and closes dialog on submit', async () => {

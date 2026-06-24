@@ -19,8 +19,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '#/components/ui/dialog'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '#/components/ui/table'
 import { Field as UiField, FieldLabel } from '#/components/ui/field'
-import { FolderOpen, AlertTriangle } from 'lucide-react'
+import { FolderOpen, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 interface BatchImportDialogProps {
   open: boolean
@@ -86,16 +94,20 @@ export function BatchImportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className='max-w-6xl!'>
         <DialogHeader>
           <DialogTitle>Batch Import Chapters</DialogTitle>
           <DialogDescription>
             Import multiple chapters at once by selecting a folder of .zip
-            files.
+            files named{' '}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs font-mono">
+              chapterXX.zip
+            </code>{' '}
+            (e.g. <code className="rounded bg-muted px-1 py-0.5 text-xs font-mono">chapter12.zip</code>).
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 pb-4">
           <div>
             <input
               ref={inputRef}
@@ -142,18 +154,56 @@ export function BatchImportDialog({
               <p className="mb-2 text-sm font-medium">
                 {parsedFiles.length} .zip files selected
               </p>
-              <div className="max-h-48 space-y-1 overflow-y-auto rounded-md border p-2">
-                {parsedFiles.map((pf, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm">
-                    <span className="w-8 text-right font-mono text-xs text-muted-foreground">
-                      {pf.chapterNumber !== null ? pf.chapterNumber : '?'}
-                    </span>
-                    <span className="truncate">{pf.file.name}</span>
-                    {pf.chapterNumber === null && (
-                      <AlertTriangle className="size-3.5 shrink-0 text-amber-500" />
-                    )}
-                  </div>
-                ))}
+              <div className="max-h-64 overflow-y-auto rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-8">#</TableHead>
+                      <TableHead className="w-20">Chapter</TableHead>
+                      <TableHead>File Name</TableHead>
+                      <TableHead className="w-24">Title</TableHead>
+                      <TableHead className="w-28">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {parsedFiles.map((pf, i) => (
+                      <TableRow key={i}>
+                        <TableCell className="font-mono text-xs text-muted-foreground">
+                          {i + 1}
+                        </TableCell>
+                        <TableCell>
+                          {pf.chapterNumber !== null ? (
+                            <span className="font-mono">{pf.chapterNumber}</span>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell
+                          className="max-w-0 truncate"
+                          title={pf.file.name}
+                        >
+                          {pf.file.name}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          —
+                        </TableCell>
+                        <TableCell>
+                          {pf.chapterNumber !== null ? (
+                            <span className="inline-flex items-center gap-1 text-xs text-green-600">
+                              <CheckCircle2 className="size-3.5" />
+                              Ready
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-xs text-amber-500">
+                              <AlertTriangle className="size-3.5" />
+                              Unparseable
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             </div>
           )}
