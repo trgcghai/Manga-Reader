@@ -311,7 +311,7 @@ function ChapterRow({
                 </Button>
               </CollapsibleTrigger>
             </TableCell>
-            <TableCell className="font-mono">{chapter.number}</TableCell>
+            <TableCell className="font-mono">{Number(chapter.number)}</TableCell>
             <TableCell>{chapter.title || '-'}</TableCell>
             <TableCell>
               <div className="flex gap-1">

@@ -159,12 +159,12 @@ export function BatchImportDialog({
               <ScrollArea className="h-64 rounded-md border">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-8">#</TableHead>
-                      <TableHead className="w-20">Chapter</TableHead>
-                      <TableHead className="w-32">File Name</TableHead>
-                      <TableHead className="w-24">Title</TableHead>
-                      <TableHead className="w-28">Status</TableHead>
+                    <TableRow className="bg-muted">
+                      <TableHead className="text-muted-foreground font-semibold w-8">#</TableHead>
+                      <TableHead className="text-muted-foreground font-semibold w-20">Chapter</TableHead>
+                      <TableHead className="text-muted-foreground font-semibold w-32">File Name</TableHead>
+                      <TableHead className="text-muted-foreground font-semibold w-24">Title</TableHead>
+                      <TableHead className="text-muted-foreground font-semibold w-28">Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
