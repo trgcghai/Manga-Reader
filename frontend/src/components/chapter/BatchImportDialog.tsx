@@ -27,6 +27,7 @@ import {
   TableHead,
   TableCell,
 } from '#/components/ui/table'
+import { ScrollArea } from '#/components/ui/scroll-area'
 import { Field as UiField, FieldLabel } from '#/components/ui/field'
 import { FolderOpen, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
@@ -155,13 +156,13 @@ export function BatchImportDialog({
               <p className="mb-2 text-sm font-medium">
                 {parsedFiles.length} .zip files selected
               </p>
-              <div className="max-h-64 overflow-y-auto rounded-md border">
+              <ScrollArea className="h-64 rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-8">#</TableHead>
                       <TableHead className="w-20">Chapter</TableHead>
-                      <TableHead>File Name</TableHead>
+                      <TableHead className="w-32">File Name</TableHead>
                       <TableHead className="w-24">Title</TableHead>
                       <TableHead className="w-28">Status</TableHead>
                     </TableRow>
@@ -176,7 +177,7 @@ export function BatchImportDialog({
                           {pf.chapterNumber !== null ? (
                             <span className="font-mono">{pf.chapterNumber}</span>
                           ) : (
-                            <span className="text-muted-foreground">—</span>
+                            <span className="text-muted-foreground">-</span>
                           )}
                         </TableCell>
                         <TableCell
@@ -186,7 +187,7 @@ export function BatchImportDialog({
                           {pf.file.name}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {pf.title ?? '—'}
+                          {pf.title ?? '-'}
                         </TableCell>
                         <TableCell>
                           {pf.chapterNumber !== null ? (
@@ -205,11 +206,9 @@ export function BatchImportDialog({
                     ))}
                   </TableBody>
                 </Table>
-              </div>
+              </ScrollArea>
             </div>
           )}
-
-          <hr />
 
           <UiField>
             <FieldLabel htmlFor="batch-language" required>
