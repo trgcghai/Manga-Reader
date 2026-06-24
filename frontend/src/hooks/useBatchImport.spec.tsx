@@ -39,8 +39,6 @@ function createWrapper() {
   }
 }
 
-const mockFile = new File([''], 'chapter 1.cbz', { type: 'application/zip' })
-
 describe('useBatchImport', () => {
   beforeEach(() => {
     vi.clearAllMocks()

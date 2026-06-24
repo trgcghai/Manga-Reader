@@ -77,6 +77,7 @@ export function useBatchImport(
           completed++
         } catch {
           failed++
+          toast.warning(`Failed to import "${file.name}"`, { id: TOAST_ID })
         }
 
         setProgress({ total, completed, failed })
