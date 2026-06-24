@@ -240,6 +240,21 @@ describe('BatchImportDialog', () => {
     expect(screen.getByText('5')).toBeInTheDocument()
   })
 
+  it('shows parsed title in Title column', async () => {
+    const user = userEvent.setup()
+    render(<BatchImportDialog {...defaultProps} />, {
+      wrapper: createWrapper(),
+    })
+
+    const file = new File([''], 'chapter 1 - The Beginning.zip', {
+      type: 'application/zip',
+    })
+    const input = screen.getByTestId('folder-input')
+    await user.upload(input, [file])
+
+    expect(screen.getByText('The Beginning')).toBeInTheDocument()
+  })
+
   it('calls mutate and closes dialog on submit', async () => {
     const onOpenChange = vi.fn()
     const mockMutate = vi.fn()
@@ -293,7 +308,7 @@ describe('BatchImportDialog', () => {
 
     expect(mockMutate).toHaveBeenCalledTimes(1)
     expect(mockMutate).toHaveBeenCalledWith(
-      [{ file, chapterNumber: 1 }],
+      [{ file, chapterNumber: 1, title: null }],
       { languageId: 1, translatorId: 1 },
     )
     expect(onOpenChange).toHaveBeenCalledWith(false)

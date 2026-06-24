@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useLanguageList } from '#/hooks/useLanguages'
 import { useBatchImport } from '#/hooks/useBatchImport'
 import { TranslatorCombobox } from '#/components/translator/TranslatorCombobox'
-import { parseChapterNumberFromFilename } from '#/utils/parseChapterNumber'
+import { parseChapterInfoFromFilename } from '#/utils/parseChapterInfo'
 import { Button } from '#/components/ui/button'
 import {
   Select,
@@ -39,6 +39,7 @@ interface BatchImportDialogProps {
 interface ParsedFile {
   file: File
   chapterNumber: number | null
+  title: string | null
 }
 
 export function BatchImportDialog({
@@ -71,8 +72,8 @@ export function BatchImportDialog({
     const parsed: ParsedFile[] = []
     for (const file of files) {
       if (!file.name.toLowerCase().endsWith('.zip')) continue
-      const chapterNumber = parseChapterNumberFromFilename(file.name)
-      parsed.push({ file, chapterNumber })
+      const info = parseChapterInfoFromFilename(file.name)
+      parsed.push({ file, chapterNumber: info.chapterNumber, title: info.title })
     }
     setParsedFiles(parsed)
   }
@@ -185,7 +186,7 @@ export function BatchImportDialog({
                           {pf.file.name}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          —
+                          {pf.title ?? '—'}
                         </TableCell>
                         <TableCell>
                           {pf.chapterNumber !== null ? (
