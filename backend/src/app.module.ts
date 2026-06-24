@@ -21,7 +21,7 @@ import { LanguageModule } from './modules/language/language.module';
       throttlers: [
         {
           ttl: 60000,
-          limit: 100,
+          limit: 300,
         },
       ],
     }),
