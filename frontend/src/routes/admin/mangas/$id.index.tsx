@@ -206,10 +206,7 @@ function MangaDetailPage() {
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold">Chapters</h2>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setBatchDialogOpen(true)}
-          >
+          <Button variant="outline" onClick={() => setBatchDialogOpen(true)}>
             Batch Import
           </Button>
           <Button onClick={() => setChapterDialogOpen(true)}>
@@ -297,141 +294,142 @@ function ChapterRow({
   }
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen} asChild>
-      <>
-        <TableRow>
-          <TableCell>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6">
-                {open ? (
-                  <ChevronDown className="h-4 w-4" />
-                ) : (
-                  <ChevronRight className="h-4 w-4" />
-                )}
-              </Button>
-            </CollapsibleTrigger>
-          </TableCell>
-          <TableCell className="font-mono">{chapter.number}</TableCell>
-          <TableCell>{chapter.title || '-'}</TableCell>
-          <TableCell>
-            <div className="flex gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setTranslationDialogOpen(true)}
-                title="Add translation"
-              >
-                <Plus className="h-3 w-3" />
-              </Button>
-            </div>
-          </TableCell>
-        </TableRow>
-
-        <CollapsibleContent asChild>
+    <>
+      <Collapsible open={open} onOpenChange={setOpen} asChild>
+        <>
           <TableRow>
-            <TableCell colSpan={6} className="bg-muted/30 p-0">
-              {chapter.translations.length === 0 ? (
-                <div className="px-6 py-3 text-sm text-muted-foreground">
-                  No translations for this chapter.
-                </div>
-              ) : (
-                <Table>
-                  <TableBody>
-                    {chapter.translations.map((tr) => (
-                      <React.Fragment key={tr.id}>
-                        <TableRow className="text-muted-foreground">
-                          <TableCell className="pl-10 w-1/10">
-                            {tr.language.name}
-                          </TableCell>
-                          <TableCell className="w-1/5 truncate">
-                            {tr.translator.name}
-                          </TableCell>
-                          <TableCell className="w-1/5">
-                            {formatDateTime(tr.createdAt)}
-                          </TableCell>
-                          <TableCell className="font-mono text-sm w-1/2 truncate">
-                            {tr.url.split('/').pop()}
-                          </TableCell>
-                          <TableCell className="w-20">
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => handleDownload(tr.url)}
-                                disabled={downloadFile.isPending}
-                                title="Download translation"
-                              >
-                                <Download className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => setEditDialogId(tr.id)}
-                                title="Edit translation"
-                              >
-                                <Pencil className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive hover:text-destructive"
-                                onClick={() => setDeleteDialogId(tr.id)}
-                                title="Delete translation"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-
-                        <EditTranslationDialog
-                          open={editDialogId === tr.id}
-                          onOpenChange={(o) =>
-                            setEditDialogId(o ? tr.id : null)
-                          }
-                          mangaId={Number(mangaId)}
-                          chapterId={chapter.id}
-                          chapterNumber={chapter.number}
-                          translation={tr}
-                        />
-
-                        <DeleteConfirmDialog
-                          open={deleteDialogId === tr.id}
-                          onOpenChange={(o) =>
-                            setDeleteDialogId(o ? tr.id : null)
-                          }
-                          title="Delete Translation"
-                          entityName={`${tr.language.name} by ${tr.translator.name}`}
-                          onConfirm={() => {
-                            deleteMutation.mutate(
-                              { translationId: tr.id },
-                              {
-                                onSuccess: () => setDeleteDialogId(null),
-                              },
-                            )
-                          }}
-                          isPending={deleteMutation.isPending}
-                        />
-                      </React.Fragment>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
+            <TableCell>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-6 w-6">
+                  {open ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4" />
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+            </TableCell>
+            <TableCell className="font-mono">{chapter.number}</TableCell>
+            <TableCell>{chapter.title || '-'}</TableCell>
+            <TableCell>
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setTranslationDialogOpen(true)}
+                  title="Add translation"
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
             </TableCell>
           </TableRow>
-        </CollapsibleContent>
 
-        <AddTranslationDialog
-          open={translationDialogOpen}
-          onOpenChange={setTranslationDialogOpen}
-          mangaId={Number(mangaId)}
-          chapterNumber={String(chapter.number)}
-          chapterTitle={chapter.title}
-        />
-      </>
-    </Collapsible>
+          <CollapsibleContent asChild>
+            <TableRow>
+              <TableCell colSpan={6} className="bg-muted/30 p-0">
+                {chapter.translations.length === 0 ? (
+                  <div className="px-6 py-3 text-sm text-muted-foreground">
+                    No translations for this chapter.
+                  </div>
+                ) : (
+                  <Table>
+                    <TableBody>
+                      {chapter.translations.map((tr) => (
+                        <React.Fragment key={tr.id}>
+                          <TableRow className="text-muted-foreground">
+                            <TableCell className="pl-10 w-1/10">
+                              {tr.language.name}
+                            </TableCell>
+                            <TableCell className="w-1/5 truncate">
+                              {tr.translator.name}
+                            </TableCell>
+                            <TableCell className="w-1/5">
+                              {formatDateTime(tr.createdAt)}
+                            </TableCell>
+                            <TableCell className="font-mono text-sm w-1/2 truncate">
+                              {tr.url.split('/').pop()}
+                            </TableCell>
+                            <TableCell className="w-20">
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => handleDownload(tr.url)}
+                                  disabled={downloadFile.isPending}
+                                  title="Download translation"
+                                >
+                                  <Download className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => setEditDialogId(tr.id)}
+                                  title="Edit translation"
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:text-destructive"
+                                  onClick={() => setDeleteDialogId(tr.id)}
+                                  title="Delete translation"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+
+                          <EditTranslationDialog
+                            open={editDialogId === tr.id}
+                            onOpenChange={(o) =>
+                              setEditDialogId(o ? tr.id : null)
+                            }
+                            mangaId={Number(mangaId)}
+                            chapterId={chapter.id}
+                            chapterNumber={chapter.number}
+                            translation={tr}
+                          />
+
+                          <DeleteConfirmDialog
+                            open={deleteDialogId === tr.id}
+                            onOpenChange={(o) =>
+                              setDeleteDialogId(o ? tr.id : null)
+                            }
+                            title="Delete Translation"
+                            entityName={`${tr.language.name} by ${tr.translator.name}`}
+                            onConfirm={() => {
+                              deleteMutation.mutate(
+                                { translationId: tr.id },
+                                {
+                                  onSuccess: () => setDeleteDialogId(null),
+                                },
+                              )
+                            }}
+                            isPending={deleteMutation.isPending}
+                          />
+                        </React.Fragment>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </TableCell>
+            </TableRow>
+          </CollapsibleContent>
+        </>
+      </Collapsible>
+      <AddTranslationDialog
+        open={translationDialogOpen}
+        onOpenChange={setTranslationDialogOpen}
+        mangaId={Number(mangaId)}
+        chapterNumber={String(chapter.number)}
+        chapterTitle={chapter.title}
+      />
+    </>
   )
 }
