@@ -3,6 +3,7 @@ import { HealthController } from './health.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RenameFolderPathToUrl } from './common/migrations/RenameFolderPathToUrl';
+import { RenameCoverPathToCoverKeyAndUrlToKey } from './common/migrations/RenameCoverPathToCoverKeyAndUrlToKey';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CacheModule } from '@nestjs/cache-manager';
 import KeyvRedis from '@keyv/redis';
@@ -37,7 +38,10 @@ import { LanguageModule } from './modules/language/language.module';
         database: configService.get<string>('DB_NAME')!,
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         migrationsRun: true,
-        migrations: [RenameFolderPathToUrl],
+        migrations: [
+          RenameFolderPathToUrl,
+          RenameCoverPathToCoverKeyAndUrlToKey,
+        ],
         synchronize: true,
       }),
       inject: [ConfigService],
