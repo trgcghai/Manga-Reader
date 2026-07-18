@@ -9,19 +9,13 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
-import { MINIO_CLIENT } from './file.constants';
+import {
+  MINIO_CLIENT,
+  EXT_MAP,
+  ALLOWED_TRANSLATION_EXTENSIONS,
+} from 'src/common/constants/file.constant';
 import { randomUUID } from 'node:crypto';
 import { getContentType } from 'src/common/utils/file-mime.util';
-import { TRANSLATION_EXTENSIONS } from 'src/common/constants/translation.constant';
-
-const EXT_MAP: Record<string, string> = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-  'image/gif': 'gif',
-  'application/zip': 'zip',
-  'application/vnd.comicbook+zip': 'cbz',
-};
 
 @Injectable()
 export class FileService {
@@ -75,22 +69,11 @@ export class FileService {
   ): Promise<{ key: string; url: string }> {
     const ext = file.originalname.split('.').pop();
 
-    if (ext && TRANSLATION_EXTENSIONS.includes(ext)) {
-      switch (ext) {
-        case 'cbz':
-          return this.upload(
-            prefix,
-            file.buffer,
-            'application/vnd.comicbook+zip',
-          );
-        case 'zip':
-          return this.upload(prefix, file.buffer, 'application/zip');
-        default:
-          return this.upload(prefix, file.buffer, file.mimetype);
-      }
+    if (ext && ALLOWED_TRANSLATION_EXTENSIONS.includes(ext)) {
+      return this.upload(prefix, file.buffer, 'application/zip');
     } else {
       throw new BadRequestException(
-        `Invalid translation file type. Only ${TRANSLATION_EXTENSIONS.join(', ')} files are allowed.`,
+        `Invalid translation file type. Only ${ALLOWED_TRANSLATION_EXTENSIONS.join(', ')} files are allowed.`,
       );
     }
   }

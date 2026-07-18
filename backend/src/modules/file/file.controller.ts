@@ -19,8 +19,12 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { FileService } from './file.service';
 import { UploadTranslationFileDto } from './dto/uploadTranslationFile.dto';
 import { extractKeyFromUrl } from 'src/common/utils/file-mime.util';
-import { ALLOWED_MIME_TYPES } from 'src/common/constants/chapter.constant';
-import { TRANSLATION_ALLOWED_MIME_TYPES } from 'src/common/constants/translation.constant';
+import {
+  ALLOWED_IMAGE_MIME_TYPES,
+  ALLOWED_TRANSLATION_MIME_TYPES,
+  MAX_COVER_FILE_SIZE,
+  MAX_TRANSLATION_FILE_SIZE,
+} from 'src/common/constants/file.constant';
 import { PresignedUploadCoverDto } from './dto/presignedUploadCover.dto';
 import { PresignedUploadTranslationDto } from './dto/presignedUploadTranslation.dto';
 import {
@@ -31,19 +35,6 @@ import {
   ApiConsumes,
   ApiBody,
 } from '@nestjs/swagger';
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
-const MAX_TRANSLATION_FILE_SIZE = 100 * 1024 * 1024;
-const PRESIGNED_COVER_MIME_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/gif',
-];
-const PRESIGNED_TRANSLATION_MIME_TYPES = [
-  'application/zip',
-  'application/vnd.comicbook+zip',
-];
 
 @ApiTags('Files')
 @Controller('files')
@@ -68,9 +59,9 @@ export class FileController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: MAX_FILE_SIZE }),
+          new MaxFileSizeValidator({ maxSize: MAX_COVER_FILE_SIZE }),
           new FileTypeValidator({
-            fileType: new RegExp(`^(${ALLOWED_MIME_TYPES.join('|')})$`),
+            fileType: new RegExp(`^(${ALLOWED_IMAGE_MIME_TYPES.join('|')})$`),
           }),
         ],
       }),
@@ -99,7 +90,7 @@ export class FileController {
           new MaxFileSizeValidator({ maxSize: MAX_TRANSLATION_FILE_SIZE }),
           new FileTypeValidator({
             fileType: new RegExp(
-              `^(${TRANSLATION_ALLOWED_MIME_TYPES.join('|')})$`,
+              `^(${ALLOWED_TRANSLATION_MIME_TYPES.join('|')})$`,
             ),
           }),
         ],
@@ -144,13 +135,15 @@ export class FileController {
   @ApiOperation({ summary: 'Get presigned upload URL for cover image' })
   @ApiBody({ type: PresignedUploadCoverDto })
   async presignedUploadCover(@Body() dto: PresignedUploadCoverDto) {
-    if (!PRESIGNED_COVER_MIME_TYPES.includes(dto.contentType)) {
+    if (!ALLOWED_IMAGE_MIME_TYPES.includes(dto.contentType)) {
       throw new BadRequestException(
-        `Unsupported cover content type. Allowed: ${PRESIGNED_COVER_MIME_TYPES.join(', ')}`,
+        `Unsupported cover content type. Allowed: ${ALLOWED_IMAGE_MIME_TYPES.join(', ')}`,
       );
     }
-    if (dto.fileSize > 10 * 1024 * 1024) {
-      throw new BadRequestException('Cover file size must not exceed 10 MB');
+    if (dto.fileSize > MAX_COVER_FILE_SIZE) {
+      throw new BadRequestException(
+        `Cover file size must not exceed ${MAX_COVER_FILE_SIZE / (1024 * 1024)} MB`,
+      );
     }
     return this.fileService.generatePresignedUploadUrl(
       'manga/cover',
@@ -162,14 +155,14 @@ export class FileController {
   @ApiOperation({ summary: 'Get presigned upload URL for translation file' })
   @ApiBody({ type: PresignedUploadTranslationDto })
   async presignedUploadTranslation(@Body() dto: PresignedUploadTranslationDto) {
-    if (!PRESIGNED_TRANSLATION_MIME_TYPES.includes(dto.contentType)) {
+    if (!ALLOWED_TRANSLATION_MIME_TYPES.includes(dto.contentType)) {
       throw new BadRequestException(
-        `Unsupported translation content type. Allowed: ${PRESIGNED_TRANSLATION_MIME_TYPES.join(', ')}`,
+        `Unsupported translation content type. Allowed: ${ALLOWED_TRANSLATION_MIME_TYPES.join(', ')}`,
       );
     }
-    if (dto.fileSize > 100 * 1024 * 1024) {
+    if (dto.fileSize > MAX_TRANSLATION_FILE_SIZE) {
       throw new BadRequestException(
-        'Translation file size must not exceed 100 MB',
+        `Translation file size must not exceed ${MAX_TRANSLATION_FILE_SIZE / (1024 * 1024)} MB`,
       );
     }
     const prefix = `manga/${dto.mangaId}/chapter/${dto.chapterNumber}/translations`;

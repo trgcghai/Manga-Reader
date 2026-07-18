@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
 import { FileService } from './file.service';
 import { FileController } from './file.controller';
-import { MINIO_CLIENT } from './file.constants';
+import { MINIO_CLIENT } from 'src/common/constants/file.constant';
 
 @Global()
 @Module({
