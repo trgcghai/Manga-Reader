@@ -1,28 +1,12 @@
 import JSZip from 'jszip'
-
-const IMAGE_EXTENSIONS = /\.(jpg|jpeg|png|webp)$/i
-
-function mimeFromExtension(filename: string): string {
-  const ext = filename.split('.').pop()?.toLowerCase()
-  switch (ext) {
-    case 'jpg':
-    case 'jpeg':
-      return 'image/jpeg'
-    case 'png':
-      return 'image/png'
-    case 'webp':
-      return 'image/webp'
-    default:
-      return 'image/jpeg'
-  }
-}
+import { IMAGE_EXTENSIONS_REGEX, mimeFromExtension } from '#/constants/file'
 
 export async function parsePages(buffer: ArrayBuffer): Promise<Blob[]> {
   try {
     const zip = await JSZip.loadAsync(buffer)
 
     const entries = Object.entries(zip.files)
-      .filter(([name, file]) => !file.dir && IMAGE_EXTENSIONS.test(name))
+      .filter(([name, file]) => !file.dir && IMAGE_EXTENSIONS_REGEX.test(name))
       .sort(([a], [b]) =>
         new Intl.Collator(undefined, {
           numeric: true,

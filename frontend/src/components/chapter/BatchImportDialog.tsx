@@ -30,6 +30,7 @@ import {
 import { ScrollArea } from '#/components/ui/scroll-area'
 import { Field as UiField, FieldLabel } from '#/components/ui/field'
 import { FolderOpen, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { TRANSLATION_EXTENSIONS } from '#/constants/file'
 
 interface BatchImportDialogProps {
   open: boolean
@@ -72,7 +73,10 @@ export function BatchImportDialog({
     setFolderPicked(true)
     const parsed: ParsedFile[] = []
     for (const file of files) {
-      if (!file.name.toLowerCase().endsWith('.zip')) continue
+      const isZip = TRANSLATION_EXTENSIONS.some((ext) =>
+        file.name.toLowerCase().endsWith(`.${ext}`),
+      )
+      if (!isZip) continue
       const info = parseChapterInfoFromFilename(file.name)
       parsed.push({ file, chapterNumber: info.chapterNumber, title: info.title })
     }
@@ -116,7 +120,7 @@ export function BatchImportDialog({
               type="file"
               webkitdirectory=""
               multiple
-              accept=".zip"
+              accept={`.${TRANSLATION_EXTENSIONS.join(',.')}`}
               onChange={handleFolderSelected}
               data-testid="folder-input"
               className="hidden"

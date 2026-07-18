@@ -29,6 +29,7 @@ import { Loader2 } from 'lucide-react'
 import { useEffect } from 'react'
 import { useCreateChapterForManga } from '#/hooks/useManga'
 import { FileDropzone } from '#/components/ui/file-dropzone'
+import { TRANSLATION_ACCEPT, MAX_TRANSLATION_FILE_SIZE } from '#/constants/file'
 
 const chapterSchema = z.object({
   number: z.number().min(0, 'Number is required'),
@@ -224,7 +225,8 @@ export default function AddChapterDialog({
                 <UiField>
                   <FieldLabel required>CBZ File</FieldLabel>
                   <FileDropzone
-                    accept={{ 'application/zip': ['.zip'] }}
+                    accept={TRANSLATION_ACCEPT}
+                    maxSize={MAX_TRANSLATION_FILE_SIZE}
                     value={field.state.value}
                     onFileSelect={(file) => field.handleChange(file!)}
                     error={field.state.meta.errors[0]?.message}

@@ -28,6 +28,7 @@ import { useEffect } from 'react'
 import { useCreateChapterForManga } from '#/hooks/useManga'
 import { useTranslationFileUpload } from '#/hooks/useFile'
 import { FileDropzone } from '#/components/ui/file-dropzone'
+import { TRANSLATION_ACCEPT, MAX_TRANSLATION_FILE_SIZE } from '#/constants/file'
 
 const translationSchema = z.object({
   languageId: z.number().refine((n) => n > 0, 'Language is required'),
@@ -178,7 +179,8 @@ export default function AddTranslationDialog({
                 <UiField>
                   <FieldLabel required>CBZ File</FieldLabel>
                   <FileDropzone
-                    accept={{ 'application/zip': ['.zip'] }}
+                    accept={TRANSLATION_ACCEPT}
+                    maxSize={MAX_TRANSLATION_FILE_SIZE}
                     value={field.state.value}
                     onFileSelect={(file) => field.handleChange(file!)}
                     error={field.state.meta.errors[0]?.message}
