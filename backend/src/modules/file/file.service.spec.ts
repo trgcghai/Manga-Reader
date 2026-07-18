@@ -177,31 +177,27 @@ describe('FileService', () => {
       const result = await service.generatePresignedUploadUrl(
         'manga/cover',
         'image/jpeg',
-        5 * 1024 * 1024,
       );
 
       expect(result).toMatchObject({
         uploadUrl: 'http://minio/upload-url',
-        key: expect.stringMatching(/^manga\/cover\/.+\.jpg$/),
+        key: expect.stringMatching(/^manga\/cover\/.+\.jpg$/), // eslint-disable-line @typescript-eslint/no-unsafe-assignment
         expiresIn: 3600,
       });
     });
 
     it('rejects unknown content type', async () => {
       await expect(
-        service.generatePresignedUploadUrl('manga/cover', 'image/avif', 1024),
+        service.generatePresignedUploadUrl('manga/cover', 'image/avif'),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('passes contentType to presignedPutObject', async () => {
       mockMinioClient.presignedPutObject.mockResolvedValue('http://minio/url');
 
-      await service.generatePresignedUploadUrl(
-        'manga/cover',
-        'image/png',
-        1024,
-      );
+      await service.generatePresignedUploadUrl('manga/cover', 'image/png');
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockMinioClient.presignedPutObject).toHaveBeenCalledWith(
         'test-bucket',
         expect.stringMatching(/\.png$/),

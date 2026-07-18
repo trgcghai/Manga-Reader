@@ -127,13 +127,9 @@ export class FileService {
     }
   }
 
-  /**
-   * @param fileSize - Reserved for future upload size validation. Not yet enforced.
-   */
   async generatePresignedUploadUrl(
     prefix: string,
     contentType: string,
-    fileSize: number,
   ): Promise<{ uploadUrl: string; key: string; expiresIn: number }> {
     const ext = EXT_MAP[contentType];
     if (!ext) {

@@ -124,7 +124,6 @@ describe('FileController', () => {
       expect(mockFileService.generatePresignedUploadUrl).toHaveBeenCalledWith(
         'manga/cover',
         'image/jpeg',
-        5 * 1024 * 1024,
       );
     });
   });
@@ -149,7 +148,6 @@ describe('FileController', () => {
       expect(mockFileService.generatePresignedUploadUrl).toHaveBeenCalledWith(
         'manga/1/chapter/5/translations',
         'application/zip',
-        50 * 1024 * 1024,
       );
     });
   });
@@ -173,7 +171,9 @@ describe('FileController', () => {
     });
 
     it('should throw BadRequestException when url is missing', async () => {
-      await expect(controller.download('')).rejects.toThrow(BadRequestException);
+      await expect(controller.download('')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw BadRequestException when url is not a Minio url', async () => {
