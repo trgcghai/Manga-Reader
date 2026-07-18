@@ -3,6 +3,7 @@ import { FileService } from './file.service';
 import { MINIO_CLIENT } from './file.constants';
 import { ConfigModule } from '@nestjs/config';
 import {
+  BadRequestException,
   NotFoundException,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ describe('FileService', () => {
     getObject: jest.fn(),
     removeObject: jest.fn(),
     listObjects: jest.fn(),
+    presignedPutObject: jest.fn(),
   } as unknown as jest.Mocked<Minio.Client>;
 
   beforeEach(async () => {
@@ -162,6 +164,54 @@ describe('FileService', () => {
       mockMinioClient.listObjects.mockReturnValue(errorStream as any);
       await expect(service.list('covers')).rejects.toThrow(
         InternalServerErrorException,
+      );
+    });
+  });
+
+  describe('generatePresignedUploadUrl', () => {
+    it('returns uploadUrl, key, and expiresIn for valid content type', async () => {
+      (mockMinioClient as any).presignedPutObject = jest
+        .fn()
+        .mockResolvedValue('http://minio/upload-url');
+
+      const result = await (service as any).generatePresignedUploadUrl(
+        'manga/cover',
+        'image/jpeg',
+        5 * 1024 * 1024,
+      );
+
+      expect(result).toMatchObject({
+        uploadUrl: 'http://minio/upload-url',
+        key: expect.stringMatching(/^manga\/cover\/.+\.jpg$/),
+        expiresIn: 3600,
+      });
+    });
+
+    it('rejects unknown content type', async () => {
+      (mockMinioClient as any).presignedPutObject = jest.fn();
+
+      await expect(
+        (service as any).generatePresignedUploadUrl(
+          'manga/cover', 'image/avif', 1024,
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('passes contentType to presignedPutObject', async () => {
+      const presigned = jest
+        .fn()
+        .mockResolvedValue('http://minio/url');
+      (mockMinioClient as any).presignedPutObject = presigned;
+
+      await (service as any).generatePresignedUploadUrl(
+        'manga/cover', 'image/png', 1024,
+      );
+
+      expect(presigned).toHaveBeenCalledWith(
+        'test-bucket',
+        expect.stringMatching(/\.png$/),
+        3600,
+        { contentType: 'image/png' },
       );
     });
   });
