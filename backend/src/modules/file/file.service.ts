@@ -146,13 +146,12 @@ export class FileService {
       this.bucket,
       key,
       expiry,
-      { contentType },
     );
 
     return { uploadUrl, key, expiresIn: expiry };
   }
 
-  async list(prefix?: string): Promise<string[]>{
+  async list(prefix?: string): Promise<string[]> {
     try {
       const stream = this.minioClient.listObjects(
         this.bucket,

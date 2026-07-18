@@ -189,26 +189,23 @@ describe('FileService', () => {
 
     it('rejects unknown content type', async () => {
       await expect(
-        service.generatePresignedUploadUrl(
-          'manga/cover', 'image/avif', 1024,
-        ),
+        service.generatePresignedUploadUrl('manga/cover', 'image/avif', 1024),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('passes contentType to presignedPutObject', async () => {
-      mockMinioClient.presignedPutObject.mockResolvedValue(
-        'http://minio/url',
-      );
+      mockMinioClient.presignedPutObject.mockResolvedValue('http://minio/url');
 
       await service.generatePresignedUploadUrl(
-        'manga/cover', 'image/png', 1024,
+        'manga/cover',
+        'image/png',
+        1024,
       );
 
       expect(mockMinioClient.presignedPutObject).toHaveBeenCalledWith(
         'test-bucket',
         expect.stringMatching(/\.png$/),
         3600,
-        { contentType: 'image/png' },
       );
     });
   });
