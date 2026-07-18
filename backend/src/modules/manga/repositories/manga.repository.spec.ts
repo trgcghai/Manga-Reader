@@ -46,7 +46,7 @@ describe('MangaRepository', () => {
             translations: [
               {
                 id: 1,
-                url: '/path',
+                key: '/path',
                 language: { id: 1, code: 'en', name: 'English' },
                 translator: { id: 1, name: 'T1' },
               },
@@ -131,7 +131,7 @@ describe('MangaRepository', () => {
         status: 'ongoing',
         description: 'Old desc',
         alternativeTitles: ['Old'],
-        coverPath: '/old.jpg',
+        coverKey: '/old.jpg',
         authors: [],
         genres: [],
       } as unknown as Manga;
@@ -140,7 +140,7 @@ describe('MangaRepository', () => {
         status: 'completed',
         description: 'New desc',
         alternativeTitles: ['New'],
-        coverPath: '/new.jpg',
+        coverKey: '/new.jpg',
       } as Partial<Manga>;
       mockRepo.findOne.mockResolvedValue(existing);
       mockRepo.save.mockResolvedValue(existing);
@@ -151,7 +151,7 @@ describe('MangaRepository', () => {
       expect(existing.status).toBe('completed');
       expect(existing.description).toBe('New desc');
       expect(existing.alternativeTitles).toEqual(['New']);
-      expect(existing.coverPath).toBe('/new.jpg');
+      expect(existing.coverKey).toBe('/new.jpg');
     });
 
     it('should NOT overwrite fields not present in partial data', async () => {
@@ -161,7 +161,7 @@ describe('MangaRepository', () => {
         status: 'ongoing',
         description: 'Some desc',
         alternativeTitles: ['Alt'],
-        coverPath: '/path.jpg',
+        coverKey: '/path.jpg',
         authors: [],
         genres: [],
       } as unknown as Manga;
@@ -174,7 +174,7 @@ describe('MangaRepository', () => {
       expect(existing.status).toBe('ongoing');
       expect(existing.description).toBe('Some desc');
       expect(existing.alternativeTitles).toEqual(['Alt']);
-      expect(existing.coverPath).toBe('/path.jpg');
+      expect(existing.coverKey).toBe('/path.jpg');
     });
 
     it('should use findOne with relations (NOT preload)', async () => {
