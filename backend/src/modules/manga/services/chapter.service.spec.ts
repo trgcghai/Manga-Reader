@@ -197,7 +197,12 @@ describe('ChapterService', () => {
           title: 'Chapter 1',
           translations: [
             { id: 10, language, translator, key: '/path' },
-            { id: 11, language: viLang, translator: translatorB, key: '/path2' },
+            {
+              id: 11,
+              language: viLang,
+              translator: translatorB,
+              key: '/path2',
+            },
           ],
         },
       ] as unknown as Chapter[];

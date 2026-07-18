@@ -12,7 +12,9 @@ export class UpdateTranslationDto {
   @IsNumber()
   translatorId?: number;
 
-  @ApiPropertyOptional({ example: 'manga/1/chapter/1/translations/new-uuid.zip' })
+  @ApiPropertyOptional({
+    example: 'manga/1/chapter/1/translations/new-uuid.zip',
+  })
   @IsOptional()
   @IsString()
   @MinLength(1)

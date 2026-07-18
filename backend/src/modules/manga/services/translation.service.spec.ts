@@ -344,7 +344,10 @@ describe('TranslationService', () => {
         translator: { id: 1 },
         language: { id: 1 },
       } as Translation;
-      const chExact = { id: 4, translations: [exactTranslation] } as unknown as Chapter;
+      const chExact = {
+        id: 4,
+        translations: [exactTranslation],
+      } as unknown as Chapter;
 
       mockTranslationRepo.findById.mockResolvedValue(baseTranslation);
       mockChapterRepo.findAdjacent
@@ -377,7 +380,10 @@ describe('TranslationService', () => {
         translator: { id: 2 },
         language: { id: 1 },
       } as Translation;
-      const chLangFallback = { id: 4, translations: [langFallbackTranslation] } as unknown as Chapter;
+      const chLangFallback = {
+        id: 4,
+        translations: [langFallbackTranslation],
+      } as unknown as Chapter;
 
       mockTranslationRepo.findById.mockResolvedValue(baseTranslation);
       mockChapterRepo.findAdjacent
@@ -410,7 +416,10 @@ describe('TranslationService', () => {
         translator: { id: 2 },
         language: { id: 2 },
       } as Translation;
-      const chAny = { id: 4, translations: [anyTranslation] } as unknown as Chapter;
+      const chAny = {
+        id: 4,
+        translations: [anyTranslation],
+      } as unknown as Chapter;
 
       mockTranslationRepo.findById.mockResolvedValue(baseTranslation);
       mockChapterRepo.findAdjacent
@@ -471,7 +480,10 @@ describe('TranslationService', () => {
         translator: { id: 1 },
         language: { id: 1 },
       } as Translation;
-      const chExact = { id: 4, translations: [exactTranslation] } as unknown as Chapter;
+      const chExact = {
+        id: 4,
+        translations: [exactTranslation],
+      } as unknown as Chapter;
 
       mockTranslationRepo.findById.mockResolvedValue(baseTranslation);
       mockChapterRepo.findAdjacent
