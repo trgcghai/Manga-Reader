@@ -71,7 +71,7 @@ export class MangaService {
       title: manga.title,
       alternativeTitles: manga.alternativeTitles ?? undefined,
       description: manga.description ?? undefined,
-      coverPath: manga.coverPath ?? undefined,
+      coverKey: manga.coverKey ?? undefined,
       status: manga.status,
       authors: manga.authors.map((a) => ({ id: a.id, name: a.name })),
       genres: manga.genres.map((g) => ({ id: g.id, name: g.name })),
@@ -99,7 +99,7 @@ export class MangaService {
             translations:
               ch.translations?.map((tr) => ({
                 id: tr.id,
-                url: tr.url,
+                key: tr.key,
                 note: tr.note ?? undefined,
                 createdAt: tr.createdAt.toISOString(),
                 language: {
@@ -141,7 +141,7 @@ export class MangaService {
         status: dto.status,
         description: dto.description,
         alternativeTitles: [...(dto.alternativeTitles || []), dto.title],
-        coverPath: dto.coverPath,
+        coverKey: dto.coverKey,
         authors,
         genres,
       });
@@ -166,10 +166,10 @@ export class MangaService {
       if (dto.description) updateData.description = dto.description;
       if (dto.alternativeTitles)
         updateData.alternativeTitles = dto.alternativeTitles;
-      if (dto.coverPath !== undefined) {
-        if (existing.coverPath && existing.coverPath !== dto.coverPath) {
+      if (dto.coverKey !== undefined) {
+        if (existing.coverKey && existing.coverKey !== dto.coverKey) {
           const key = extractKeyFromUrl(
-            existing.coverPath,
+            existing.coverKey,
             this.fileService.endpoint,
             this.fileService.bucket,
           );
@@ -177,7 +177,7 @@ export class MangaService {
             await this.fileService.delete(key);
           }
         }
-        updateData.coverPath = dto.coverPath;
+        updateData.coverKey = dto.coverKey;
       }
 
       if (dto.authors) {
@@ -225,9 +225,9 @@ export class MangaService {
         throw new NotFoundException(`Manga with ID ${id} not found`);
       }
 
-      if (existing.coverPath) {
+      if (existing.coverKey) {
         const key = extractKeyFromUrl(
-          existing.coverPath,
+          existing.coverKey,
           this.fileService.endpoint,
           this.fileService.bucket,
         );

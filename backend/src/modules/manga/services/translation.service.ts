@@ -70,7 +70,7 @@ export class TranslationService {
 
     return {
       id: translation.id,
-      url: translation.url,
+      key: translation.key,
       note: translation.note ?? undefined,
       createdAt: translation.createdAt.toISOString(),
       language: translation.language,
@@ -116,8 +116,8 @@ export class TranslationService {
       const translator = await this.translatorService.findOne(dto.translatorId);
       partial.translator = translator;
     }
-    if (dto.url !== undefined) {
-      partial.url = dto.url;
+    if (dto.key !== undefined) {
+      partial.key = dto.key;
     }
 
     if (dto.languageId !== undefined || dto.translatorId !== undefined) {
@@ -137,12 +137,12 @@ export class TranslationService {
     }
 
     if (
-      dto.url !== undefined &&
-      translation.url &&
-      translation.url !== dto.url
+      dto.key !== undefined &&
+      translation.key &&
+      translation.key !== dto.key
     ) {
       const key = extractKeyFromUrl(
-        translation.url,
+        translation.key,
         this.fileService.endpoint,
         this.fileService.bucket,
       );
@@ -174,9 +174,9 @@ export class TranslationService {
       throw new NotFoundException('Translation not found');
     }
 
-    if (translation.url) {
+    if (translation.key) {
       const key = extractKeyFromUrl(
-        translation.url,
+        translation.key,
         this.fileService.endpoint,
         this.fileService.bucket,
       );
