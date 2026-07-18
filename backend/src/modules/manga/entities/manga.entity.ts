@@ -52,7 +52,7 @@ export class Manga {
   status: MangaStatus;
 
   @Column({ nullable: true })
-  coverPath?: string;
+  coverKey?: string;
 
   @OneToMany(() => Chapter, (chapter) => chapter.manga)
   chapters: Chapter[];
