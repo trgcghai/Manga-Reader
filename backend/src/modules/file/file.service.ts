@@ -127,6 +127,9 @@ export class FileService {
     }
   }
 
+  /**
+   * @param fileSize - Reserved for future upload size validation. Not yet enforced.
+   */
   async generatePresignedUploadUrl(
     prefix: string,
     contentType: string,

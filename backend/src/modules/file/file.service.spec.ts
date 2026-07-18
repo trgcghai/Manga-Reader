@@ -170,11 +170,11 @@ describe('FileService', () => {
 
   describe('generatePresignedUploadUrl', () => {
     it('returns uploadUrl, key, and expiresIn for valid content type', async () => {
-      (mockMinioClient as any).presignedPutObject = jest
-        .fn()
-        .mockResolvedValue('http://minio/upload-url');
+      mockMinioClient.presignedPutObject.mockResolvedValue(
+        'http://minio/upload-url',
+      );
 
-      const result = await (service as any).generatePresignedUploadUrl(
+      const result = await service.generatePresignedUploadUrl(
         'manga/cover',
         'image/jpeg',
         5 * 1024 * 1024,
@@ -188,26 +188,23 @@ describe('FileService', () => {
     });
 
     it('rejects unknown content type', async () => {
-      (mockMinioClient as any).presignedPutObject = jest.fn();
-
       await expect(
-        (service as any).generatePresignedUploadUrl(
+        service.generatePresignedUploadUrl(
           'manga/cover', 'image/avif', 1024,
         ),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('passes contentType to presignedPutObject', async () => {
-      const presigned = jest
-        .fn()
-        .mockResolvedValue('http://minio/url');
-      (mockMinioClient as any).presignedPutObject = presigned;
+      mockMinioClient.presignedPutObject.mockResolvedValue(
+        'http://minio/url',
+      );
 
-      await (service as any).generatePresignedUploadUrl(
+      await service.generatePresignedUploadUrl(
         'manga/cover', 'image/png', 1024,
       );
 
-      expect(presigned).toHaveBeenCalledWith(
+      expect(mockMinioClient.presignedPutObject).toHaveBeenCalledWith(
         'test-bucket',
         expect.stringMatching(/\.png$/),
         3600,
