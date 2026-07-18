@@ -21,6 +21,8 @@ import { UploadTranslationFileDto } from './dto/uploadTranslationFile.dto';
 import { extractKeyFromUrl } from 'src/common/utils/file-mime.util';
 import { ALLOWED_MIME_TYPES } from 'src/common/constants/chapter.constant';
 import { TRANSLATION_ALLOWED_MIME_TYPES } from 'src/common/constants/translation.constant';
+import { PresignedUploadCoverDto } from './dto/presignedUploadCover.dto';
+import { PresignedUploadTranslationDto } from './dto/presignedUploadTranslation.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -32,6 +34,8 @@ import {
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_TRANSLATION_FILE_SIZE = 100 * 1024 * 1024;
+const PRESIGNED_COVER_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const PRESIGNED_TRANSLATION_MIME_TYPES = ['application/zip', 'application/vnd.comicbook+zip'];
 
 @ApiTags('Files')
 @Controller('files')
@@ -126,5 +130,40 @@ export class FileController {
   @ApiParam({ name: 'key', description: 'MinIO object key' })
   async delete(@Param('key') key: string) {
     await this.fileService.delete(key);
+  }
+
+  @Post('presigned-upload/cover')
+  @ApiOperation({ summary: 'Get presigned upload URL for cover image' })
+  @ApiBody({ type: PresignedUploadCoverDto })
+  async presignedUploadCover(
+    @Body() dto: PresignedUploadCoverDto,
+  ) {
+    if (!PRESIGNED_COVER_MIME_TYPES.includes(dto.contentType)) {
+      throw new BadRequestException(
+        `Unsupported cover content type. Allowed: ${PRESIGNED_COVER_MIME_TYPES.join(', ')}`,
+      );
+    }
+    if (dto.fileSize > 10 * 1024 * 1024) {
+      throw new BadRequestException('Cover file size must not exceed 10 MB');
+    }
+    return this.fileService.generatePresignedUploadUrl('manga/cover', dto.contentType, dto.fileSize);
+  }
+
+  @Post('presigned-upload/translation')
+  @ApiOperation({ summary: 'Get presigned upload URL for translation file' })
+  @ApiBody({ type: PresignedUploadTranslationDto })
+  async presignedUploadTranslation(
+    @Body() dto: PresignedUploadTranslationDto,
+  ) {
+    if (!PRESIGNED_TRANSLATION_MIME_TYPES.includes(dto.contentType)) {
+      throw new BadRequestException(
+        `Unsupported translation content type. Allowed: ${PRESIGNED_TRANSLATION_MIME_TYPES.join(', ')}`,
+      );
+    }
+    if (dto.fileSize > 100 * 1024 * 1024) {
+      throw new BadRequestException('Translation file size must not exceed 100 MB');
+    }
+    const prefix = `manga/${dto.mangaId}/chapter/${dto.chapterNumber}/translations`;
+    return this.fileService.generatePresignedUploadUrl(prefix, dto.contentType, dto.fileSize);
   }
 }

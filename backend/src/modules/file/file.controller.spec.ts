@@ -13,6 +13,7 @@ describe('FileController', () => {
     delete: jest.fn(),
     download: jest.fn(),
     list: jest.fn(),
+    generatePresignedUploadUrl: jest.fn(),
     endpoint: 'http://localhost:9000/manga-pages',
     bucket: 'manga-pages',
   } as jest.Mocked<
@@ -23,6 +24,7 @@ describe('FileController', () => {
       | 'delete'
       | 'download'
       | 'list'
+      | 'generatePresignedUploadUrl'
       | 'endpoint'
       | 'bucket'
     >
@@ -101,6 +103,54 @@ describe('FileController', () => {
       mockFileService.delete.mockResolvedValue(undefined);
       await controller.delete('covers/test.jpg');
       expect(mockFileService.delete).toHaveBeenCalledWith('covers/test.jpg');
+    });
+  });
+
+  describe('POST /files/presigned-upload/cover', () => {
+    it('returns uploadUrl, key, expiresIn for valid image', async () => {
+      const mockResult = {
+        uploadUrl: 'http://minio/upload',
+        key: 'manga/cover/uuid.jpg',
+        expiresIn: 3600,
+      };
+      mockFileService.generatePresignedUploadUrl.mockResolvedValue(mockResult);
+
+      const result = await controller.presignedUploadCover({
+        contentType: 'image/jpeg',
+        fileSize: 5 * 1024 * 1024,
+      });
+
+      expect(result).toEqual(mockResult);
+      expect(mockFileService.generatePresignedUploadUrl).toHaveBeenCalledWith(
+        'manga/cover',
+        'image/jpeg',
+        5 * 1024 * 1024,
+      );
+    });
+  });
+
+  describe('POST /files/presigned-upload/translation', () => {
+    it('returns presigned info for valid translation file', async () => {
+      const mockResult = {
+        uploadUrl: 'http://minio/upload',
+        key: 'manga/1/chapter/5/translations/uuid.zip',
+        expiresIn: 3600,
+      };
+      mockFileService.generatePresignedUploadUrl.mockResolvedValue(mockResult);
+
+      const result = await controller.presignedUploadTranslation({
+        contentType: 'application/zip',
+        fileSize: 50 * 1024 * 1024,
+        mangaId: 1,
+        chapterNumber: 5,
+      });
+
+      expect(result).toEqual(mockResult);
+      expect(mockFileService.generatePresignedUploadUrl).toHaveBeenCalledWith(
+        'manga/1/chapter/5/translations',
+        'application/zip',
+        50 * 1024 * 1024,
+      );
     });
   });
 
