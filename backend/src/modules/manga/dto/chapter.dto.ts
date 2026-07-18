@@ -27,12 +27,10 @@ export class CreateChapterDto {
   @IsNumber()
   translatorId: number;
 
-  @ApiProperty({
-    example: 'http://minio/manga/1/chapter/1/translations/uuid.zip',
-  })
+  @ApiProperty({ example: 'manga/1/chapter/1/translations/uuid.zip' })
   @IsString()
   @MinLength(1)
-  url: string;
+  key: string;
 }
 
 export class ImportChapterRowDto {

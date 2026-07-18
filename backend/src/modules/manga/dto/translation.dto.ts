@@ -12,11 +12,11 @@ export class UpdateTranslationDto {
   @IsNumber()
   translatorId?: number;
 
-  @ApiPropertyOptional({ example: 'http://minio/bucket/new-key.zip' })
+  @ApiPropertyOptional({ example: 'manga/1/chapter/1/translations/new-uuid.zip' })
   @IsOptional()
   @IsString()
   @MinLength(1)
-  url?: string;
+  key?: string;
 }
 
 export class TranslationDetailResponse {
@@ -24,7 +24,7 @@ export class TranslationDetailResponse {
   id: number;
 
   @ApiProperty()
-  url: string;
+  key: string;
 
   @ApiPropertyOptional()
   note?: string;
