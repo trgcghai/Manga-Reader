@@ -33,7 +33,7 @@ export class Translation {
   translator: Translator;
 
   @Column()
-  key: string;
+  url: string;
 
   @Column({ type: 'text', nullable: true })
   note: string;

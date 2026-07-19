@@ -18,7 +18,7 @@ export class UpdateTranslationDto {
   @IsOptional()
   @IsString()
   @MinLength(1)
-  key?: string;
+  url?: string;
 }
 
 export class TranslationDetailResponse {
@@ -26,7 +26,7 @@ export class TranslationDetailResponse {
   id: number;
 
   @ApiProperty()
-  key: string;
+  url: string;
 
   @ApiPropertyOptional()
   note?: string;

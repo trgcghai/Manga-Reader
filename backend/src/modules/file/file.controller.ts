@@ -25,8 +25,6 @@ import {
   MAX_COVER_FILE_SIZE,
   MAX_TRANSLATION_FILE_SIZE,
 } from 'src/common/constants/file.constant';
-import { PresignedUploadCoverDto } from './dto/presignedUploadCover.dto';
-import { PresignedUploadTranslationDto } from './dto/presignedUploadTranslation.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -129,43 +127,5 @@ export class FileController {
   @ApiParam({ name: 'key', description: 'MinIO object key' })
   async delete(@Param('key') key: string) {
     await this.fileService.delete(key);
-  }
-
-  @Post('presigned-upload/cover')
-  @ApiOperation({ summary: 'Get presigned upload URL for cover image' })
-  @ApiBody({ type: PresignedUploadCoverDto })
-  async presignedUploadCover(@Body() dto: PresignedUploadCoverDto) {
-    if (!ALLOWED_IMAGE_MIME_TYPES.includes(dto.contentType)) {
-      throw new BadRequestException(
-        `Unsupported cover content type. Allowed: ${ALLOWED_IMAGE_MIME_TYPES.join(', ')}`,
-      );
-    }
-    if (dto.fileSize > MAX_COVER_FILE_SIZE) {
-      throw new BadRequestException(
-        `Cover file size must not exceed ${MAX_COVER_FILE_SIZE / (1024 * 1024)} MB`,
-      );
-    }
-    return this.fileService.generatePresignedUploadUrl(
-      'manga/cover',
-      dto.contentType,
-    );
-  }
-
-  @Post('presigned-upload/translation')
-  @ApiOperation({ summary: 'Get presigned upload URL for translation file' })
-  @ApiBody({ type: PresignedUploadTranslationDto })
-  async presignedUploadTranslation(@Body() dto: PresignedUploadTranslationDto) {
-    if (!ALLOWED_TRANSLATION_MIME_TYPES.includes(dto.contentType)) {
-      throw new BadRequestException(
-        `Unsupported translation content type. Allowed: ${ALLOWED_TRANSLATION_MIME_TYPES.join(', ')}`,
-      );
-    }
-    if (dto.fileSize > MAX_TRANSLATION_FILE_SIZE) {
-      throw new BadRequestException(
-        `Translation file size must not exceed ${MAX_TRANSLATION_FILE_SIZE / (1024 * 1024)} MB`,
-      );
-    }
-    const prefix = `manga/${dto.mangaId}/chapter/${dto.chapterNumber}/translations`;
-    return this.fileService.generatePresignedUploadUrl(prefix, dto.contentType);
   }
 }

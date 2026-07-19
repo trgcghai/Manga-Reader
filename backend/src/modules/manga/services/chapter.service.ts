@@ -57,7 +57,7 @@ export class ChapterService {
         chapter: existingChapter,
         language,
         translator,
-        key: dto.key,
+        url: dto.url,
       });
 
       return existingChapter;
@@ -73,7 +73,7 @@ export class ChapterService {
       chapter,
       language,
       translator,
-      key: dto.key,
+      url: dto.url,
     });
 
     return chapter;

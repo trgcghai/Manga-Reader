@@ -78,8 +78,8 @@ export class ImportMangaService {
         Object.keys(row).find((k) => normalizeKey(k) === 'alternativetitles') ??
           ''
       ];
-    const coverKey =
-      row[Object.keys(row).find((k) => normalizeKey(k) === 'coverkey') ?? ''];
+    const coverPath =
+      row[Object.keys(row).find((k) => normalizeKey(k) === 'coverpath') ?? ''];
     const authors =
       row[Object.keys(row).find((k) => normalizeKey(k) === 'authors') ?? ''];
     const genres =
@@ -104,7 +104,7 @@ export class ImportMangaService {
       alternativeTitles: alternativeTitles
         ? this.parseCsvCell(alternativeTitles)
         : undefined,
-      coverKey: coverKey?.trim() || undefined,
+      coverPath: coverPath?.trim() || undefined,
       authors: authors ? this.parseCsvCell(authors) : undefined,
       genres: genres ? this.parseCsvCell(genres) : undefined,
     };

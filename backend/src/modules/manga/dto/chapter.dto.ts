@@ -30,7 +30,7 @@ export class CreateChapterDto {
   @ApiProperty({ example: 'manga/1/chapter/1/translations/uuid.zip' })
   @IsString()
   @MinLength(1)
-  key: string;
+  url: string;
 }
 
 export class ImportChapterRowDto {

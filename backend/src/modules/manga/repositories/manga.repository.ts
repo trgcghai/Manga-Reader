@@ -108,7 +108,7 @@ export class MangaRepository {
     if (data.description !== undefined) manga.description = data.description;
     if (data.alternativeTitles !== undefined)
       manga.alternativeTitles = data.alternativeTitles;
-    if (data.coverKey !== undefined) manga.coverKey = data.coverKey;
+    if (data.coverPath !== undefined) manga.coverPath = data.coverPath;
     if (data.authors !== undefined) manga.authors = data.authors;
     if (data.genres !== undefined) manga.genres = data.genres;
 

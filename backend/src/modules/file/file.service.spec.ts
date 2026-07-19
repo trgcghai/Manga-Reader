@@ -3,7 +3,6 @@ import { FileService } from './file.service';
 import { MINIO_CLIENT } from 'src/common/constants/file.constant';
 import { ConfigModule } from '@nestjs/config';
 import {
-  BadRequestException,
   NotFoundException,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -164,44 +163,6 @@ describe('FileService', () => {
       mockMinioClient.listObjects.mockReturnValue(errorStream as any);
       await expect(service.list('covers')).rejects.toThrow(
         InternalServerErrorException,
-      );
-    });
-  });
-
-  describe('generatePresignedUploadUrl', () => {
-    it('returns uploadUrl, key, and expiresIn for valid content type', async () => {
-      mockMinioClient.presignedPutObject.mockResolvedValue(
-        'http://minio/upload-url',
-      );
-
-      const result = await service.generatePresignedUploadUrl(
-        'manga/cover',
-        'image/jpeg',
-      );
-
-      expect(result).toMatchObject({
-        uploadUrl: 'http://minio/upload-url',
-        key: expect.stringMatching(/^manga\/cover\/.+\.jpeg$/), // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-        expiresIn: 3600,
-      });
-    });
-
-    it('rejects unknown content type', async () => {
-      await expect(
-        service.generatePresignedUploadUrl('manga/cover', 'image/avif'),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it('passes contentType to presignedPutObject', async () => {
-      mockMinioClient.presignedPutObject.mockResolvedValue('http://minio/url');
-
-      await service.generatePresignedUploadUrl('manga/cover', 'image/png');
-
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockMinioClient.presignedPutObject).toHaveBeenCalledWith(
-        'test-bucket',
-        expect.stringMatching(/\.png$/),
-        3600,
       );
     });
   });

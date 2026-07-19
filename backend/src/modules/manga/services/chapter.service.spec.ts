@@ -69,7 +69,7 @@ describe('ChapterService', () => {
     chapter,
     language,
     translator,
-    key: '/path',
+    url: '/path',
   } as unknown as Translation;
 
   const dto: CreateChapterDto = {
@@ -77,7 +77,7 @@ describe('ChapterService', () => {
     title: 'Ch 5',
     languageId: 1,
     translatorId: 1,
-    key: '/chapters/5',
+    url: '/chapters/5',
   };
 
   beforeEach(async () => {
@@ -156,7 +156,7 @@ describe('ChapterService', () => {
         chapter,
         language,
         translator,
-        key: dto.key,
+        url: dto.url,
       });
       expect(result).toEqual(chapter);
     });
@@ -178,7 +178,7 @@ describe('ChapterService', () => {
         chapter,
         language,
         translator,
-        key: dto.key,
+        url: dto.url,
       });
       expect(result).toEqual(chapter);
     });
@@ -196,12 +196,12 @@ describe('ChapterService', () => {
           number: 1,
           title: 'Chapter 1',
           translations: [
-            { id: 10, language, translator, key: '/path' },
+            { id: 10, language, translator, url: '/path' },
             {
               id: 11,
               language: viLang,
               translator: translatorB,
-              key: '/path2',
+              url: '/path2',
             },
           ],
         },
@@ -241,7 +241,7 @@ describe('ChapterService', () => {
           number: 1,
           title: 'Chapter 1',
           translations: [
-            { id: 30, language: viLang, translator: translatorB, key: '/path' },
+            { id: 30, language: viLang, translator: translatorB, url: '/path' },
           ],
         },
       ] as unknown as Chapter[];

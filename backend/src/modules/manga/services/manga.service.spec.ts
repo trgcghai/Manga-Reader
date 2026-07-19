@@ -177,7 +177,7 @@ describe('MangaService', () => {
         title: 'Test',
         alternativeTitles: [],
         description: 'Desc',
-        coverKey: null,
+        coverPath: null,
         status: 'ongoing',
         authors: [{ id: 1, name: 'Author1' }],
         genres: [{ id: 1, name: 'Genre1' }],
@@ -193,7 +193,7 @@ describe('MangaService', () => {
             translations: [
               {
                 id: 1,
-                key: '/path',
+                url: '/path',
                 note: null,
                 createdAt: new Date('2024-01-01'),
                 language: { id: 1, code: 'en', name: 'English' },
@@ -227,7 +227,7 @@ describe('MangaService', () => {
         title: 'Test',
         alternativeTitles: [],
         description: 'Desc',
-        coverKey: null,
+        coverPath: null,
         status: 'ongoing',
         authors: [{ id: 1, name: 'Author1' }],
         genres: [{ id: 1, name: 'Genre1' }],
@@ -289,7 +289,7 @@ describe('MangaService', () => {
         status: MangaStatus.ONGOING,
         description: undefined,
         alternativeTitles: ['Berserk'],
-        coverKey: undefined,
+        coverPath: undefined,
         authors: [author],
         genres: [genre],
       });
@@ -692,7 +692,7 @@ describe('MangaService', () => {
         status: 'ongoing',
         description: 'Old desc',
         alternativeTitles: ['Old Alt'],
-        coverKey: '/old.jpg',
+        coverPath: '/old.jpg',
         authors: [{ id: 1, name: 'Old Author' }],
         genres: [{ id: 1, name: 'Old Genre' }],
       } as unknown as Manga;
@@ -701,7 +701,7 @@ describe('MangaService', () => {
         status: 'completed' as const,
         description: 'New desc',
         alternativeTitles: ['New Alt'],
-        coverKey: '/new.jpg',
+        coverPath: '/new.jpg',
         authors: ['New Author'],
         genres: ['New Genre'],
       } as UpdateMangaDto;
@@ -719,7 +719,7 @@ describe('MangaService', () => {
         status: 'completed',
         description: 'New desc',
         alternativeTitles: ['New Alt'],
-        coverKey: '/new.jpg',
+        coverPath: '/new.jpg',
         authors: [newAuthor],
         genres: [newGenre],
       });
@@ -738,7 +738,7 @@ describe('MangaService', () => {
           status: 'completed',
           description: 'New desc',
           alternativeTitles: ['New Alt'],
-          coverKey: '/new.jpg',
+          coverPath: '/new.jpg',
           authors: [newAuthor],
           genres: [newGenre],
         }),

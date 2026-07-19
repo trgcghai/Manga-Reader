@@ -39,7 +39,7 @@ export class MangaResponse {
   description?: string;
 
   @ApiPropertyOptional()
-  coverKey?: string;
+  coverPath?: string;
 
   @ApiProperty()
   status: string;
@@ -62,7 +62,7 @@ export class ChapterTranslationResponse {
   id: number;
 
   @ApiProperty()
-  key: string;
+  url: string;
 
   @ApiPropertyOptional()
   note?: string;
@@ -127,7 +127,7 @@ export class CreateMangaDto {
   @ApiPropertyOptional({ example: 'manga/cover/uuid.jpg' })
   @IsOptional()
   @IsString()
-  coverKey?: string;
+  coverPath?: string;
 
   @ApiPropertyOptional({ example: ['Eiichiro Oda'] })
   @IsOptional()
@@ -170,7 +170,7 @@ export class UpdateMangaDto {
   @ApiPropertyOptional({ example: 'manga/cover/uuid.jpg' })
   @IsOptional()
   @IsString()
-  coverKey?: string;
+  coverPath?: string;
 
   @ApiPropertyOptional({ example: ['Eiichiro Oda'] })
   @IsOptional()

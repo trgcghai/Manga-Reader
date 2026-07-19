@@ -110,26 +110,6 @@ export class FileService {
     }
   }
 
-  async generatePresignedUploadUrl(
-    prefix: string,
-    contentType: string,
-  ): Promise<{ uploadUrl: string; key: string; expiresIn: number }> {
-    const ext = EXT_MAP[contentType];
-    if (!ext) {
-      throw new BadRequestException(`Unsupported content type: ${contentType}`);
-    }
-    const key = `${prefix}/${randomUUID()}.${ext}`;
-    const expiry = 3600;
-
-    const uploadUrl = await this.minioClient.presignedPutObject(
-      this.bucket,
-      key,
-      expiry,
-    );
-
-    return { uploadUrl, key, expiresIn: expiry };
-  }
-
   async list(prefix?: string): Promise<string[]> {
     try {
       const stream = this.minioClient.listObjects(

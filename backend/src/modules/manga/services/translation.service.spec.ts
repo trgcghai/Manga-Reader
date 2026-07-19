@@ -45,7 +45,7 @@ describe('TranslationService', () => {
 
   const translation = {
     id: 1,
-    key: '/path',
+    url: '/path',
     language,
     translator,
     chapter: { id: 5, manga: { id: 10 } },
@@ -53,7 +53,7 @@ describe('TranslationService', () => {
 
   const dto: UpdateTranslationDto = {
     languageId: 2,
-    key: '/new/path',
+    url: '/new/path',
   };
 
   beforeEach(async () => {
@@ -133,10 +133,10 @@ describe('TranslationService', () => {
       });
       mockTranslationRepo.update.mockResolvedValue({
         ...translation,
-        key: '/updated/path',
+        url: '/updated/path',
       });
       const dtoFolderOnly: UpdateTranslationDto = {
-        key: '/updated/path',
+        url: '/updated/path',
       };
       const result = await service.update(10, 5, 1, dtoFolderOnly);
       expect(
@@ -149,7 +149,7 @@ describe('TranslationService', () => {
       const newLang = { id: 2, code: 'fr', name: 'French' } as Language;
       const updated = {
         ...translation,
-        key: '/new/path',
+        url: '/new/path',
         language: newLang,
       };
       mockTranslationRepo.findById.mockResolvedValue(translation);
@@ -161,7 +161,7 @@ describe('TranslationService', () => {
       const result = await service.update(10, 5, 1, dto);
       expect(mockTranslationRepo.update).toHaveBeenCalledWith(1, {
         language: newLang,
-        key: '/new/path',
+        url: '/new/path',
       });
       expect(result).toEqual(updated);
     });
@@ -169,7 +169,7 @@ describe('TranslationService', () => {
     it('should delete old file when url is changed to a Minio url', async () => {
       const withOldUrl = {
         ...translation,
-        key: 'http://localhost:9000/manga-pages/old/file.cbz',
+        url: 'http://localhost:9000/manga-pages/old/file.cbz',
       };
       mockTranslationRepo.findById.mockResolvedValue(withOldUrl);
       mockLanguageService.findOne.mockResolvedValue(language);
@@ -178,10 +178,10 @@ describe('TranslationService', () => {
       );
       mockTranslationRepo.update.mockResolvedValue({
         ...withOldUrl,
-        key: 'http://localhost:9000/manga-pages/new/file.cbz',
+        url: 'http://localhost:9000/manga-pages/new/file.cbz',
       });
       await service.update(10, 5, 1, {
-        key: 'http://localhost:9000/manga-pages/new/file.cbz',
+        url: 'http://localhost:9000/manga-pages/new/file.cbz',
       });
       expect(mockFileService.delete).toHaveBeenCalledWith('old/file.cbz');
     });
@@ -193,7 +193,7 @@ describe('TranslationService', () => {
       );
       mockTranslationRepo.update.mockResolvedValue({
         ...translation,
-        key: '/new/path',
+        url: '/new/path',
       });
       await service.update(10, 5, 1, dto);
       expect(mockFileService.delete).not.toHaveBeenCalled();
@@ -202,7 +202,7 @@ describe('TranslationService', () => {
     it('should not delete file when URL is not provided', async () => {
       const withUrl = {
         ...translation,
-        key: 'http://localhost:9000/manga-pages/old/file.cbz',
+        url: 'http://localhost:9000/manga-pages/old/file.cbz',
       };
       mockTranslationRepo.findById.mockResolvedValue(withUrl);
       mockTranslationRepo.update.mockResolvedValue(withUrl);
@@ -223,12 +223,12 @@ describe('TranslationService', () => {
       const sameUrl = 'http://localhost:9000/manga-pages/same/file.cbz';
       const withSameUrl = {
         ...translation,
-        key: sameUrl,
+        url: sameUrl,
       };
       mockTranslationRepo.findById.mockResolvedValue(withSameUrl);
       mockTranslationRepo.update.mockResolvedValue(withSameUrl);
 
-      await service.update(10, 5, 1, { key: sameUrl });
+      await service.update(10, 5, 1, { url: sameUrl });
 
       expect(mockFileService.delete).not.toHaveBeenCalled();
     });
@@ -236,7 +236,7 @@ describe('TranslationService', () => {
     it('should propagate file delete error during update', async () => {
       const withUrl = {
         ...translation,
-        key: 'http://localhost:9000/manga-pages/old/file.cbz',
+        url: 'http://localhost:9000/manga-pages/old/file.cbz',
       };
       mockTranslationRepo.findById.mockResolvedValue(withUrl);
       mockLanguageService.findOne.mockResolvedValue({
@@ -249,7 +249,7 @@ describe('TranslationService', () => {
       );
       mockFileService.delete.mockRejectedValue(new Error('Minio error'));
       await expect(
-        service.update(10, 5, 1, { key: '/new/path' }),
+        service.update(10, 5, 1, { url: '/new/path' }),
       ).rejects.toThrow('Minio error');
     });
   });
@@ -258,7 +258,7 @@ describe('TranslationService', () => {
     it('should return TranslationDetailResponse when translation exists', async () => {
       const found = {
         id: 1,
-        key: '/path/to/file.cbz',
+        url: '/path/to/file.cbz',
         note: 'v2',
         createdAt: new Date('2026-01-01'),
         language: { id: 1, code: 'en', name: 'English' },
@@ -277,7 +277,7 @@ describe('TranslationService', () => {
       expect(mockTranslationRepo.findById).toHaveBeenCalledWith(1);
       expect(result).toEqual({
         id: 1,
-        key: '/path/to/file.cbz',
+        url: '/path/to/file.cbz',
         note: 'v2',
         createdAt: '2026-01-01T00:00:00.000Z',
         language: { id: 1, code: 'en', name: 'English' },
@@ -303,7 +303,7 @@ describe('TranslationService', () => {
     it('should set prevTranslationId and nextTranslationId to null when no adjacent chapters exist', async () => {
       const baseTranslation = {
         id: 1,
-        key: '/path',
+        url: '/path',
         note: 'v2',
         createdAt: new Date('2026-01-01'),
         language: { id: 1, code: 'en', name: 'English' },
@@ -327,7 +327,7 @@ describe('TranslationService', () => {
     it('should find prevTranslationId with exact translator+language match', async () => {
       const baseTranslation = {
         id: 1,
-        key: '/path',
+        url: '/path',
         note: 'v2',
         createdAt: new Date('2026-01-01'),
         language: { id: 1, code: 'en', name: 'English' },
@@ -363,7 +363,7 @@ describe('TranslationService', () => {
     it('should fall back to same language match when no exact translator match for prev', async () => {
       const baseTranslation = {
         id: 1,
-        key: '/path',
+        url: '/path',
         note: 'v2',
         createdAt: new Date('2026-01-01'),
         language: { id: 1, code: 'en', name: 'English' },
@@ -399,7 +399,7 @@ describe('TranslationService', () => {
     it('should fall back to first translation when no language match for prev', async () => {
       const baseTranslation = {
         id: 1,
-        key: '/path',
+        url: '/path',
         note: 'v2',
         createdAt: new Date('2026-01-01'),
         language: { id: 1, code: 'en', name: 'English' },
@@ -435,7 +435,7 @@ describe('TranslationService', () => {
     it('should set prevTranslationId to null when prev chapter has no translations', async () => {
       const baseTranslation = {
         id: 1,
-        key: '/path',
+        url: '/path',
         note: 'v2',
         createdAt: new Date('2026-01-01'),
         language: { id: 1, code: 'en', name: 'English' },
@@ -463,7 +463,7 @@ describe('TranslationService', () => {
     it('should set both prevTranslationId and nextTranslationId when both exist with exact matches', async () => {
       const baseTranslation = {
         id: 1,
-        key: '/path',
+        url: '/path',
         note: 'v2',
         createdAt: new Date('2026-01-01'),
         language: { id: 1, code: 'en', name: 'English' },
@@ -527,7 +527,7 @@ describe('TranslationService', () => {
     it('should delete file when translation has a Minio url', async () => {
       const withUrl = {
         ...translation,
-        key: 'http://localhost:9000/manga-pages/some/file.cbz',
+        url: 'http://localhost:9000/manga-pages/some/file.cbz',
       };
       mockTranslationRepo.findById.mockResolvedValue(withUrl);
       mockTranslationRepo.delete.mockResolvedValue(undefined);
@@ -545,7 +545,7 @@ describe('TranslationService', () => {
     it('should propagate file delete error during delete', async () => {
       const withUrl = {
         ...translation,
-        key: 'http://localhost:9000/manga-pages/old/file.cbz',
+        url: 'http://localhost:9000/manga-pages/old/file.cbz',
       };
       mockTranslationRepo.findById.mockResolvedValue(withUrl);
       mockFileService.delete.mockRejectedValue(new Error('Minio error'));
@@ -553,7 +553,7 @@ describe('TranslationService', () => {
     });
 
     it('should not attempt file delete when translation has no url', async () => {
-      const noUrl = { ...translation, key: null };
+      const noUrl = { ...translation, url: null };
       mockTranslationRepo.findById.mockResolvedValue(noUrl);
       mockTranslationRepo.delete.mockResolvedValue(undefined);
       await service.delete(10, 5, 1);
