@@ -13,9 +13,11 @@ import {
 } from '@nestjs/common';
 import {
   CreateMangaDto,
+  MangaResponse,
   UpdateMangaDto,
 } from 'src/modules/manga/dto/manga.dto';
 import { MangaStatus } from 'src/common/constants/manga.constant';
+import { TranslationDetailResponse } from 'src/modules/manga/dto/translation.dto';
 
 describe('MangaController', () => {
   let controller: MangaController;
@@ -130,7 +132,9 @@ describe('MangaController', () => {
 
   describe('findOne', () => {
     it('should return a manga when found', async () => {
-      service.findOne.mockResolvedValue(mockMangaList[0]);
+      service.findOne.mockResolvedValue(
+        mockMangaList[0] as unknown as MangaResponse,
+      );
 
       const result = await controller.findOne('1');
 
@@ -347,7 +351,9 @@ describe('MangaController', () => {
     };
 
     it('should return translation when found', async () => {
-      translationService.findOne.mockResolvedValue(mockResponse);
+      translationService.findOne.mockResolvedValue(
+        mockResponse as unknown as TranslationDetailResponse,
+      );
 
       const result = await controller.getTranslation(1);
 
@@ -369,7 +375,13 @@ describe('MangaController', () => {
   describe('getReaderChapters', () => {
     it('should call ChapterService.getChapterList with correct params', async () => {
       const expected = [
-        { chapterId: 1, title: 'Ch 1', translationId: 10, isFirstChapter: true, isLatestChapter: false },
+        {
+          chapterId: 1,
+          title: 'Ch 1',
+          translationId: 10,
+          isFirstChapter: true,
+          isLatestChapter: false,
+        },
       ];
       chapterService.getChapterList.mockResolvedValue(expected as any);
 
@@ -384,9 +396,9 @@ describe('MangaController', () => {
         new NotFoundException('Manga #999 not found'),
       );
 
-      await expect(
-        controller.getReaderChapters(999, 1, 'en'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(controller.getReaderChapters(999, 1, 'en')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

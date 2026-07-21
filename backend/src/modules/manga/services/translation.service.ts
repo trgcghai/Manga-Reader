@@ -50,8 +50,7 @@ export class TranslationService {
       }
 
       const exact = adjacent.translations.find(
-        (t) =>
-          t.translator.id === translatorId && t.language.id === languageId,
+        (t) => t.translator.id === translatorId && t.language.id === languageId,
       );
       if (exact) return exact.id;
 

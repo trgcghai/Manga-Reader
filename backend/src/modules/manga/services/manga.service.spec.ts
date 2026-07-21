@@ -105,6 +105,48 @@ describe('MangaService', () => {
         'ongoing',
       );
     });
+
+    it('should forward authors filter to repository', async () => {
+      const paginatedResult = {
+        data: [{ id: 1, title: 'Naruto' } as Manga],
+        total: 1,
+        page: 1,
+        limit: 20,
+        totalPages: 1,
+      };
+      mockMangaRepository.findAll.mockResolvedValue(paginatedResult);
+
+      const result = await service.findAll(1, 20, undefined, undefined);
+
+      expect(result).toEqual(paginatedResult);
+      expect(mockMangaRepository.findAll).toHaveBeenCalledWith(
+        1,
+        20,
+        undefined,
+        undefined,
+      );
+    });
+
+    it('should forward genres filter to repository', async () => {
+      const paginatedResult = {
+        data: [{ id: 1, title: 'Naruto' } as Manga],
+        total: 1,
+        page: 1,
+        limit: 20,
+        totalPages: 1,
+      };
+      mockMangaRepository.findAll.mockResolvedValue(paginatedResult);
+
+      const result = await service.findAll(1, 20, undefined, undefined);
+
+      expect(result).toEqual(paginatedResult);
+      expect(mockMangaRepository.findAll).toHaveBeenCalledWith(
+        1,
+        20,
+        undefined,
+        undefined,
+      );
+    });
   });
 
   describe('findOne', () => {

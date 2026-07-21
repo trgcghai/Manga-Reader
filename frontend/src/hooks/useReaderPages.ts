@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useFileDownload } from '#/hooks/useFile'
-import {
-  parseCbzPages,
-  loadCbzAsObjectUrls,
-  revokeObjectUrls,
-} from '#/utils/cbzParser'
 import { useReaderStore } from '#/stores/rootStore'
+import {
+  loadPagesAsObjectUrls,
+  parsePages,
+  revokeObjectUrls,
+} from '#/utils/fileParser'
 
 export function useReaderPages(url: string | undefined): {
   pages: string[]
@@ -40,8 +40,8 @@ export function useReaderPages(url: string | undefined): {
         if (!url) return
         const blob = await mutateAsync(url)
         const buffer = await blob.arrayBuffer()
-        const imageBlobs = await parseCbzPages(buffer)
-        const urls = loadCbzAsObjectUrls(imageBlobs)
+        const imageBlobs = await parsePages(buffer)
+        const urls = loadPagesAsObjectUrls(imageBlobs)
 
         if (cancelled) {
           revokeObjectUrls(urls)

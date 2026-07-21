@@ -46,7 +46,7 @@ function ReaderPage() {
 
   useEffect(() => {
     if (data?.chapter.number) {
-      const chapterTitle = data.chapter.title && ` - ${data.chapter.title}`
+      const chapterTitle = data.chapter.title ? ` - ${data.chapter.title}` : ''
 
       toast.message(`Chapter ${Number(data.chapter.number)}${chapterTitle}`, {
         duration: 2000,
@@ -207,8 +207,8 @@ function ReaderPage() {
           <ScrollViewer
             pages={pages}
             displayMode={displayMode}
-            onPrevChapter={handlePrevPage}
-            onNextChapter={handleNextPage}
+            onPrevChapter={handlePrevChapter}
+            onNextChapter={handleNextChapter}
           />
         ) : (
           <PageViewer

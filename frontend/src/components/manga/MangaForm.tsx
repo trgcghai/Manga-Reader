@@ -24,6 +24,7 @@ import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
 import { addTag } from '#/lib/mangaUtils'
 import { FileDropzone } from '#/components/ui/file-dropzone'
+import { COVER_ACCEPT, MAX_COVER_FILE_SIZE } from '#/constants/file'
 
 export const mangaSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -110,12 +111,8 @@ export function MangaForm({
                   <UiField>
                     <FieldLabel>Cover Image</FieldLabel>
                     <FileDropzone
-                      accept={{
-                        'image/jpeg': ['.jpg', '.jpeg'],
-                        'image/png': ['.png'],
-                        'image/webp': ['.webp'],
-                        'image/gif': ['.gif'],
-                      }}
+                      accept={COVER_ACCEPT}
+                      maxSize={MAX_COVER_FILE_SIZE}
                       value={form.getFieldValue('coverFile') as File | null}
                       onFileSelect={(file) => {
                         form.setFieldValue('coverFile', file)

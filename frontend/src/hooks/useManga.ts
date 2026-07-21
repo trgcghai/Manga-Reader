@@ -34,6 +34,8 @@ const mangaKeys = {
     limit: number
     search?: string
     status?: string
+    authors?: string
+    genres?: string
   }) =>
     [
       ...mangaKeys.all,
@@ -42,6 +44,8 @@ const mangaKeys = {
       params.limit,
       params.search,
       params.status,
+      params.authors,
+      params.genres,
     ] as const,
   detail: (id: number) => [...mangaKeys.all, 'detail', id] as const,
 }
@@ -51,6 +55,8 @@ export function useMangaList(params: {
   limit: number
   search?: string
   status?: string
+  authors?: string
+  genres?: string
 }) {
   return useQuery<PaginatedResponse<MangaResponse>>({
     queryKey: mangaKeys.list(params),

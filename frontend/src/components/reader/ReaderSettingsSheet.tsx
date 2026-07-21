@@ -37,7 +37,7 @@ import {
 } from '#/components/ui/select'
 import { useReaderChapters } from '#/hooks/useManga'
 import { useReaderStore } from '#/stores/rootStore'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 
 function getPageItems(displayMode: 'single' | 'double', totalPages: number) {
   if (displayMode === 'single') {
@@ -116,9 +116,13 @@ export function ReaderSettingsSheet({
         </SheetHeader>
         <div className="flex flex-col gap-6 px-4">
           <div className="flex flex-col gap-3">
-            <h3 className="text-sm font-medium text-muted-foreground line-clamp-2">
+            <Link
+              className="text-sm font-medium text-muted-foreground line-clamp-2 hover:text-primary hover:bg-muted p-2 rounded-lg"
+              to="/manga/$id"
+              params={{ id: String(currentChapter?.mangaId) }}
+            >
               {title}
-            </h3>
+            </Link>
           </div>
           {currentChapter && readingMode === 'page' && (
             <>

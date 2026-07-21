@@ -33,6 +33,7 @@ import type {
 } from '#/services/api/mangaApi'
 import { Badge } from '#/components/ui/badge'
 import { FileDropzone } from '#/components/ui/file-dropzone'
+import { TRANSLATION_ACCEPT, MAX_TRANSLATION_FILE_SIZE } from '#/constants/file'
 
 const translationSchema = z.object({
   languageId: z.number().optional(),
@@ -214,7 +215,8 @@ export default function EditTranslationDialog({
                 <UiField>
                   <FieldLabel>CBZ File</FieldLabel>
                   <FileDropzone
-                    accept={{ 'application/zip': ['.zip'] }}
+                    accept={TRANSLATION_ACCEPT}
+                    maxSize={MAX_TRANSLATION_FILE_SIZE}
                     value={field.state.value as File | null}
                     onFileSelect={(file) => field.handleChange(file!)}
                     error={field.state.meta.errors[0]?.message}

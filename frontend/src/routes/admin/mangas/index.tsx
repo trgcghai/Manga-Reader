@@ -17,14 +17,22 @@ import {
 } from '#/components/ui/table'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
+import { Input } from '#/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '#/components/ui/select'
 import { Skeleton } from '#/components/ui/skeleton'
 import {
   ErrorDisplay,
   ErrorTitle,
   ErrorDescription,
 } from '#/components/ui/error-display'
-import { useState } from 'react'
-import { BookOpenText, Plus, Upload } from 'lucide-react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { BookOpenText, Plus, Upload, X } from 'lucide-react'
 import { ImportDialog } from '#/components/manga/ImportDialog'
 import { Pagination } from '#/components/ui/pagination'
 import {
@@ -38,6 +46,7 @@ import {
 import { formatDateTime } from '#/lib/dateTimeFormatter'
 import ActionsCell from '#/components/manga/ActionCell'
 import { getStatusVariant } from '#/lib/mangaUtils'
+import { useDebounce } from '#/hooks/useDebounce'
 
 const columnHelper = createColumnHelper<MangaResponse>()
 
@@ -104,22 +113,69 @@ const columns = [
   }),
 ]
 
+interface MangaListSearch {
+  search?: string
+  status?: string
+}
+
 export const Route = createFileRoute('/admin/mangas/')({
+  validateSearch: (search: Record<string, string | undefined>): MangaListSearch => ({
+    search: search.search || undefined,
+    status: search.status || undefined,
+  }),
   component: MangaListPage,
 })
 
 function MangaListPage() {
+  const navigate = useNavigate()
+  const { search, status } = Route.useSearch()
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [importOpen, setImportOpen] = useState(false)
-  const navigate = useNavigate()
-  const { data, isLoading, isError } = useMangaList({ page, limit: pageSize })
+
+  const [searchInput, setSearchInput] = useState(search ?? '')
+  const [statusInput, setStatusInput] = useState(status ?? '')
+
+  const debouncedSearch = useDebounce(searchInput, 500)
+
+  const isFirstRender = useRef(true)
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    setPage(1)
+    navigate({
+      to: '/admin/mangas',
+      search: {
+        search: debouncedSearch || undefined,
+        status: statusInput && statusInput !== 'all' ? statusInput : undefined,
+      },
+    })
+  }, [debouncedSearch, statusInput, navigate])
+
+  const { data, isLoading, isError } = useMangaList({
+    page,
+    limit: pageSize,
+    search: debouncedSearch || undefined,
+    status: statusInput && statusInput !== 'all' ? statusInput : undefined,
+  })
 
   const table = useReactTable({
     data: data?.data ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
+
+  const clearFilters = useCallback(() => {
+    setSearchInput('')
+    setStatusInput('')
+    setPage(1)
+    navigate({ to: '/admin/mangas', search: {} })
+  }, [navigate])
+
+  const hasFilters = searchInput || statusInput
 
   if (isLoading) {
     return (
@@ -161,6 +217,32 @@ function MangaListPage() {
         </div>
       </div>
 
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <Input
+          placeholder="Search by title, description, author, or genre..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          className="max-w-xl"
+        />
+        <Select value={statusInput} onValueChange={setStatusInput}>
+          <SelectTrigger>
+            <SelectValue placeholder="All statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="ongoing">Ongoing</SelectItem>
+            <SelectItem value="paused">Paused</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+          </SelectContent>
+        </Select>
+        {hasFilters && (
+          <Button variant="default" onClick={clearFilters}>
+            <X className="h-4 w-4" />
+            Clear
+          </Button>
+        )}
+      </div>
+
       {!data?.data.length && (
         <Empty>
           <EmptyHeader>
@@ -169,7 +251,9 @@ function MangaListPage() {
             </EmptyMedia>
             <EmptyTitle>No Mangas Found</EmptyTitle>
             <EmptyDescription>
-              No mangas available at the moment.
+              {hasFilters
+                ? 'No mangas match the current filters.'
+                : 'No mangas available at the moment.'}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>

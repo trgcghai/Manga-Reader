@@ -59,6 +59,22 @@ function CommandItem({ className, ...props }: React.ComponentProps<typeof Comman
   )
 }
 
+function CommandInput({
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.Input>) {
+  return (
+    <CommandPrimitive.Input
+      data-slot="command-input"
+      className={cn(
+        'flex h-10 w-full rounded-md bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
 function CommandShortcut({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
@@ -69,4 +85,4 @@ function CommandShortcut({ className, ...props }: React.ComponentProps<'span'>) 
   )
 }
 
-export { Command, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandShortcut }
+export { Command, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandInput, CommandShortcut }

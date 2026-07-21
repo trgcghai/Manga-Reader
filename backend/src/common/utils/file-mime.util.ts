@@ -1,9 +1,4 @@
-const MIME_MAP: Record<string, string> = {
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  png: 'image/png',
-  webp: 'image/webp',
-};
+import { MIME_MAP } from 'src/common/constants/file.constant';
 
 export function getContentType(key: string): string {
   const ext = key.split('.').pop()?.toLowerCase();

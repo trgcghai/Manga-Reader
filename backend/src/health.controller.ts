@@ -10,7 +10,9 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { type Cache } from 'cache-manager';
 import { Connection, ConnectionStates } from 'mongoose';
 import { DataSource } from 'typeorm';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
+@ApiTags('Health')
 @Controller('health')
 export class HealthController {
   constructor(
@@ -21,6 +23,9 @@ export class HealthController {
 
   @SkipThrottle()
   @Get()
+  @ApiOperation({ summary: 'Check service health' })
+  @ApiResponse({ status: 200, description: 'All services connected' })
+  @ApiResponse({ status: 503, description: 'One or more services unavailable' })
   async getHealth() {
     if (!this.dataSource.isInitialized) {
       throw new ServiceUnavailableException('PostgreSQL not initialized');

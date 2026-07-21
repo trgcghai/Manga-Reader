@@ -20,6 +20,7 @@ interface FileDropzoneProps {
   previewUrl?: string
   onRemove?: () => void
   aspectRatio?: string
+  maxSize?: number
 }
 
 function EmptyState({
@@ -110,6 +111,7 @@ export function FileDropzone({
   previewUrl,
   onRemove,
   aspectRatio,
+  maxSize = 100 * 1024 * 1024,
 }: FileDropzoneProps) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDropAccepted: (files) => {
@@ -125,7 +127,7 @@ export function FileDropzone({
     disabled,
     multiple: false,
     maxFiles: 1,
-    maxSize: 100 * 1024 * 1024, // 100MB
+    maxSize,
   })
 
   const showPreview = previewUrl !== undefined

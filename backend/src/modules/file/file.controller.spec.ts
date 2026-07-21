@@ -13,6 +13,7 @@ describe('FileController', () => {
     delete: jest.fn(),
     download: jest.fn(),
     list: jest.fn(),
+    generatePresignedUploadUrl: jest.fn(),
     endpoint: 'http://localhost:9000/manga-pages',
     bucket: 'manga-pages',
   } as jest.Mocked<
@@ -123,7 +124,9 @@ describe('FileController', () => {
     });
 
     it('should throw BadRequestException when url is missing', async () => {
-      await expect(controller.download('')).rejects.toThrow(BadRequestException);
+      await expect(controller.download('')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw BadRequestException when url is not a Minio url', async () => {

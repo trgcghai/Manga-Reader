@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FileService } from './file.service';
-import { MINIO_CLIENT } from './file.constants';
+import { MINIO_CLIENT } from 'src/common/constants/file.constant';
 import { ConfigModule } from '@nestjs/config';
 import {
   NotFoundException,
@@ -17,6 +17,7 @@ describe('FileService', () => {
     getObject: jest.fn(),
     removeObject: jest.fn(),
     listObjects: jest.fn(),
+    presignedPutObject: jest.fn(),
   } as unknown as jest.Mocked<Minio.Client>;
 
   beforeEach(async () => {
@@ -74,9 +75,9 @@ describe('FileService', () => {
       });
       const buffer = Buffer.from('test-image-data');
       const result = await service.upload('covers', buffer, 'image/jpeg');
-      expect(result.key).toMatch(/^covers\/.+\.jpg$/);
+      expect(result.key).toMatch(/^covers\/.+\.jpeg$/);
       expect(result.url).toMatch(
-        /^http:\/\/localhost:9000\/test-bucket\/covers\/.+\.jpg$/,
+        /^http:\/\/localhost:9000\/test-bucket\/covers\/.+\.jpeg$/,
       );
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockMinioClient.putObject).toHaveBeenCalledTimes(1);

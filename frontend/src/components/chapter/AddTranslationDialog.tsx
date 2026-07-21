@@ -1,8 +1,8 @@
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
 import { useLanguageList } from '#/hooks/useLanguages'
-import { useTranslatorList } from '#/hooks/useTranslators'
 import { Button } from '#/components/ui/button'
+import { TranslatorCombobox } from '#/components/translator/TranslatorCombobox'
 import {
   Select,
   SelectContent,
@@ -28,6 +28,7 @@ import { useEffect } from 'react'
 import { useCreateChapterForManga } from '#/hooks/useManga'
 import { useTranslationFileUpload } from '#/hooks/useFile'
 import { FileDropzone } from '#/components/ui/file-dropzone'
+import { TRANSLATION_ACCEPT, MAX_TRANSLATION_FILE_SIZE } from '#/constants/file'
 
 const translationSchema = z.object({
   languageId: z.number().refine((n) => n > 0, 'Language is required'),
@@ -61,8 +62,6 @@ export default function AddTranslationDialog({
   const createMutation = useCreateChapterForManga(mangaId)
   const uploadMutation = useTranslationFileUpload(mangaId)
   const { data: languages, isLoading: languagesLoading } = useLanguageList()
-  const { data: translatorsData, isLoading: translatorsLoading } =
-    useTranslatorList(1, 100)
 
   const form = useForm({
     validators: { onSubmit: translationSchema },
@@ -162,32 +161,12 @@ export default function AddTranslationDialog({
                   <FieldLabel htmlFor="translation-translator" required>
                     Translator
                   </FieldLabel>
-                  <Select
-                    value={String(field.state.value || '')}
-                    onValueChange={(v) => field.handleChange(Number(v))}
-                  >
-                    <SelectTrigger
-                      id="translation-translator"
-                      aria-invalid={
-                        field.state.meta.errors.length > 0 || undefined
-                      }
-                    >
-                      <SelectValue
-                        placeholder={
-                          translatorsLoading
-                            ? 'Loading...'
-                            : 'Select translator'
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {translatorsData?.data.map((tr) => (
-                        <SelectItem key={tr.id} value={String(tr.id)}>
-                          {tr.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <TranslatorCombobox
+                    id="translation-translator"
+                    value={field.state.value}
+                    onChange={(id) => field.handleChange(id)}
+                    invalid={field.state.meta.errors.length > 0 || undefined}
+                  />
                   {field.state.meta.errors.length > 0 && (
                     <UiFieldError errors={field.state.meta.errors} />
                   )}
@@ -200,7 +179,8 @@ export default function AddTranslationDialog({
                 <UiField>
                   <FieldLabel required>CBZ File</FieldLabel>
                   <FileDropzone
-                    accept={{ 'application/zip': ['.zip'] }}
+                    accept={TRANSLATION_ACCEPT}
+                    maxSize={MAX_TRANSLATION_FILE_SIZE}
                     value={field.state.value}
                     onFileSelect={(file) => field.handleChange(file!)}
                     error={field.state.meta.errors[0]?.message}

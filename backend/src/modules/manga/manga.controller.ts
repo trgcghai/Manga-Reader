@@ -33,7 +33,16 @@ import {
   UpdateTranslationDto,
   ReaderChapterItem,
 } from 'src/modules/manga/dto/translation.dto';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiQuery,
+  ApiParam,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
 
+@ApiTags('Mangas')
 @Controller('mangas')
 export class MangaController {
   constructor(
@@ -44,11 +53,27 @@ export class MangaController {
   ) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create a manga' })
   create(@Body() dto: CreateMangaDto) {
     return this.mangaService.create(dto);
   }
 
   @Get()
+  @ApiOperation({ summary: 'List all mangas' })
+  @ApiQuery({ name: 'page', required: false, example: '1' })
+  @ApiQuery({ name: 'limit', required: false, example: '20' })
+  @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({
+    name: 'authors',
+    required: false,
+    description: 'Comma-separated author names',
+  })
+  @ApiQuery({
+    name: 'genres',
+    required: false,
+    description: 'Comma-separated genre names',
+  })
   findAll(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
@@ -65,6 +90,16 @@ export class MangaController {
 
   @Post('import')
   @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Import mangas from Excel file' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
   async import(
     @UploadedFile() file: Express.Multer.File,
   ): Promise<ImportResult> {
@@ -75,6 +110,7 @@ export class MangaController {
   }
 
   @Get('import-template')
+  @ApiOperation({ summary: 'Download manga import Excel template' })
   downloadTemplate(): StreamableFile {
     const workbook = XLSX.utils.book_new();
     const headerRow = [
@@ -100,22 +136,31 @@ export class MangaController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get a manga by ID' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiQuery({ name: 'include', required: false })
   findOne(@Param('id') id: string, @Query('include') include?: string) {
     return this.mangaService.findOne(+id, include);
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a manga' })
+  @ApiParam({ name: 'id', type: Number })
   update(@Param('id') id: string, @Body() dto: UpdateMangaDto) {
     return this.mangaService.update(+id, dto);
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete a manga' })
+  @ApiParam({ name: 'id', type: Number })
   delete(@Param('id') id: string) {
     return this.mangaService.delete(+id);
   }
 
   @Post(':mangaId/chapter')
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a chapter with translation' })
+  @ApiParam({ name: 'mangaId', type: Number })
   createChapter(
     @Param('mangaId', ParseIntPipe) mangaId: number,
     @Body() dto: CreateChapterDto,
@@ -124,6 +169,10 @@ export class MangaController {
   }
 
   @Patch(':mangaId/chapter/:chapterId/translations/:translationId')
+  @ApiOperation({ summary: 'Update a translation' })
+  @ApiParam({ name: 'mangaId', type: Number })
+  @ApiParam({ name: 'chapterId', type: Number })
+  @ApiParam({ name: 'translationId', type: Number })
   updateTranslation(
     @Param('mangaId', ParseIntPipe) mangaId: number,
     @Param('chapterId', ParseIntPipe) chapterId: number,
@@ -139,12 +188,18 @@ export class MangaController {
   }
 
   @Get('translations/:translationId')
+  @ApiOperation({ summary: 'Get a translation by ID' })
+  @ApiParam({ name: 'translationId', type: Number })
   getTranslation(@Param('translationId', ParseIntPipe) translationId: number) {
     return this.translationService.findOne(translationId);
   }
 
   @Delete(':mangaId/chapter/:chapterId/translations/:translationId')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a translation' })
+  @ApiParam({ name: 'mangaId', type: Number })
+  @ApiParam({ name: 'chapterId', type: Number })
+  @ApiParam({ name: 'translationId', type: Number })
   deleteTranslation(
     @Param('mangaId', ParseIntPipe) mangaId: number,
     @Param('chapterId', ParseIntPipe) chapterId: number,
@@ -154,6 +209,10 @@ export class MangaController {
   }
 
   @Get('reader/chapters')
+  @ApiOperation({ summary: 'Get chapters for reader view' })
+  @ApiQuery({ name: 'mangaId', required: true, type: Number })
+  @ApiQuery({ name: 'translatorId', required: true, type: Number })
+  @ApiQuery({ name: 'language', required: true })
   getReaderChapters(
     @Query('mangaId', ParseIntPipe) mangaId: number,
     @Query('translatorId', ParseIntPipe) translatorId: number,
