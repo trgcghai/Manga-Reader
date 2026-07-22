@@ -38,6 +38,7 @@ export class MangaService {
     limit: number = 20,
     search?: string,
     status?: string,
+    readingFlag?: string,
   ): Promise<{
     data: Manga[];
     total: number;
@@ -45,7 +46,13 @@ export class MangaService {
     limit: number;
     totalPages: number;
   }> => {
-    return await this.mangaRepository.findAll(page, limit, search, status);
+    const VALID_FLAG_FILTERS = [...Object.values(ReadingFlag), 'any'];
+    if (readingFlag && !VALID_FLAG_FILTERS.includes(readingFlag as any)) {
+      throw new BadRequestException(
+        `Invalid readingFlag value. Allowed: ${VALID_FLAG_FILTERS.join(', ')}`,
+      );
+    }
+    return await this.mangaRepository.findAll(page, limit, search, status, undefined, undefined, readingFlag);
   };
 
   findOne = async (

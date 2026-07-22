@@ -17,6 +17,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as XLSX from 'xlsx';
+import { ReadingFlag } from 'src/common/constants/manga.constant';
 import { MangaService } from './services/manga.service';
 import {
   ImportMangaService,
@@ -75,17 +76,25 @@ export class MangaController {
     required: false,
     description: 'Comma-separated genre names',
   })
+  @ApiQuery({
+    name: 'readingFlag',
+    required: false,
+    description: 'Filter by reading flag. Use "any" for all flagged manga.',
+    enum: [...Object.values(ReadingFlag), 'any'],
+  })
   findAll(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
     @Query('search') search?: string,
     @Query('status') status?: string,
+    @Query('readingFlag') readingFlag?: string,
   ) {
     return this.mangaService.findAll(
       parseInt(page),
       parseInt(limit),
       search,
       status,
+      readingFlag,
     );
   }
 

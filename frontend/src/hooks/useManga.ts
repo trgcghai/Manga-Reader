@@ -25,6 +25,7 @@ import type {
   TranslationDetailResponse,
   ReaderChapterItem,
   ReadingFlag,
+  ReadingFlagFilter,
 } from '#/services/api/mangaApi'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -38,6 +39,7 @@ const mangaKeys = {
     status?: string
     authors?: string
     genres?: string
+    readingFlag?: ReadingFlagFilter
   }) =>
     [
       ...mangaKeys.all,
@@ -48,6 +50,7 @@ const mangaKeys = {
       params.status,
       params.authors,
       params.genres,
+      params.readingFlag,
     ] as const,
   detail: (id: number) => [...mangaKeys.all, 'detail', id] as const,
 }
@@ -59,6 +62,7 @@ export function useMangaList(params: {
   status?: string
   authors?: string
   genres?: string
+  readingFlag?: ReadingFlagFilter
 }) {
   return useQuery<PaginatedResponse<MangaResponse>>({
     queryKey: mangaKeys.list(params),

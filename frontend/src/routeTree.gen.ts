@@ -13,6 +13,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as ReaderRouteImport } from './routes/_reader'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppFlaggedRouteImport } from './routes/_app/flagged'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAuthorsRouteImport } from './routes/admin/authors'
 import { Route as AdminGenresRouteImport } from './routes/admin/genres'
@@ -42,6 +43,11 @@ const AdminRoute = AdminRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFlaggedRoute = AppFlaggedRouteImport.update({
+  id: '/flagged',
+  path: '/flagged',
   getParentRoute: () => AppRoute,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -109,6 +115,7 @@ const AdminMangasIdEditRoute = AdminMangasIdEditRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/flagged': typeof AppFlaggedRoute
   '/admin/authors': typeof AdminAuthorsRoute
   '/admin/genres': typeof AdminGenresRoute
   '/admin/languages': typeof AdminLanguagesRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
+  '/flagged': typeof AppFlaggedRoute
   '/admin/authors': typeof AdminAuthorsRoute
   '/admin/genres': typeof AdminGenresRoute
   '/admin/languages': typeof AdminLanguagesRoute
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_reader': typeof ReaderRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
+  '/_app/flagged': typeof AppFlaggedRoute
   '/admin/authors': typeof AdminAuthorsRoute
   '/admin/genres': typeof AdminGenresRoute
   '/admin/languages': typeof AdminLanguagesRoute
@@ -160,6 +169,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/flagged'
     | '/admin/authors'
     | '/admin/genres'
     | '/admin/languages'
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/flagged'
     | '/admin/authors'
     | '/admin/genres'
     | '/admin/languages'
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_reader'
     | '/admin'
+    | '/_app/flagged'
     | '/admin/authors'
     | '/admin/genres'
     | '/admin/languages'
@@ -240,6 +252,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/flagged': {
+      id: '/_app/flagged'
+      path: '/flagged'
+      fullPath: '/flagged'
+      preLoaderRoute: typeof AppFlaggedRouteImport
       parentRoute: typeof AppRoute
     }
     '/admin/': {
@@ -330,11 +349,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppFlaggedRoute: typeof AppFlaggedRoute
   AppIndexRoute: typeof AppIndexRoute
   AppMangaIdRoute: typeof AppMangaIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppFlaggedRoute: AppFlaggedRoute,
   AppIndexRoute: AppIndexRoute,
   AppMangaIdRoute: AppMangaIdRoute,
 }

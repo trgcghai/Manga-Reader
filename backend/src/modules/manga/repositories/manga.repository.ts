@@ -16,6 +16,7 @@ export class MangaRepository {
     status?: string,
     authors?: string[],
     genres?: string[],
+    readingFlag?: string,
   ): Promise<{
     data: Manga[];
     total: number;
@@ -63,6 +64,12 @@ export class MangaRepository {
         {} as Record<string, string>,
       );
       query.andWhere(`(${conditions.join(' OR ')})`, params);
+    }
+
+    if (readingFlag === 'any') {
+      query.andWhere('manga.readingFlag IS NOT NULL');
+    } else if (readingFlag) {
+      query.andWhere('manga.readingFlag = :readingFlag', { readingFlag });
     }
 
     query

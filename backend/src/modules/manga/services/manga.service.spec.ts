@@ -82,6 +82,9 @@ describe('MangaService', () => {
         20,
         undefined,
         undefined,
+        undefined,
+        undefined,
+        undefined,
       );
     });
 
@@ -103,6 +106,9 @@ describe('MangaService', () => {
         20,
         'naruto',
         'ongoing',
+        undefined,
+        undefined,
+        undefined,
       );
     });
 
@@ -124,6 +130,9 @@ describe('MangaService', () => {
         20,
         undefined,
         undefined,
+        undefined,
+        undefined,
+        undefined,
       );
     });
 
@@ -143,6 +152,9 @@ describe('MangaService', () => {
       expect(mockMangaRepository.findAll).toHaveBeenCalledWith(
         1,
         20,
+        undefined,
+        undefined,
+        undefined,
         undefined,
         undefined,
       );
