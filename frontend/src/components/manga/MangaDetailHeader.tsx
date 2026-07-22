@@ -1,13 +1,24 @@
-import type { MangaDetailResponse } from '#/services/api/mangaApi'
+import type { MangaDetailResponse, ReadingFlag } from '#/services/api/mangaApi'
+import { READING_FLAGS } from '#/services/api/mangaApi'
 import { Badge } from '#/components/ui/badge'
-import { BookOpen, Info, Tags, UserRoundPen } from 'lucide-react'
-import { getStatusVariant } from '#/lib/mangaUtils'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '#/components/ui/select'
+import { BookOpen, Bookmark, Info, Tags, UserRoundPen } from 'lucide-react'
+import { getStatusVariant, getReadingFlagLabel } from '#/lib/mangaUtils'
+import { useUpdateMangaFlag } from '#/hooks/useManga'
 
 interface MangaDetailHeaderProps {
   manga: MangaDetailResponse
 }
 
 export function MangaDetailHeader({ manga }: MangaDetailHeaderProps) {
+  const updateFlag = useUpdateMangaFlag()
+
   return (
     <div className="flex flex-col gap-6 md:flex-row">
       <div className="shrink-0 md:w-72">
@@ -35,7 +46,7 @@ export function MangaDetailHeader({ manga }: MangaDetailHeaderProps) {
         </div>
 
         {manga.authors.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-sm text-muted-foreground">
               <UserRoundPen className="size-5 inline-block" />
             </span>
@@ -48,7 +59,7 @@ export function MangaDetailHeader({ manga }: MangaDetailHeaderProps) {
         )}
 
         {manga.genres.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-sm text-muted-foreground">
               <Tags className="size-5 inline-block" />
             </span>
@@ -60,7 +71,7 @@ export function MangaDetailHeader({ manga }: MangaDetailHeaderProps) {
           </div>
         )}
 
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-sm text-muted-foreground">
             <Info className="size-5 inline-block" />
           </span>
@@ -72,6 +83,32 @@ export function MangaDetailHeader({ manga }: MangaDetailHeaderProps) {
               {manga.status}
             </Badge>
           </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-sm text-muted-foreground">
+            <Bookmark className="size-5 inline-block" />
+          </span>
+          <Select
+            value={manga.readingFlag ?? ''}
+            onValueChange={(value: string) => { 
+              const flag = value === '' ? null : (value as ReadingFlag)
+              updateFlag.mutate({ mangaId: manga.id, flag })
+            }}
+            disabled={updateFlag.isPending}
+          >
+            <SelectTrigger className="w-40 rounded-full cursor-pointer">
+              <SelectValue placeholder="None" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">None</SelectItem>
+              {READING_FLAGS.map((flag) => (
+                <SelectItem key={flag} value={flag} className="capitalize">
+                  {getReadingFlagLabel(flag)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {manga.description && (

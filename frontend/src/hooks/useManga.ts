@@ -11,6 +11,7 @@ import {
   deleteTranslation,
   getTranslation,
   getReaderChapters,
+  updateMangaFlag,
 } from '#/services/api/mangaApi'
 import type {
   CreateMangaPayload,
@@ -23,6 +24,7 @@ import type {
   UpdateTranslationPayload,
   TranslationDetailResponse,
   ReaderChapterItem,
+  ReadingFlag,
 } from '#/services/api/mangaApi'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -101,6 +103,23 @@ export function useUpdateManga() {
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : 'Failed to update manga')
+    },
+  })
+}
+
+export function useUpdateMangaFlag() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ mangaId, flag }: { mangaId: number; flag: ReadingFlag | null }) =>
+      updateMangaFlag(mangaId, flag),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mangaKeys.all })
+    },
+    onError: (err) => {
+      console.error(
+        err instanceof Error ? err.message : 'Failed to update reading flag',
+      )
     },
   })
 }

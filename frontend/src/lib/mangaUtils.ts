@@ -26,4 +26,10 @@ const getStatusVariant = (status: string | undefined) => {
   }
 }
 
-export { addTag, getStatusVariant }
+const getReadingFlagLabel = (flag: string): string =>
+  flag
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('-')
+
+export { addTag, getStatusVariant, getReadingFlagLabel }
