@@ -6,6 +6,7 @@ import appCss from '../styles.css?url'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { TooltipProvider } from '#/components/ui/tooltip'
 import { Toaster } from '#/components/ui/sonner'
+import "driver.js/dist/driver.css";
 
 export const Route = createRootRoute({
   head: () => ({

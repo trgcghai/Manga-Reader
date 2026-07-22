@@ -6,7 +6,7 @@ import {
   IsArray,
   ArrayMinSize,
 } from 'class-validator';
-import { MangaStatus } from 'src/common/constants/manga.constant';
+import { MangaStatus, ReadingFlag } from 'src/common/constants/manga.constant';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class AuthorRef {
@@ -43,6 +43,9 @@ export class MangaResponse {
 
   @ApiProperty()
   status: string;
+
+  @ApiProperty({ enum: ReadingFlag, nullable: true })
+  readingFlag?: ReadingFlag | null;
 
   @ApiProperty({ type: AuthorRef, isArray: true })
   authors: AuthorRef[];
@@ -183,4 +186,11 @@ export class UpdateMangaDto {
   @IsArray()
   @IsString({ each: true })
   genres?: string[];
+}
+
+export class UpdateMangaFlagDto {
+  @ApiProperty({ enum: ReadingFlag, nullable: true })
+  @IsOptional()
+  @IsEnum(ReadingFlag)
+  flag?: ReadingFlag;
 }

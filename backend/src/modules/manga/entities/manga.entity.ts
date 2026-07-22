@@ -1,4 +1,4 @@
-import { MangaStatus } from 'src/common/constants/manga.constant';
+import { MangaStatus, ReadingFlag } from 'src/common/constants/manga.constant';
 import { Chapter } from './chapter.entity';
 import { Author } from 'src/modules/author/entities/author.entity';
 import { Genre } from 'src/modules/genre/entities/genre.entity';
@@ -50,6 +50,13 @@ export class Manga {
     enum: MangaStatus,
   })
   status: MangaStatus;
+
+  @Column({
+    type: 'enum',
+    enum: ReadingFlag,
+    nullable: true,
+  })
+  readingFlag?: ReadingFlag | null;
 
   @Column({ nullable: true })
   coverPath?: string;

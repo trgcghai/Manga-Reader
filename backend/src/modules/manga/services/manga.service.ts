@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
+import { ReadingFlag } from 'src/common/constants/manga.constant';
 import { MangaRepository } from 'src/modules/manga/repositories/manga.repository';
 import {
   CreateMangaDto,
@@ -73,6 +74,7 @@ export class MangaService {
       description: manga.description ?? undefined,
       coverPath: manga.coverPath ?? undefined,
       status: manga.status,
+      readingFlag: manga.readingFlag ?? undefined,
       authors: manga.authors.map((a) => ({ id: a.id, name: a.name })),
       genres: manga.genres.map((g) => ({ id: g.id, name: g.name })),
       createdAt: manga.createdAt.toISOString(),
@@ -243,5 +245,18 @@ export class MangaService {
       }
       throw new BadRequestException(`Failed to delete manga: ${error}`);
     }
+  };
+
+  updateFlag = async (id: number, flag: ReadingFlag | null): Promise<Manga> => {
+    const existing = await this.mangaRepository.findOneByIdWithRelations(id);
+    if (!existing) {
+      throw new NotFoundException(`Manga with ID ${id} not found`);
+    }
+
+    const updated = await this.mangaRepository.updateFlag(id, flag);
+    if (!updated) {
+      throw new NotFoundException(`Manga with ID ${id} not found`);
+    }
+    return updated;
   };
 }

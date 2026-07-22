@@ -25,6 +25,7 @@ import {
 import {
   CreateMangaDto,
   UpdateMangaDto,
+  UpdateMangaFlagDto,
 } from 'src/modules/manga/dto/manga.dto';
 import { ChapterService } from './services/chapter.service';
 import { TranslationService } from './services/translation.service';
@@ -155,6 +156,16 @@ export class MangaController {
   @ApiParam({ name: 'id', type: Number })
   delete(@Param('id') id: string) {
     return this.mangaService.delete(+id);
+  }
+
+  @Patch(':mangaId/flag')
+  @ApiOperation({ summary: 'Update manga reading flag' })
+  @ApiParam({ name: 'mangaId', type: Number })
+  updateFlag(
+    @Param('mangaId', ParseIntPipe) mangaId: number,
+    @Body() dto: UpdateMangaFlagDto,
+  ) {
+    return this.mangaService.updateFlag(mangaId, dto.flag ?? null);
   }
 
   @Post(':mangaId/chapter')
