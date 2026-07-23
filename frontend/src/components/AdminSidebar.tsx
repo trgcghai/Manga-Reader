@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { BookOpen, BookUser, Languages } from 'lucide-react'
+import { Activity, BookOpen, BookUser, Languages } from 'lucide-react'
 
 import { NavMain } from '#/components/nav-main.tsx'
 import { NavSub } from '#/components/nav-sub'
@@ -56,6 +56,11 @@ const data = {
       name: 'Language',
       url: '/admin/languages',
       icon: Languages,
+    },
+    {
+      name: 'Tracking',
+      url: '/admin/tracking',
+      icon: Activity,
     },
   ],
 }
