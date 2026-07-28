@@ -11,9 +11,22 @@ A full-stack offline manga reader application. Built with a NestJS backend and a
 - **MongoDB** — Document storage (optional, for future use)
 - **MinIO** — Object storage for manga page images
 
-## Quick Start (Docker Compose)
+## Prerequisites
 
-Ensure Docker and Docker Compose are installed, then:
+### Docker
+
+- Docker
+- Docker Compose
+
+### Manual
+
+- Node.js >= 22
+- MinIO installed
+- PostgreSQL installed
+
+## How to Run
+
+### Docker Compose (recommended)
 
 ```bash
 docker compose up --build
@@ -27,23 +40,16 @@ This starts all services with hot-reload enabled. Changes to `backend/` or `fron
 | Backend  | http://localhost:3001 |
 | MinIO    | http://localhost:9001 |
 
-## Manual Setup
+### Manual Setup
 
-### Prerequisites
-
-- Node.js >= 22
-- npm or pnpm
-
-### Backend
-
+#### Backend
 ```bash
 cd backend
 npm install
 npm run start:dev
 ```
 
-### Frontend
-
+#### Frontend
 ```bash
 cd frontend
 npm install
