@@ -11,8 +11,6 @@ A full-stack offline manga reader application. Built with a NestJS backend and a
 - **MongoDB** — Document storage (optional, for future use)
 - **MinIO** — Object storage for manga page images
 
-For detailed manual setup, see the [Manual Instructions](./docs/instructions/instructions.md).
-
 ## Quick Start (Docker Compose)
 
 Ensure Docker and Docker Compose are installed, then:
