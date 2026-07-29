@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TrackingController } from './tracking.controller';
 import { TrackingService } from './tracking.service';
-import { CreateTrackingSourceDto, TrackingSourceResponseDto } from './dto/tracking-source.dto';
+import {
+  CreateTrackingSourceDto,
+  TrackingSourceResponseDto,
+} from './dto/tracking-source.dto';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 
 describe('TrackingController', () => {
@@ -27,18 +30,23 @@ describe('TrackingController', () => {
           useValue: {
             getStatus: jest.fn(),
             createSource: jest.fn(),
+            findAllSources: jest.fn(),
           },
         },
       ],
     }).compile();
 
     controller = module.get<TrackingController>(TrackingController);
-    service = module.get(TrackingService) as jest.Mocked<TrackingService>;
+    service = module.get(TrackingService);
   });
 
   describe('getStatus', () => {
     it('should return module status', () => {
-      const expected = { status: 'ok', module: 'tracking', timestamp: '2026-01-01T00:00:00.000Z' };
+      const expected = {
+        status: 'ok',
+        module: 'tracking',
+        timestamp: '2026-01-01T00:00:00.000Z',
+      };
       service.getStatus.mockReturnValue(expected);
 
       const result = controller.getStatus();
@@ -80,6 +88,41 @@ describe('TrackingController', () => {
       service.createSource.mockRejectedValue(new ConflictException('url'));
 
       await expect(controller.create(dto)).rejects.toThrow(ConflictException);
+    });
+  });
+
+  describe('findAll', () => {
+    const paginatedResult = {
+      data: [],
+      total: 0,
+      page: 1,
+      limit: 20,
+      totalPages: 0,
+    };
+
+    it('should return paginated sources', async () => {
+      service.findAllSources.mockResolvedValue(paginatedResult as any);
+
+      const result = await controller.findAll();
+
+      expect(result).toEqual(paginatedResult);
+      expect(service.findAllSources).toHaveBeenCalledWith(undefined, 1, 20);
+    });
+
+    it('should pass mangaId filter', async () => {
+      service.findAllSources.mockResolvedValue(paginatedResult as any);
+
+      await controller.findAll('1');
+
+      expect(service.findAllSources).toHaveBeenCalledWith(1, 1, 20);
+    });
+
+    it('should pass page and limit params', async () => {
+      service.findAllSources.mockResolvedValue(paginatedResult as any);
+
+      await controller.findAll(undefined, '2', '5');
+
+      expect(service.findAllSources).toHaveBeenCalledWith(undefined, 2, 5);
     });
   });
 });
