@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 import { Test, TestingModule } from '@nestjs/testing';
 import { TrackingService } from './tracking.service';
 import { TrackingRepository } from './tracking.repository';
@@ -32,8 +33,8 @@ describe('TrackingService', () => {
     }).compile();
 
     service = module.get<TrackingService>(TrackingService);
-    trackingRepo = module.get(TrackingRepository) as jest.Mocked<TrackingRepository>;
-    mangaRepo = module.get(MangaRepository) as jest.Mocked<MangaRepository>;
+    trackingRepo = module.get(TrackingRepository);
+    mangaRepo = module.get(MangaRepository);
   });
 
   describe('getStatus', () => {
@@ -46,7 +47,11 @@ describe('TrackingService', () => {
   });
 
   describe('createSource', () => {
-    const dto = { mangaId: 1, url: 'https://example.com/manga/one-piece', name: 'MangaDex' };
+    const dto = {
+      mangaId: 1,
+      url: 'https://example.com/manga/one-piece',
+      name: 'MangaDex',
+    };
 
     it('should create a tracking source successfully', async () => {
       mangaRepo.findOneById.mockResolvedValue(mockManga);
@@ -59,7 +64,7 @@ describe('TrackingService', () => {
         latestChapterNumber: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-      } as any);
+      });
 
       const result = await service.createSource(dto);
 
@@ -73,7 +78,9 @@ describe('TrackingService', () => {
     it('should throw NotFoundException when manga does not exist', async () => {
       mangaRepo.findOneById.mockResolvedValue(null);
 
-      await expect(service.createSource(dto)).rejects.toThrow(NotFoundException);
+      await expect(service.createSource(dto)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(trackingRepo.createSource).not.toHaveBeenCalled();
     });
 
@@ -83,17 +90,25 @@ describe('TrackingService', () => {
         { manga: { id: 1 }, name: 'MangaDex', url: 'https://other.com' } as any,
       ]);
 
-      await expect(service.createSource(dto)).rejects.toThrow(ConflictException);
+      await expect(service.createSource(dto)).rejects.toThrow(
+        ConflictException,
+      );
       expect(trackingRepo.createSource).not.toHaveBeenCalled();
     });
 
     it('should throw ConflictException when (mangaId, url) is duplicate', async () => {
       mangaRepo.findOneById.mockResolvedValue(mockManga);
       trackingRepo.findAllSources.mockResolvedValue([
-        { manga: { id: 1 }, name: 'Other', url: 'https://example.com/manga/one-piece' } as any,
+        {
+          manga: { id: 1 },
+          name: 'Other',
+          url: 'https://example.com/manga/one-piece',
+        } as any,
       ]);
 
-      await expect(service.createSource(dto)).rejects.toThrow(ConflictException);
+      await expect(service.createSource(dto)).rejects.toThrow(
+        ConflictException,
+      );
       expect(trackingRepo.createSource).not.toHaveBeenCalled();
     });
   });
