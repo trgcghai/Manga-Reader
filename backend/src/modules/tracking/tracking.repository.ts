@@ -23,11 +23,16 @@ export class TrackingRepository {
     return await this.sourceRepo.findOne({ where: { id } });
   };
 
-  createSource = async (data: Partial<TrackingSource>): Promise<TrackingSource> => {
+  createSource = async (
+    data: Partial<TrackingSource>,
+  ): Promise<TrackingSource> => {
     return await this.sourceRepo.save(data);
   };
 
-  updateSource = async (id: number, data: Partial<TrackingSource>): Promise<TrackingSource | null> => {
+  updateSource = async (
+    id: number,
+    data: Partial<TrackingSource>,
+  ): Promise<TrackingSource | null> => {
     const entity = await this.sourceRepo.findOne({ where: { id } });
     if (!entity) return null;
     Object.assign(entity, data);
@@ -46,7 +51,9 @@ export class TrackingRepository {
     return configs[0] ?? null;
   };
 
-  upsertConfig = async (data: Partial<TrackingConfig>): Promise<TrackingConfig> => {
+  upsertConfig = async (
+    data: Partial<TrackingConfig>,
+  ): Promise<TrackingConfig> => {
     const existing = await this.findConfig();
     if (existing) {
       Object.assign(existing, data);

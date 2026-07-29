@@ -47,12 +47,20 @@ export class MangaService {
     totalPages: number;
   }> => {
     const VALID_FLAG_FILTERS = [...Object.values(ReadingFlag), 'any'];
-    if (readingFlag && !VALID_FLAG_FILTERS.includes(readingFlag as any)) {
+    if (readingFlag && !VALID_FLAG_FILTERS.includes(readingFlag)) {
       throw new BadRequestException(
         `Invalid readingFlag value. Allowed: ${VALID_FLAG_FILTERS.join(', ')}`,
       );
     }
-    return await this.mangaRepository.findAll(page, limit, search, status, undefined, undefined, readingFlag);
+    return await this.mangaRepository.findAll(
+      page,
+      limit,
+      search,
+      status,
+      undefined,
+      undefined,
+      readingFlag,
+    );
   };
 
   findOne = async (

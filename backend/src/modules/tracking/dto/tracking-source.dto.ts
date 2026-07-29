@@ -1,7 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsInt, IsOptional, IsString, IsUrl,
-} from 'class-validator';
+import { IsInt, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class CreateTrackingSourceDto {
   @ApiProperty({ example: 1 })
