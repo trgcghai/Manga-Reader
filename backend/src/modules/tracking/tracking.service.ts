@@ -1,7 +1,14 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { TrackingRepository } from './tracking.repository';
 import { MangaRepository } from '../manga/repositories/manga.repository';
-import { CreateTrackingSourceDto, TrackingSourceResponseDto } from './dto/tracking-source.dto';
+import {
+  CreateTrackingSourceDto,
+  TrackingSourceResponseDto,
+} from './dto/tracking-source.dto';
 
 @Injectable()
 export class TrackingService {
@@ -18,7 +25,9 @@ export class TrackingService {
     };
   };
 
-  createSource = async (dto: CreateTrackingSourceDto): Promise<TrackingSourceResponseDto> => {
+  createSource = async (
+    dto: CreateTrackingSourceDto,
+  ): Promise<TrackingSourceResponseDto> => {
     const manga = await this.mangaRepository.findOneById(dto.mangaId);
     if (!manga) {
       throw new NotFoundException(`Manga with ID ${dto.mangaId} not found`);
@@ -30,14 +39,18 @@ export class TrackingService {
       (s) => s.manga?.id === dto.mangaId && s.name === dto.name,
     );
     if (duplicateName) {
-      throw new ConflictException(`Tracking source with name "${dto.name}" already exists for this manga`);
+      throw new ConflictException(
+        `Tracking source with name "${dto.name}" already exists for this manga`,
+      );
     }
 
     const duplicateUrl = existingSources.find(
       (s) => s.manga?.id === dto.mangaId && s.url === dto.url,
     );
     if (duplicateUrl) {
-      throw new ConflictException(`Tracking source with URL "${dto.url}" already exists for this manga`);
+      throw new ConflictException(
+        `Tracking source with URL "${dto.url}" already exists for this manga`,
+      );
     }
 
     const source = await this.trackingRepository.createSource({
@@ -55,5 +68,13 @@ export class TrackingService {
       createdAt: source.createdAt.toISOString(),
       updatedAt: source.updatedAt.toISOString(),
     };
+  };
+
+  findAllSources = async (
+    mangaId?: number,
+    page: number = 1,
+    limit: number = 20,
+  ) => {
+    return await this.trackingRepository.findAllSourcesPaginated(mangaId, page, limit);
   };
 }
