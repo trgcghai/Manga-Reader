@@ -14,6 +14,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { TranslatorModule } from './modules/translator/translator.module';
 import { LanguageModule } from './modules/language/language.module';
+import { TrackingModule } from './modules/tracking/tracking.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { LanguageModule } from './modules/language/language.module';
     MangaModule,
     TranslatorModule,
     LanguageModule,
+    TrackingModule,
   ],
   controllers: [HealthController],
   providers: [
