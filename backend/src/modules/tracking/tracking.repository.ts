@@ -19,6 +19,37 @@ export class TrackingRepository {
     return await this.sourceRepo.find();
   };
 
+  findAllSourcesPaginated = async (
+    mangaId?: number,
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<{
+    data: TrackingSource[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> => {
+    const qb = this.sourceRepo.createQueryBuilder('source');
+    qb.leftJoinAndSelect('source.manga', 'manga');
+    qb.skip((page - 1) * limit);
+    qb.take(limit);
+    qb.orderBy('source.id', 'ASC');
+
+    if (mangaId) {
+      qb.where('source.mangaId = :mangaId', { mangaId });
+    }
+
+    const [data, total] = await qb.getManyAndCount();
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  };
+
   findSourceById = async (id: number): Promise<TrackingSource | null> => {
     return await this.sourceRepo.findOne({ where: { id } });
   };
