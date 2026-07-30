@@ -1,14 +1,16 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param, Patch } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiOkResponse,
   ApiCreatedResponse,
   ApiQuery,
+  ApiParam,
 } from '@nestjs/swagger';
 import { TrackingService } from './tracking.service';
 import {
   CreateTrackingSourceDto,
+  UpdateTrackingSourceDto,
   TrackingSourceResponseDto,
 } from './dto/tracking-source.dto';
 
@@ -48,5 +50,16 @@ export class TrackingController {
       parseInt(page, 10),
       parseInt(limit, 10),
     );
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update a tracking source' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiOkResponse({ type: TrackingSourceResponseDto })
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateTrackingSourceDto,
+  ): Promise<TrackingSourceResponseDto> {
+    return this.trackingService.updateSource(parseInt(id, 10), dto);
   }
 }

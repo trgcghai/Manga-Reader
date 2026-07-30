@@ -3,6 +3,7 @@ import { TrackingController } from './tracking.controller';
 import { TrackingService } from './tracking.service';
 import {
   CreateTrackingSourceDto,
+  UpdateTrackingSourceDto,
   TrackingSourceResponseDto,
 } from './dto/tracking-source.dto';
 import { NotFoundException, ConflictException } from '@nestjs/common';
@@ -31,6 +32,7 @@ describe('TrackingController', () => {
             getStatus: jest.fn(),
             createSource: jest.fn(),
             findAllSources: jest.fn(),
+            updateSource: jest.fn(),
           },
         },
       ],
@@ -123,6 +125,35 @@ describe('TrackingController', () => {
       await controller.findAll(undefined, '2', '5');
 
       expect(service.findAllSources).toHaveBeenCalledWith(undefined, 2, 5);
+    });
+  });
+
+  describe('update', () => {
+    const updateDto: UpdateTrackingSourceDto = { name: 'MangaPlus' };
+
+    it('should update and return updated source', async () => {
+      service.updateSource.mockResolvedValue(mockResponse);
+
+      const result = await controller.update('1', updateDto);
+
+      expect(result).toEqual(mockResponse);
+      expect(service.updateSource).toHaveBeenCalledWith(1, updateDto);
+    });
+
+    it('should throw NotFoundException when source not found', async () => {
+      service.updateSource.mockRejectedValue(new NotFoundException());
+
+      await expect(controller.update('999', updateDto)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('should throw ConflictException on duplicate name', async () => {
+      service.updateSource.mockRejectedValue(new ConflictException('name'));
+
+      await expect(controller.update('1', updateDto)).rejects.toThrow(
+        ConflictException,
+      );
     });
   });
 });
