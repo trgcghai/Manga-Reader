@@ -75,6 +75,10 @@ export class TrackingService {
     page: number = 1,
     limit: number = 20,
   ) => {
-    return await this.trackingRepository.findAllSourcesPaginated(mangaId, page, limit);
+    return await this.trackingRepository.findAllSourcesPaginated(
+      mangaId,
+      page,
+      limit,
+    );
   };
 }

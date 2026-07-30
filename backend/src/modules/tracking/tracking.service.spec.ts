@@ -140,7 +140,11 @@ describe('TrackingService', () => {
       expect(result.total).toBe(1);
       expect(result.page).toBe(1);
       expect(result.limit).toBe(20);
-      expect(trackingRepo.findAllSourcesPaginated).toHaveBeenCalledWith(undefined, 1, 20);
+      expect(trackingRepo.findAllSourcesPaginated).toHaveBeenCalledWith(
+        undefined,
+        1,
+        20,
+      );
     });
 
     it('should filter by mangaId', async () => {
@@ -154,12 +158,16 @@ describe('TrackingService', () => {
 
       await service.findAllSources(1);
 
-      expect(trackingRepo.findAllSourcesPaginated).toHaveBeenCalledWith(1, 1, 20);
+      expect(trackingRepo.findAllSourcesPaginated).toHaveBeenCalledWith(
+        1,
+        1,
+        20,
+      );
     });
 
     it('should respect page and limit params', async () => {
       trackingRepo.findAllSourcesPaginated.mockResolvedValue({
-        data: [] as any,
+        data: [],
         total: 0,
         page: 2,
         limit: 5,
@@ -170,12 +178,16 @@ describe('TrackingService', () => {
 
       expect(result.page).toBe(2);
       expect(result.limit).toBe(5);
-      expect(trackingRepo.findAllSourcesPaginated).toHaveBeenCalledWith(undefined, 2, 5);
+      expect(trackingRepo.findAllSourcesPaginated).toHaveBeenCalledWith(
+        undefined,
+        2,
+        5,
+      );
     });
 
     it('should return empty data when no results', async () => {
       trackingRepo.findAllSourcesPaginated.mockResolvedValue({
-        data: [] as any,
+        data: [],
         total: 0,
         page: 1,
         limit: 20,

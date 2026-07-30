@@ -101,7 +101,7 @@ describe('TrackingController', () => {
     };
 
     it('should return paginated sources', async () => {
-      service.findAllSources.mockResolvedValue(paginatedResult as any);
+      service.findAllSources.mockResolvedValue(paginatedResult);
 
       const result = await controller.findAll();
 
@@ -110,7 +110,7 @@ describe('TrackingController', () => {
     });
 
     it('should pass mangaId filter', async () => {
-      service.findAllSources.mockResolvedValue(paginatedResult as any);
+      service.findAllSources.mockResolvedValue(paginatedResult);
 
       await controller.findAll('1');
 
@@ -118,7 +118,7 @@ describe('TrackingController', () => {
     });
 
     it('should pass page and limit params', async () => {
-      service.findAllSources.mockResolvedValue(paginatedResult as any);
+      service.findAllSources.mockResolvedValue(paginatedResult);
 
       await controller.findAll(undefined, '2', '5');
 
