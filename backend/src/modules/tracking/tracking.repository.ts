@@ -51,7 +51,33 @@ export class TrackingRepository {
   };
 
   findSourceById = async (id: number): Promise<TrackingSource | null> => {
-    return await this.sourceRepo.findOne({ where: { id } });
+    return await this.sourceRepo.findOne({ where: { id }, relations: ['manga'] });
+  };
+
+  findByMangaIdAndNameExcludingId = async (
+    mangaId: number,
+    name: string,
+    excludeId: number,
+  ): Promise<TrackingSource | null> => {
+    return await this.sourceRepo
+      .createQueryBuilder('source')
+      .where('source.mangaId = :mangaId', { mangaId })
+      .andWhere('source.name = :name', { name })
+      .andWhere('source.id != :excludeId', { excludeId })
+      .getOne();
+  };
+
+  findByMangaIdAndUrlExcludingId = async (
+    mangaId: number,
+    url: string,
+    excludeId: number,
+  ): Promise<TrackingSource | null> => {
+    return await this.sourceRepo
+      .createQueryBuilder('source')
+      .where('source.mangaId = :mangaId', { mangaId })
+      .andWhere('source.url = :url', { url })
+      .andWhere('source.id != :excludeId', { excludeId })
+      .getOne();
   };
 
   createSource = async (
