@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 import { Test, TestingModule } from '@nestjs/testing';
 import { TrackingService } from './tracking.service';
 import { TrackingRepository } from './tracking.repository';
@@ -231,8 +231,14 @@ describe('TrackingService', () => {
       expect(result.name).toBe('MangaPlus');
       expect(result.latestChapterNumber).toBe('100');
       expect(trackingRepo.findSourceById).toHaveBeenCalledWith(1);
-      expect(trackingRepo.findByMangaIdAndNameExcludingId).toHaveBeenCalledWith(1, 'MangaPlus', 1);
-      expect(trackingRepo.updateSource).toHaveBeenCalledWith(1, { name: 'MangaPlus' });
+      expect(trackingRepo.findByMangaIdAndNameExcludingId).toHaveBeenCalledWith(
+        1,
+        'MangaPlus',
+        1,
+      );
+      expect(trackingRepo.updateSource).toHaveBeenCalledWith(1, {
+        name: 'MangaPlus',
+      });
     });
 
     it('should update url and return updated DTO', async () => {
@@ -312,8 +318,12 @@ describe('TrackingService', () => {
 
       await service.updateSource(1, {});
 
-      expect(trackingRepo.findByMangaIdAndNameExcludingId).not.toHaveBeenCalled();
-      expect(trackingRepo.findByMangaIdAndUrlExcludingId).not.toHaveBeenCalled();
+      expect(
+        trackingRepo.findByMangaIdAndNameExcludingId,
+      ).not.toHaveBeenCalled();
+      expect(
+        trackingRepo.findByMangaIdAndUrlExcludingId,
+      ).not.toHaveBeenCalled();
       expect(trackingRepo.updateSource).toHaveBeenCalledWith(1, {});
     });
   });

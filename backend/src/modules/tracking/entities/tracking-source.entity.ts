@@ -26,7 +26,7 @@ export class TrackingSource {
   name: string;
 
   @Column({ nullable: true, default: null })
-  latestChapterNumber: string | null;
+  latestChapterNumber: string;
 
   @CreateDateColumn()
   createdAt: Date;

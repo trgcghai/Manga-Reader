@@ -93,11 +93,12 @@ export class TrackingService {
     }
 
     if (dto.name) {
-      const duplicateName = await this.trackingRepository.findByMangaIdAndNameExcludingId(
-        source.manga.id,
-        dto.name,
-        id,
-      );
+      const duplicateName =
+        await this.trackingRepository.findByMangaIdAndNameExcludingId(
+          source.manga.id,
+          dto.name,
+          id,
+        );
       if (duplicateName) {
         throw new ConflictException(
           `Tracking source with name "${dto.name}" already exists for this manga`,
@@ -106,11 +107,12 @@ export class TrackingService {
     }
 
     if (dto.url) {
-      const duplicateUrl = await this.trackingRepository.findByMangaIdAndUrlExcludingId(
-        source.manga.id,
-        dto.url,
-        id,
-      );
+      const duplicateUrl =
+        await this.trackingRepository.findByMangaIdAndUrlExcludingId(
+          source.manga.id,
+          dto.url,
+          id,
+        );
       if (duplicateUrl) {
         throw new ConflictException(
           `Tracking source with URL "${dto.url}" already exists for this manga`,

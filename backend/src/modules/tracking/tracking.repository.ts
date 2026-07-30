@@ -51,7 +51,10 @@ export class TrackingRepository {
   };
 
   findSourceById = async (id: number): Promise<TrackingSource | null> => {
-    return await this.sourceRepo.findOne({ where: { id }, relations: ['manga'] });
+    return await this.sourceRepo.findOne({
+      where: { id },
+      relations: ['manga'],
+    });
   };
 
   findByMangaIdAndNameExcludingId = async (
