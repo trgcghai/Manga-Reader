@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access */
 import { Test, TestingModule } from '@nestjs/testing';
 import { TrackingService } from './tracking.service';
 import { TrackingRepository } from './tracking.repository';
@@ -22,6 +22,10 @@ describe('TrackingService', () => {
             findAllSources: jest.fn(),
             findAllSourcesPaginated: jest.fn(),
             createSource: jest.fn(),
+            findSourceById: jest.fn(),
+            findByMangaIdAndNameExcludingId: jest.fn(),
+            findByMangaIdAndUrlExcludingId: jest.fn(),
+            updateSource: jest.fn(),
           },
         },
         {
@@ -198,6 +202,119 @@ describe('TrackingService', () => {
 
       expect(result.data).toEqual([]);
       expect(result.total).toBe(0);
+    });
+  });
+
+  describe('updateSource', () => {
+    const existingSource = {
+      id: 1,
+      manga: { id: 1, title: 'One Piece' },
+      url: 'https://example.com/manga/one-piece',
+      name: 'MangaDex',
+      latestChapterNumber: '100',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const updateDto = { name: 'MangaPlus' };
+
+    it('should update name and return updated DTO', async () => {
+      trackingRepo.findSourceById.mockResolvedValue(existingSource as any);
+      trackingRepo.findByMangaIdAndNameExcludingId.mockResolvedValue(null);
+      trackingRepo.updateSource.mockResolvedValue({
+        ...existingSource,
+        name: 'MangaPlus',
+      } as any);
+
+      const result = await service.updateSource(1, updateDto);
+
+      expect(result.name).toBe('MangaPlus');
+      expect(result.latestChapterNumber).toBe('100');
+      expect(trackingRepo.findSourceById).toHaveBeenCalledWith(1);
+      expect(trackingRepo.findByMangaIdAndNameExcludingId).toHaveBeenCalledWith(1, 'MangaPlus', 1);
+      expect(trackingRepo.updateSource).toHaveBeenCalledWith(1, { name: 'MangaPlus' });
+    });
+
+    it('should update url and return updated DTO', async () => {
+      const urlDto = { url: 'https://example.com/manga/one-piece-v2' };
+      trackingRepo.findSourceById.mockResolvedValue(existingSource as any);
+      trackingRepo.findByMangaIdAndUrlExcludingId.mockResolvedValue(null);
+      trackingRepo.updateSource.mockResolvedValue({
+        ...existingSource,
+        url: 'https://example.com/manga/one-piece-v2',
+      } as any);
+
+      const result = await service.updateSource(1, urlDto);
+
+      expect(result.url).toBe('https://example.com/manga/one-piece-v2');
+      expect(trackingRepo.findByMangaIdAndUrlExcludingId).toHaveBeenCalledWith(
+        1,
+        'https://example.com/manga/one-piece-v2',
+        1,
+      );
+    });
+
+    it('should NOT reset latestChapterNumber', async () => {
+      trackingRepo.findSourceById.mockResolvedValue(existingSource as any);
+      trackingRepo.findByMangaIdAndNameExcludingId.mockResolvedValue(null);
+      trackingRepo.updateSource.mockResolvedValue({
+        ...existingSource,
+        name: 'MangaPlus',
+        latestChapterNumber: '100',
+      } as any);
+
+      const result = await service.updateSource(1, updateDto);
+
+      expect(result.latestChapterNumber).toBe('100');
+    });
+
+    it('should throw NotFoundException when source does not exist', async () => {
+      trackingRepo.findSourceById.mockResolvedValue(null);
+
+      await expect(service.updateSource(999, updateDto)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(trackingRepo.updateSource).not.toHaveBeenCalled();
+    });
+
+    it('should throw ConflictException when (mangaId, name) conflicts', async () => {
+      trackingRepo.findSourceById.mockResolvedValue(existingSource as any);
+      trackingRepo.findByMangaIdAndNameExcludingId.mockResolvedValue({
+        id: 2,
+        manga: { id: 1 },
+        name: 'MangaPlus',
+      } as any);
+
+      await expect(service.updateSource(1, updateDto)).rejects.toThrow(
+        ConflictException,
+      );
+      expect(trackingRepo.updateSource).not.toHaveBeenCalled();
+    });
+
+    it('should throw ConflictException when (mangaId, url) conflicts', async () => {
+      const urlDto = { url: 'https://example.com/manga/one-piece-v2' };
+      trackingRepo.findSourceById.mockResolvedValue(existingSource as any);
+      trackingRepo.findByMangaIdAndUrlExcludingId.mockResolvedValue({
+        id: 2,
+        manga: { id: 1 },
+        url: 'https://example.com/manga/one-piece-v2',
+      } as any);
+
+      await expect(service.updateSource(1, urlDto)).rejects.toThrow(
+        ConflictException,
+      );
+      expect(trackingRepo.updateSource).not.toHaveBeenCalled();
+    });
+
+    it('should skip duplicate checks when name/url not provided', async () => {
+      trackingRepo.findSourceById.mockResolvedValue(existingSource as any);
+      trackingRepo.updateSource.mockResolvedValue(existingSource as any);
+
+      await service.updateSource(1, {});
+
+      expect(trackingRepo.findByMangaIdAndNameExcludingId).not.toHaveBeenCalled();
+      expect(trackingRepo.findByMangaIdAndUrlExcludingId).not.toHaveBeenCalled();
+      expect(trackingRepo.updateSource).toHaveBeenCalledWith(1, {});
     });
   });
 });
