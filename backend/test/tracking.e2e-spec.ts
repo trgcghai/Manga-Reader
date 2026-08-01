@@ -34,6 +34,7 @@ describe('TrackingSource CRUD (e2e)', () => {
   let app: INestApplication<App>;
   let dataSource: DataSource;
   let trackingSourceRepo: Repository<TrackingSource>;
+  let trackingConfigRepo: Repository<TrackingConfig>;
   let mangaRepo: Repository<Manga>;
 
   beforeAll(async () => {
@@ -74,6 +75,7 @@ describe('TrackingSource CRUD (e2e)', () => {
     );
     dataSource = moduleFixture.get(DataSource);
     trackingSourceRepo = moduleFixture.get(getRepositoryToken(TrackingSource));
+    trackingConfigRepo = moduleFixture.get(getRepositoryToken(TrackingConfig));
     mangaRepo = moduleFixture.get(getRepositoryToken(Manga));
     await app.init();
   });
@@ -155,6 +157,38 @@ describe('TrackingSource CRUD (e2e)', () => {
 
       const ids = (res.body.data as { id: number }[]).map((s) => s.id);
       expect(ids).not.toContain(id);
+    });
+  });
+
+  describe('GET /tracking-config', () => {
+    it('returns 200 with config when one exists', async () => {
+      await trackingConfigRepo.save({
+        frequency: 'daily',
+        interval: 1,
+        runAt: '02:00',
+      } as any);
+
+      const res = await request(app.getHttpServer())
+        .get('/tracking-config')
+        .expect(200);
+
+      expect(res.body.id).toBeDefined();
+      expect(res.body.frequency).toBe('daily');
+      expect(res.body.interval).toBe(1);
+      expect(res.body.runAt).toBe('02:00');
+      expect(res.body.updatedAt).toBeDefined();
+    });
+
+    it('auto-creates and returns default config when none exists', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/tracking-config')
+        .expect(200);
+
+      expect(res.body.id).toBeDefined();
+      expect(res.body.frequency).toBe('daily');
+      expect(res.body.interval).toBe(1);
+      expect(res.body.runAt).toBe('00:00');
+      expect(res.body.updatedAt).toBeDefined();
     });
   });
 });
