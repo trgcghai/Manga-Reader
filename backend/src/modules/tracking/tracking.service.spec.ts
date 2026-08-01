@@ -26,6 +26,7 @@ describe('TrackingService', () => {
             findByMangaIdAndNameExcludingId: jest.fn(),
             findByMangaIdAndUrlExcludingId: jest.fn(),
             updateSource: jest.fn(),
+            deleteSource: jest.fn(),
           },
         },
         {
@@ -325,6 +326,37 @@ describe('TrackingService', () => {
         trackingRepo.findByMangaIdAndUrlExcludingId,
       ).not.toHaveBeenCalled();
       expect(trackingRepo.updateSource).toHaveBeenCalledWith(1, {});
+    });
+  });
+
+  describe('deleteSource', () => {
+    const existingSource = {
+      id: 1,
+      manga: { id: 1, title: 'One Piece' },
+      url: 'https://example.com/manga/one-piece',
+      name: 'MangaDex',
+      latestChapterNumber: '100',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    it('should delete a source successfully', async () => {
+      trackingRepo.findSourceById.mockResolvedValue(existingSource as any);
+      trackingRepo.deleteSource.mockResolvedValue(true);
+
+      await service.deleteSource(1);
+
+      expect(trackingRepo.findSourceById).toHaveBeenCalledWith(1);
+      expect(trackingRepo.deleteSource).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw NotFoundException when source does not exist', async () => {
+      trackingRepo.findSourceById.mockResolvedValue(null);
+
+      await expect(service.deleteSource(999)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(trackingRepo.deleteSource).not.toHaveBeenCalled();
     });
   });
 });

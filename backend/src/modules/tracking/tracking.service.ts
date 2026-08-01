@@ -139,4 +139,12 @@ export class TrackingService {
       updatedAt: updated.updatedAt.toISOString(),
     };
   };
+
+  deleteSource = async (id: number): Promise<void> => {
+    const source = await this.trackingRepository.findSourceById(id);
+    if (!source) {
+      throw new NotFoundException(`Tracking source with ID ${id} not found`);
+    }
+    await this.trackingRepository.deleteSource(id);
+  };
 }
