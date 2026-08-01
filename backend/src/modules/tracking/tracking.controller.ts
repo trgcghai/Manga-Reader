@@ -6,6 +6,9 @@ import {
   Query,
   Param,
   Patch,
+  Delete,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -14,6 +17,7 @@ import {
   ApiCreatedResponse,
   ApiQuery,
   ApiParam,
+  ApiNoContentResponse,
 } from '@nestjs/swagger';
 import { TrackingService } from './tracking.service';
 import {
@@ -69,5 +73,14 @@ export class TrackingController {
     @Body() dto: UpdateTrackingSourceDto,
   ): Promise<TrackingSourceResponseDto> {
     return this.trackingService.updateSource(parseInt(id, 10), dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a tracking source' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiNoContentResponse({ description: 'Tracking source deleted' })
+  async delete(@Param('id') id: string): Promise<void> {
+    await this.trackingService.deleteSource(parseInt(id, 10));
   }
 }

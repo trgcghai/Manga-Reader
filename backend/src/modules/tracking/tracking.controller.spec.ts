@@ -33,6 +33,7 @@ describe('TrackingController', () => {
             createSource: jest.fn(),
             findAllSources: jest.fn(),
             updateSource: jest.fn(),
+            deleteSource: jest.fn(),
           },
         },
       ],
@@ -154,6 +155,23 @@ describe('TrackingController', () => {
       await expect(controller.update('1', updateDto)).rejects.toThrow(
         ConflictException,
       );
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete a source and return no body', async () => {
+      service.deleteSource.mockResolvedValue(undefined);
+
+      const result = await controller.delete('1');
+
+      expect(result).toBeUndefined();
+      expect(service.deleteSource).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw NotFoundException when source not found', async () => {
+      service.deleteSource.mockRejectedValue(new NotFoundException());
+
+      await expect(controller.delete('999')).rejects.toThrow(NotFoundException);
     });
   });
 });
