@@ -27,6 +27,8 @@ describe('TrackingService', () => {
             findByMangaIdAndUrlExcludingId: jest.fn(),
             updateSource: jest.fn(),
             deleteSource: jest.fn(),
+            findConfig: jest.fn(),
+            upsertConfig: jest.fn(),
           },
         },
         {
@@ -357,6 +359,48 @@ describe('TrackingService', () => {
         NotFoundException,
       );
       expect(trackingRepo.deleteSource).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getConfig', () => {
+    const existingConfig = {
+      id: 1,
+      frequency: 'daily',
+      interval: 1,
+      runAt: '00:00',
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    };
+
+    it('should return existing config mapped to DTO', async () => {
+      trackingRepo.findConfig.mockResolvedValue(existingConfig as any);
+
+      const result = await service.getConfig();
+
+      expect(result).toEqual({
+        id: 1,
+        frequency: 'daily',
+        interval: 1,
+        runAt: '00:00',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
+      expect(trackingRepo.findConfig).toHaveBeenCalled();
+      expect(trackingRepo.upsertConfig).not.toHaveBeenCalled();
+    });
+
+    it('should auto-create default config when none exists', async () => {
+      trackingRepo.findConfig.mockResolvedValue(null);
+      trackingRepo.upsertConfig.mockResolvedValue(existingConfig as any);
+
+      const result = await service.getConfig();
+
+      expect(result.frequency).toBe('daily');
+      expect(result.interval).toBe(1);
+      expect(result.runAt).toBe('00:00');
+      expect(trackingRepo.upsertConfig).toHaveBeenCalledWith({
+        frequency: 'daily',
+        interval: 1,
+        runAt: '00:00',
+      });
     });
   });
 });

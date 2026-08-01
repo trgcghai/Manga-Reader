@@ -10,6 +10,8 @@ import {
   UpdateTrackingSourceDto,
   TrackingSourceResponseDto,
 } from './dto/tracking-source.dto';
+import { TrackingConfigResponseDto } from './dto/tracking-config.dto';
+import { DEFAULT_TRACKING_CONFIG } from './constants/tracking.constant';
 
 @Injectable()
 export class TrackingService {
@@ -146,5 +148,22 @@ export class TrackingService {
       throw new NotFoundException(`Tracking source with ID ${id} not found`);
     }
     await this.trackingRepository.deleteSource(id);
+  };
+
+  getConfig = async (): Promise<TrackingConfigResponseDto> => {
+    let config = await this.trackingRepository.findConfig();
+    if (!config) {
+      config = await this.trackingRepository.upsertConfig(
+        DEFAULT_TRACKING_CONFIG,
+      );
+    }
+
+    return {
+      id: config.id,
+      frequency: config.frequency,
+      interval: config.interval,
+      runAt: config.runAt,
+      updatedAt: config.updatedAt.toISOString(),
+    };
   };
 }
