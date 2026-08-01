@@ -1,9 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiOkResponse,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 import { TrackingService } from './tracking.service';
 import { TrackingConfigResponseDto } from './dto/tracking-config.dto';
 
