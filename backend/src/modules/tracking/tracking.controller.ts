@@ -25,6 +25,7 @@ import {
   UpdateTrackingSourceDto,
   TrackingSourceResponseDto,
 } from './dto/tracking-source.dto';
+import { TrackingConfigResponseDto } from './dto/tracking-config.dto';
 
 @ApiTags('Tracking Sources')
 @Controller('tracking-sources')
@@ -82,5 +83,12 @@ export class TrackingController {
   @ApiNoContentResponse({ description: 'Tracking source deleted' })
   async delete(@Param('id') id: string): Promise<void> {
     await this.trackingService.deleteSource(parseInt(id, 10));
+  }
+
+  @Get('config')
+  @ApiOperation({ summary: 'Get tracking config' })
+  @ApiOkResponse({ type: TrackingConfigResponseDto })
+  getConfig(): Promise<TrackingConfigResponseDto> {
+    return this.trackingService.getConfig();
   }
 }

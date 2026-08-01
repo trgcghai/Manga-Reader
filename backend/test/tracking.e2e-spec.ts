@@ -160,7 +160,7 @@ describe('TrackingSource CRUD (e2e)', () => {
     });
   });
 
-  describe('GET /tracking-config', () => {
+  describe('GET /tracking-sources/config', () => {
     it('returns 200 with config when one exists', async () => {
       await trackingConfigRepo.save({
         frequency: 'daily',
@@ -169,7 +169,7 @@ describe('TrackingSource CRUD (e2e)', () => {
       } as any);
 
       const res = await request(app.getHttpServer())
-        .get('/tracking-config')
+        .get('/tracking-sources/config')
         .expect(200);
 
       expect(res.body.id).toBeDefined();
@@ -181,7 +181,7 @@ describe('TrackingSource CRUD (e2e)', () => {
 
     it('auto-creates and returns default config when none exists', async () => {
       const res = await request(app.getHttpServer())
-        .get('/tracking-config')
+        .get('/tracking-sources/config')
         .expect(200);
 
       expect(res.body.id).toBeDefined();

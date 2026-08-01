@@ -6,6 +6,7 @@ import {
   UpdateTrackingSourceDto,
   TrackingSourceResponseDto,
 } from './dto/tracking-source.dto';
+import { TrackingConfigResponseDto } from './dto/tracking-config.dto';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 
 describe('TrackingController', () => {
@@ -34,6 +35,7 @@ describe('TrackingController', () => {
             findAllSources: jest.fn(),
             updateSource: jest.fn(),
             deleteSource: jest.fn(),
+            getConfig: jest.fn(),
           },
         },
       ],
@@ -155,6 +157,25 @@ describe('TrackingController', () => {
       await expect(controller.update('1', updateDto)).rejects.toThrow(
         ConflictException,
       );
+    });
+  });
+
+  describe('getConfig', () => {
+    const mockConfig: TrackingConfigResponseDto = {
+      id: 1,
+      frequency: 'daily',
+      interval: 1,
+      runAt: '00:00',
+      updatedAt: new Date().toISOString(),
+    };
+
+    it('should return tracking config DTO', async () => {
+      service.getConfig.mockResolvedValue(mockConfig);
+
+      const result = await controller.getConfig();
+
+      expect(result).toEqual(mockConfig);
+      expect(service.getConfig).toHaveBeenCalled();
     });
   });
 
