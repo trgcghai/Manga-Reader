@@ -10,7 +10,10 @@ import {
   UpdateTrackingSourceDto,
   TrackingSourceResponseDto,
 } from './dto/tracking-source.dto';
-import { TrackingConfigResponseDto } from './dto/tracking-config.dto';
+import {
+  UpdateTrackingConfigDto,
+  TrackingConfigResponseDto,
+} from './dto/tracking-config.dto';
 import { DEFAULT_TRACKING_CONFIG } from './constants/tracking.constant';
 
 @Injectable()
@@ -157,6 +160,24 @@ export class TrackingService {
         DEFAULT_TRACKING_CONFIG,
       );
     }
+
+    return {
+      id: config.id,
+      frequency: config.frequency,
+      interval: config.interval,
+      runAt: config.runAt,
+      updatedAt: config.updatedAt.toISOString(),
+    };
+  };
+
+  updateConfig = async (
+    dto: UpdateTrackingConfigDto,
+  ): Promise<TrackingConfigResponseDto> => {
+    const current = await this.trackingRepository.findConfig();
+    const base = current ?? DEFAULT_TRACKING_CONFIG;
+    const merged = { ...base, ...dto };
+
+    const config = await this.trackingRepository.upsertConfig(merged);
 
     return {
       id: config.id,

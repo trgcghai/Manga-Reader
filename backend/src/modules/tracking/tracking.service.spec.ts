@@ -403,4 +403,75 @@ describe('TrackingService', () => {
       });
     });
   });
+
+  describe('updateConfig', () => {
+    const existingConfig = {
+      id: 1,
+      frequency: 'daily',
+      interval: 1,
+      runAt: '00:00',
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    };
+
+    it('should preserve unspecified fields on partial update', async () => {
+      trackingRepo.findConfig.mockResolvedValue(existingConfig as any);
+      trackingRepo.upsertConfig.mockResolvedValue({
+        ...existingConfig,
+        frequency: 'weekly',
+      } as any);
+
+      const result = await service.updateConfig({ frequency: 'weekly' });
+
+      expect(trackingRepo.upsertConfig).toHaveBeenCalledWith({
+        id: 1,
+        frequency: 'weekly',
+        interval: 1,
+        runAt: '00:00',
+        updatedAt: existingConfig.updatedAt,
+      });
+      expect(result).toEqual({
+        id: 1,
+        frequency: 'weekly',
+        interval: 1,
+        runAt: '00:00',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
+    });
+
+    it('should auto-create merging over defaults when none exists', async () => {
+      trackingRepo.findConfig.mockResolvedValue(null);
+      trackingRepo.upsertConfig.mockResolvedValue({
+        ...existingConfig,
+        runAt: '23:59',
+      } as any);
+
+      const result = await service.updateConfig({ runAt: '23:59' });
+
+      expect(trackingRepo.upsertConfig).toHaveBeenCalledWith({
+        frequency: 'daily',
+        interval: 1,
+        runAt: '23:59',
+      });
+      expect(result.runAt).toBe('23:59');
+    });
+
+    it('should map result to DTO with ISO updatedAt', async () => {
+      trackingRepo.findConfig.mockResolvedValue(existingConfig as any);
+      trackingRepo.upsertConfig.mockResolvedValue({
+        ...existingConfig,
+        interval: 2,
+      } as any);
+
+      const result = await service.updateConfig({ interval: 2 });
+
+      expect(result).toEqual({
+        id: 1,
+        frequency: 'daily',
+        interval: 2,
+        runAt: '00:00',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
+      expect(trackingRepo.findConfig).toHaveBeenCalled();
+    });
+  });
 });
