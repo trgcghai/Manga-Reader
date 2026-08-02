@@ -491,5 +491,32 @@ describe('TrackingService', () => {
         updatedAt: '2026-01-01T00:00:00.000Z',
       });
     });
+
+    it('should treat undefined dto keys as absent', async () => {
+      trackingRepo.findConfig.mockResolvedValue(existingConfig as any);
+      trackingRepo.upsertConfig.mockResolvedValue({
+        ...existingConfig,
+        frequency: 'weekly',
+      } as any);
+
+      const result = await service.updateConfig({
+        frequency: 'weekly',
+        interval: undefined,
+        runAt: undefined,
+      } as any);
+
+      expect(trackingRepo.upsertConfig).toHaveBeenCalledWith({
+        frequency: 'weekly',
+        interval: 1,
+        runAt: '00:00',
+      });
+      expect(result).toEqual({
+        id: 1,
+        frequency: 'weekly',
+        interval: 1,
+        runAt: '00:00',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
+    });
   });
 });
