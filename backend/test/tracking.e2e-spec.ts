@@ -191,4 +191,128 @@ describe('TrackingSource CRUD (e2e)', () => {
       expect(res.body.updatedAt).toBeDefined();
     });
   });
+
+  describe('PATCH /tracking-sources/config', () => {
+    it('updates frequency and returns updated config', async () => {
+      await trackingConfigRepo.save({
+        frequency: 'daily',
+        interval: 1,
+        runAt: '02:00',
+      } as any);
+
+      const res = await request(app.getHttpServer())
+        .patch('/tracking-sources/config')
+        .send({ frequency: 'weekly' })
+        .expect(200);
+
+      expect(res.body.frequency).toBe('weekly');
+      expect(res.body.interval).toBe(1);
+      expect(res.body.runAt).toBe('02:00');
+      expect(res.body.updatedAt).toBeDefined();
+    });
+
+    it('updates interval and returns updated config', async () => {
+      await trackingConfigRepo.save({
+        frequency: 'daily',
+        interval: 1,
+        runAt: '02:00',
+      } as any);
+
+      const res = await request(app.getHttpServer())
+        .patch('/tracking-sources/config')
+        .send({ interval: 3 })
+        .expect(200);
+
+      expect(res.body.interval).toBe(3);
+      expect(res.body.frequency).toBe('daily');
+      expect(res.body.runAt).toBe('02:00');
+    });
+
+    it('updates runAt and returns updated config', async () => {
+      await trackingConfigRepo.save({
+        frequency: 'daily',
+        interval: 1,
+        runAt: '02:00',
+      } as any);
+
+      const res = await request(app.getHttpServer())
+        .patch('/tracking-sources/config')
+        .send({ runAt: '23:59' })
+        .expect(200);
+
+      expect(res.body.runAt).toBe('23:59');
+      expect(res.body.frequency).toBe('daily');
+      expect(res.body.interval).toBe(1);
+    });
+
+    it('returns 400 for invalid frequency', async () => {
+      await request(app.getHttpServer())
+        .patch('/tracking-sources/config')
+        .send({ frequency: 'hourly' })
+        .expect(400);
+    });
+
+    it('returns 400 for interval < 1', async () => {
+      await request(app.getHttpServer())
+        .patch('/tracking-sources/config')
+        .send({ interval: 0 })
+        .expect(400);
+    });
+
+    it('returns 400 for invalid runAt format', async () => {
+      await request(app.getHttpServer())
+        .patch('/tracking-sources/config')
+        .send({ runAt: '9:00' })
+        .expect(400);
+    });
+
+    it('auto-creates config merged over defaults when none exists', async () => {
+      const res = await request(app.getHttpServer())
+        .patch('/tracking-sources/config')
+        .send({ runAt: '23:59' })
+        .expect(200);
+
+      expect(res.body.runAt).toBe('23:59');
+      expect(res.body.frequency).toBe('daily');
+      expect(res.body.interval).toBe(1);
+    });
+
+    it('returns 400 for runAt 24:00', async () => {
+      await request(app.getHttpServer())
+        .patch('/tracking-sources/config')
+        .send({ runAt: '24:00' })
+        .expect(400);
+    });
+  });
+
+  describe('PATCH /tracking-sources/:id route guard', () => {
+    it('still routes to the update handler, not the config handler', async () => {
+      const manga = await mangaRepo.save({
+        title: 'Patch Guard Manga',
+        status: 'ongoing',
+        alternativeTitles: ['Patch Guard Manga'],
+        authors: [],
+        genres: [],
+      } as any);
+
+      const createRes = await request(app.getHttpServer())
+        .post('/tracking-sources')
+        .send({
+          mangaId: manga.id,
+          url: 'https://example.com/manga/patch-guard',
+          name: 'Patch Guard Source',
+        })
+        .expect(201);
+
+      const id = createRes.body.id as number;
+
+      const res = await request(app.getHttpServer())
+        .patch(`/tracking-sources/${id}`)
+        .send({ name: 'Renamed Source' })
+        .expect(200);
+
+      expect(res.body.name).toBe('Renamed Source');
+      expect(res.body.id).toBe(id);
+    });
+  });
 });
