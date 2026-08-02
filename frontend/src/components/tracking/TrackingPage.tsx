@@ -7,10 +7,15 @@ import {
 import type { UpdateTrackingConfigPayload } from '#/services/api/trackingApi'
 import { TrackingConfigPanel } from './TrackingConfigPanel'
 import { TrackingSourcesTable } from './TrackingSourcesTable'
+import { ManageSourcesDialog } from './ManageSourcesDialog'
 
 export function TrackingPage() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
+  const [manageSource, setManageSource] = useState<{
+    mangaId: number
+    mangaTitle: string
+  } | null>(null)
 
   const { data: config, isLoading: configLoading } = useTrackingConfig()
   const {
@@ -55,8 +60,24 @@ export function TrackingPage() {
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
         onRetry={() => refetch()}
-        onManage={() => undefined}
+        onManage={(source) =>
+          setManageSource({
+            mangaId: source.mangaId,
+            mangaTitle: source.manga?.title ?? `Manga #${source.mangaId}`,
+          })
+        }
       />
+
+      {manageSource && (
+        <ManageSourcesDialog
+          mangaId={manageSource.mangaId}
+          mangaTitle={manageSource.mangaTitle}
+          open
+          onOpenChange={(open) => {
+            if (!open) setManageSource(null)
+          }}
+        />
+      )}
     </div>
   )
 }
