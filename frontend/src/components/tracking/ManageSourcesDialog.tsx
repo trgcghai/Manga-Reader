@@ -51,7 +51,11 @@ export function ManageSourcesDialog({
   const [deleteSource, setDeleteSource] =
     useState<TrackingSourceResponse | null>(null)
 
-  const { data, isLoading, isError, refetch } = useTrackingSources(mangaId)
+  const { data, isLoading, isError, refetch } = useTrackingSources(
+    mangaId,
+    1,
+    100,
+  )
   const createMutation = useCreateTrackingSource()
   const updateMutation = useUpdateTrackingSource()
   const deleteMutation = useDeleteTrackingSource()
