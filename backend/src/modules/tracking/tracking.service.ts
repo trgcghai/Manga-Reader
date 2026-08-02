@@ -175,7 +175,16 @@ export class TrackingService {
   ): Promise<TrackingConfigResponseDto> => {
     const current = await this.trackingRepository.findConfig();
     const base = current ?? DEFAULT_TRACKING_CONFIG;
-    const merged = { ...base, ...dto };
+
+    const changes = Object.fromEntries(
+      Object.entries(dto).filter(([, value]) => value != null),
+    );
+    const merged = {
+      frequency: base.frequency,
+      interval: base.interval,
+      runAt: base.runAt,
+      ...changes,
+    };
 
     const config = await this.trackingRepository.upsertConfig(merged);
 

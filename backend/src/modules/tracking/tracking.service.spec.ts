@@ -423,11 +423,9 @@ describe('TrackingService', () => {
       const result = await service.updateConfig({ frequency: 'weekly' });
 
       expect(trackingRepo.upsertConfig).toHaveBeenCalledWith({
-        id: 1,
         frequency: 'weekly',
         interval: 1,
         runAt: '00:00',
-        updatedAt: existingConfig.updatedAt,
       });
       expect(result).toEqual({
         id: 1,
@@ -472,6 +470,26 @@ describe('TrackingService', () => {
         updatedAt: '2026-01-01T00:00:00.000Z',
       });
       expect(trackingRepo.findConfig).toHaveBeenCalled();
+    });
+
+    it('should be a no-op on empty body', async () => {
+      trackingRepo.findConfig.mockResolvedValue(existingConfig as any);
+      trackingRepo.upsertConfig.mockResolvedValue({ ...existingConfig } as any);
+
+      const result = await service.updateConfig({});
+
+      expect(trackingRepo.upsertConfig).toHaveBeenCalledWith({
+        frequency: 'daily',
+        interval: 1,
+        runAt: '00:00',
+      });
+      expect(result).toEqual({
+        id: 1,
+        frequency: 'daily',
+        interval: 1,
+        runAt: '00:00',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
     });
   });
 });
