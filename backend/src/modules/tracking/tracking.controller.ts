@@ -36,13 +36,6 @@ import {
 export class TrackingController {
   constructor(private readonly trackingService: TrackingService) {}
 
-  @Get('health')
-  @ApiOperation({ summary: 'Check tracking module health' })
-  @ApiOkResponse({ description: 'Module is active' })
-  getStatus(): { status: string; module: string; timestamp: string } {
-    return this.trackingService.getStatus();
-  }
-
   @Post()
   @ApiOperation({ summary: 'Create a tracking source' })
   @ApiCreatedResponse({ type: TrackingSourceResponseDto })

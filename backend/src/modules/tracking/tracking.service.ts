@@ -14,7 +14,7 @@ import {
   UpdateTrackingConfigDto,
   TrackingConfigResponseDto,
 } from './dto/tracking-config.dto';
-import { DEFAULT_TRACKING_CONFIG } from './constants/tracking.constant';
+import { DEFAULT_TRACKING_CONFIG } from 'src/common/constants/tracking.constant';
 
 @Injectable()
 export class TrackingService {
@@ -22,14 +22,6 @@ export class TrackingService {
     private readonly trackingRepository: TrackingRepository,
     private readonly mangaRepository: MangaRepository,
   ) {}
-
-  getStatus = (): { status: string; module: string; timestamp: string } => {
-    return {
-      status: 'ok',
-      module: 'tracking',
-      timestamp: new Date().toISOString(),
-    };
-  };
 
   createSource = async (
     dto: CreateTrackingSourceDto,

@@ -1,10 +1,10 @@
+import { TrackingFrequency } from 'src/common/constants/tracking.constant';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   UpdateDateColumn,
 } from 'typeorm';
-import { TrackingFrequency } from '../constants/tracking.constant';
 
 @Entity()
 export class TrackingConfig {

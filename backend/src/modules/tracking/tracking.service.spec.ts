@@ -4,6 +4,7 @@ import { TrackingService } from './tracking.service';
 import { TrackingRepository } from './tracking.repository';
 import { MangaRepository } from '../manga/repositories/manga.repository';
 import { NotFoundException, ConflictException } from '@nestjs/common';
+import { TrackingFrequency } from 'src/common/constants/tracking.constant';
 
 describe('TrackingService', () => {
   let service: TrackingService;
@@ -72,7 +73,7 @@ describe('TrackingService', () => {
         latestChapterNumber: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-      });
+      } as any);
 
       const result = await service.createSource(dto);
 
@@ -365,20 +366,20 @@ describe('TrackingService', () => {
   describe('getConfig', () => {
     const existingConfig = {
       id: 1,
-      frequency: 'daily',
+      frequency: TrackingFrequency.DAILY,
       interval: 1,
       runAt: '00:00',
       updatedAt: new Date('2026-01-01T00:00:00.000Z'),
     };
 
     it('should return existing config mapped to DTO', async () => {
-      trackingRepo.findConfig.mockResolvedValue(existingConfig as any);
+      trackingRepo.findConfig.mockResolvedValue(existingConfig);
 
       const result = await service.getConfig();
 
       expect(result).toEqual({
         id: 1,
-        frequency: 'daily',
+        frequency: TrackingFrequency.DAILY,
         interval: 1,
         runAt: '00:00',
         updatedAt: '2026-01-01T00:00:00.000Z',
@@ -389,15 +390,15 @@ describe('TrackingService', () => {
 
     it('should auto-create default config when none exists', async () => {
       trackingRepo.findConfig.mockResolvedValue(null);
-      trackingRepo.upsertConfig.mockResolvedValue(existingConfig as any);
+      trackingRepo.upsertConfig.mockResolvedValue(existingConfig);
 
       const result = await service.getConfig();
 
-      expect(result.frequency).toBe('daily');
+      expect(result.frequency).toBe(TrackingFrequency.DAILY);
       expect(result.interval).toBe(1);
       expect(result.runAt).toBe('00:00');
       expect(trackingRepo.upsertConfig).toHaveBeenCalledWith({
-        frequency: 'daily',
+        frequency: TrackingFrequency.DAILY,
         interval: 1,
         runAt: '00:00',
       });
@@ -407,29 +408,31 @@ describe('TrackingService', () => {
   describe('updateConfig', () => {
     const existingConfig = {
       id: 1,
-      frequency: 'daily',
+      frequency: TrackingFrequency.DAILY,
       interval: 1,
       runAt: '00:00',
       updatedAt: new Date('2026-01-01T00:00:00.000Z'),
     };
 
     it('should preserve unspecified fields on partial update', async () => {
-      trackingRepo.findConfig.mockResolvedValue(existingConfig as any);
+      trackingRepo.findConfig.mockResolvedValue(existingConfig);
       trackingRepo.upsertConfig.mockResolvedValue({
         ...existingConfig,
-        frequency: 'weekly',
-      } as any);
+        frequency: TrackingFrequency.WEEKLY,
+      });
 
-      const result = await service.updateConfig({ frequency: 'weekly' });
+      const result = await service.updateConfig({
+        frequency: TrackingFrequency.WEEKLY,
+      });
 
       expect(trackingRepo.upsertConfig).toHaveBeenCalledWith({
-        frequency: 'weekly',
+        frequency: TrackingFrequency.WEEKLY,
         interval: 1,
         runAt: '00:00',
       });
       expect(result).toEqual({
         id: 1,
-        frequency: 'weekly',
+        frequency: TrackingFrequency.WEEKLY,
         interval: 1,
         runAt: '00:00',
         updatedAt: '2026-01-01T00:00:00.000Z',
@@ -441,12 +444,12 @@ describe('TrackingService', () => {
       trackingRepo.upsertConfig.mockResolvedValue({
         ...existingConfig,
         runAt: '23:59',
-      } as any);
+      });
 
       const result = await service.updateConfig({ runAt: '23:59' });
 
       expect(trackingRepo.upsertConfig).toHaveBeenCalledWith({
-        frequency: 'daily',
+        frequency: TrackingFrequency.DAILY,
         interval: 1,
         runAt: '23:59',
       });
@@ -454,17 +457,17 @@ describe('TrackingService', () => {
     });
 
     it('should map result to DTO with ISO updatedAt', async () => {
-      trackingRepo.findConfig.mockResolvedValue(existingConfig as any);
+      trackingRepo.findConfig.mockResolvedValue(existingConfig);
       trackingRepo.upsertConfig.mockResolvedValue({
         ...existingConfig,
         interval: 2,
-      } as any);
+      });
 
       const result = await service.updateConfig({ interval: 2 });
 
       expect(result).toEqual({
         id: 1,
-        frequency: 'daily',
+        frequency: TrackingFrequency.DAILY,
         interval: 2,
         runAt: '00:00',
         updatedAt: '2026-01-01T00:00:00.000Z',
@@ -473,19 +476,19 @@ describe('TrackingService', () => {
     });
 
     it('should be a no-op on empty body', async () => {
-      trackingRepo.findConfig.mockResolvedValue(existingConfig as any);
-      trackingRepo.upsertConfig.mockResolvedValue({ ...existingConfig } as any);
+      trackingRepo.findConfig.mockResolvedValue(existingConfig);
+      trackingRepo.upsertConfig.mockResolvedValue({ ...existingConfig });
 
       const result = await service.updateConfig({});
 
       expect(trackingRepo.upsertConfig).toHaveBeenCalledWith({
-        frequency: 'daily',
+        frequency: TrackingFrequency.DAILY,
         interval: 1,
         runAt: '00:00',
       });
       expect(result).toEqual({
         id: 1,
-        frequency: 'daily',
+        frequency: TrackingFrequency.DAILY,
         interval: 1,
         runAt: '00:00',
         updatedAt: '2026-01-01T00:00:00.000Z',
@@ -493,26 +496,26 @@ describe('TrackingService', () => {
     });
 
     it('should treat undefined dto keys as absent', async () => {
-      trackingRepo.findConfig.mockResolvedValue(existingConfig as any);
+      trackingRepo.findConfig.mockResolvedValue(existingConfig);
       trackingRepo.upsertConfig.mockResolvedValue({
         ...existingConfig,
-        frequency: 'weekly',
-      } as any);
+        frequency: TrackingFrequency.WEEKLY,
+      });
 
       const result = await service.updateConfig({
-        frequency: 'weekly',
+        frequency: TrackingFrequency.WEEKLY,
         interval: undefined,
         runAt: undefined,
-      } as any);
+      });
 
       expect(trackingRepo.upsertConfig).toHaveBeenCalledWith({
-        frequency: 'weekly',
+        frequency: TrackingFrequency.WEEKLY,
         interval: 1,
         runAt: '00:00',
       });
       expect(result).toEqual({
         id: 1,
-        frequency: 'weekly',
+        frequency: TrackingFrequency.WEEKLY,
         interval: 1,
         runAt: '00:00',
         updatedAt: '2026-01-01T00:00:00.000Z',

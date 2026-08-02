@@ -11,6 +11,7 @@ import {
   TrackingConfigResponseDto,
 } from './dto/tracking-config.dto';
 import { NotFoundException, ConflictException } from '@nestjs/common';
+import { TrackingFrequency } from 'src/common/constants/tracking.constant';
 
 describe('TrackingController', () => {
   let controller: TrackingController;
@@ -47,22 +48,6 @@ describe('TrackingController', () => {
 
     controller = module.get<TrackingController>(TrackingController);
     service = module.get(TrackingService);
-  });
-
-  describe('getStatus', () => {
-    it('should return module status', () => {
-      const expected = {
-        status: 'ok',
-        module: 'tracking',
-        timestamp: '2026-01-01T00:00:00.000Z',
-      };
-      service.getStatus.mockReturnValue(expected);
-
-      const result = controller.getStatus();
-
-      expect(result).toEqual(expected);
-      expect(service.getStatus).toHaveBeenCalled();
-    });
   });
 
   describe('create', () => {
@@ -167,7 +152,7 @@ describe('TrackingController', () => {
   describe('getConfig', () => {
     const mockConfig: TrackingConfigResponseDto = {
       id: 1,
-      frequency: 'daily',
+      frequency: TrackingFrequency.DAILY,
       interval: 1,
       runAt: '00:00',
       updatedAt: new Date().toISOString(),
@@ -185,12 +170,12 @@ describe('TrackingController', () => {
 
   describe('updateConfig', () => {
     const updateDto: UpdateTrackingConfigDto = {
-      frequency: 'weekly',
+      frequency: TrackingFrequency.WEEKLY,
     };
 
     const mockConfig: TrackingConfigResponseDto = {
       id: 1,
-      frequency: 'weekly',
+      frequency: TrackingFrequency.WEEKLY,
       interval: 1,
       runAt: '00:00',
       updatedAt: new Date().toISOString(),

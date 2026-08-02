@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsOptional, Matches, Min } from 'class-validator';
-import { TrackingFrequency } from '../constants/tracking.constant';
+import { TrackingFrequency } from '../../../common/constants/tracking.constant';
 
 export class UpdateTrackingConfigDto {
   @ApiPropertyOptional({
