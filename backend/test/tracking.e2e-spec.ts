@@ -194,7 +194,7 @@ describe('TrackingSource CRUD (e2e)', () => {
 
   describe('PATCH /tracking-sources/config', () => {
     it('updates frequency and returns updated config', async () => {
-      await trackingConfigRepo.save({
+      const seeded = await trackingConfigRepo.save({
         frequency: 'daily',
         interval: 1,
         runAt: '02:00',
@@ -208,11 +208,13 @@ describe('TrackingSource CRUD (e2e)', () => {
       expect(res.body.frequency).toBe('weekly');
       expect(res.body.interval).toBe(1);
       expect(res.body.runAt).toBe('02:00');
-      expect(res.body.updatedAt).toBeDefined();
+      expect(new Date(res.body.updatedAt).getTime()).toBeGreaterThan(
+        seeded.updatedAt.getTime(),
+      );
     });
 
     it('updates interval and returns updated config', async () => {
-      await trackingConfigRepo.save({
+      const seeded = await trackingConfigRepo.save({
         frequency: 'daily',
         interval: 1,
         runAt: '02:00',
@@ -223,13 +225,14 @@ describe('TrackingSource CRUD (e2e)', () => {
         .send({ interval: 3 })
         .expect(200);
 
+      expect(res.body.id).toBe(seeded.id);
       expect(res.body.interval).toBe(3);
       expect(res.body.frequency).toBe('daily');
       expect(res.body.runAt).toBe('02:00');
     });
 
     it('updates runAt and returns updated config', async () => {
-      await trackingConfigRepo.save({
+      const seeded = await trackingConfigRepo.save({
         frequency: 'daily',
         interval: 1,
         runAt: '02:00',
@@ -240,6 +243,7 @@ describe('TrackingSource CRUD (e2e)', () => {
         .send({ runAt: '23:59' })
         .expect(200);
 
+      expect(res.body.id).toBe(seeded.id);
       expect(res.body.runAt).toBe('23:59');
       expect(res.body.frequency).toBe('daily');
       expect(res.body.interval).toBe(1);
@@ -313,6 +317,7 @@ describe('TrackingSource CRUD (e2e)', () => {
 
       expect(res.body.name).toBe('Renamed Source');
       expect(res.body.id).toBe(id);
+      expect(res.body.mangaId).toBe(manga.id);
     });
   });
 });
