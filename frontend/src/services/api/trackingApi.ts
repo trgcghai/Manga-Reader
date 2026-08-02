@@ -9,6 +9,10 @@ export interface TrackingSourceResponse {
   latestChapterNumber: string | null
   createdAt: string
   updatedAt: string
+  manga?: {
+    id: number
+    title: string
+  }
 }
 
 export interface PaginatedTrackingSourceResponse {
