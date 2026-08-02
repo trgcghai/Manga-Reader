@@ -208,9 +208,7 @@ describe('TrackingController', () => {
     it('should propagate service rejection', async () => {
       service.updateConfig.mockRejectedValue(new Error('boom'));
 
-      await expect(controller.updateConfig(updateDto)).rejects.toThrow(
-        'boom',
-      );
+      await expect(controller.updateConfig(updateDto)).rejects.toThrow('boom');
     });
   });
 
