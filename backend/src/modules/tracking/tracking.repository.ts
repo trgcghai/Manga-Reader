@@ -93,7 +93,10 @@ export class TrackingRepository {
     id: number,
     data: Partial<TrackingSource>,
   ): Promise<TrackingSource | null> => {
-    const entity = await this.sourceRepo.findOne({ where: { id } });
+    const entity = await this.sourceRepo.findOne({
+      where: { id },
+      relations: ['manga'],
+    });
     if (!entity) return null;
     Object.assign(entity, data);
     return await this.sourceRepo.save(entity);
