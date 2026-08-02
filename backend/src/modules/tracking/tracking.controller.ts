@@ -69,6 +69,16 @@ export class TrackingController {
     );
   }
 
+  @Patch('config')
+  @ApiOperation({ summary: 'Update tracking config' })
+  @ApiBody({ type: UpdateTrackingConfigDto })
+  @ApiOkResponse({ type: TrackingConfigResponseDto })
+  async updateConfig(
+    @Body() dto: UpdateTrackingConfigDto,
+  ): Promise<TrackingConfigResponseDto> {
+    return this.trackingService.updateConfig(dto);
+  }
+
   @Patch(':id')
   @ApiOperation({ summary: 'Update a tracking source' })
   @ApiParam({ name: 'id', type: Number })
@@ -94,15 +104,5 @@ export class TrackingController {
   @ApiOkResponse({ type: TrackingConfigResponseDto })
   getConfig(): Promise<TrackingConfigResponseDto> {
     return this.trackingService.getConfig();
-  }
-
-  @Patch('config')
-  @ApiOperation({ summary: 'Update tracking config' })
-  @ApiBody({ type: UpdateTrackingConfigDto })
-  @ApiOkResponse({ type: TrackingConfigResponseDto })
-  async updateConfig(
-    @Body() dto: UpdateTrackingConfigDto,
-  ): Promise<TrackingConfigResponseDto> {
-    return this.trackingService.updateConfig(dto);
   }
 }
