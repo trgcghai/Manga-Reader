@@ -43,22 +43,24 @@ export function TrackingConfigPanel({
   onSave,
 }: TrackingConfigPanelProps) {
   const [frequency, setFrequency] = useState<TrackingFrequency>('daily')
-  const [interval, setInterval] = useState('1')
+  const [intervalInput, setIntervalInput] = useState('1')
   const [runAt, setRunAt] = useState('00:00')
   const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
     if (config && !initialized) {
       setFrequency(config.frequency)
-      setInterval(String(config.interval))
+      setIntervalInput(String(config.interval))
       setRunAt(config.runAt)
       setInitialized(true)
     }
   }, [config, initialized])
 
+  const intervalValue = Number(intervalInput)
+  const intervalValid = Number.isInteger(intervalValue) && intervalValue >= 1
+
   const handleSave = () => {
-    const intervalValue = Number(interval)
-    if (!Number.isInteger(intervalValue) || intervalValue < 1) return
+    if (!intervalValid) return
     onSave({ frequency, interval: intervalValue, runAt })
   }
 
@@ -75,7 +77,7 @@ export function TrackingConfigPanel({
       <CollapsibleContent>
         <div className="flex flex-wrap items-end gap-6 border-t p-4">
           <Field className="w-40">
-            <FieldLabel>Frequency</FieldLabel>
+            <FieldLabel htmlFor="tracking-frequency">Frequency</FieldLabel>
             <FieldContent>
               {isLoading ? (
                 <Skeleton className="h-9 w-full" />
@@ -86,7 +88,7 @@ export function TrackingConfigPanel({
                     setFrequency(value as TrackingFrequency)
                   }
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger id="tracking-frequency" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -102,28 +104,30 @@ export function TrackingConfigPanel({
           </Field>
 
           <Field className="w-28">
-            <FieldLabel>Interval</FieldLabel>
+            <FieldLabel htmlFor="tracking-interval">Interval</FieldLabel>
             <FieldContent>
               {isLoading ? (
                 <Skeleton className="h-9 w-full" />
               ) : (
                 <Input
+                  id="tracking-interval"
                   type="number"
                   min={1}
-                  value={interval}
-                  onChange={(event) => setInterval(event.target.value)}
+                  value={intervalInput}
+                  onChange={(event) => setIntervalInput(event.target.value)}
                 />
               )}
             </FieldContent>
           </Field>
 
           <Field className="w-36">
-            <FieldLabel>Run At</FieldLabel>
+            <FieldLabel htmlFor="tracking-run-at">Run At</FieldLabel>
             <FieldContent>
               {isLoading ? (
                 <Skeleton className="h-9 w-full" />
               ) : (
                 <Input
+                  id="tracking-run-at"
                   type="time"
                   value={runAt}
                   onChange={(event) => setRunAt(event.target.value)}
@@ -134,7 +138,9 @@ export function TrackingConfigPanel({
 
           <Button
             onClick={handleSave}
-            disabled={isLoading || isSaving || !config}
+            disabled={
+              isLoading || isSaving || !config || !intervalValid || !runAt
+            }
           >
             {isSaving ? (
               <>
