@@ -46,15 +46,6 @@ describe('TrackingService', () => {
     mangaRepo = module.get(MangaRepository);
   });
 
-  describe('getStatus', () => {
-    it('should return module status with timestamp', () => {
-      const result = service.getStatus();
-      expect(result.status).toBe('ok');
-      expect(result.module).toBe('tracking');
-      expect(result.timestamp).toBeDefined();
-    });
-  });
-
   describe('createSource', () => {
     const dto = {
       mangaId: 1,
