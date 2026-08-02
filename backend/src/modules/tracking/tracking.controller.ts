@@ -15,6 +15,7 @@ import {
   ApiOperation,
   ApiOkResponse,
   ApiCreatedResponse,
+  ApiBody,
   ApiQuery,
   ApiParam,
   ApiNoContentResponse,
@@ -25,7 +26,10 @@ import {
   UpdateTrackingSourceDto,
   TrackingSourceResponseDto,
 } from './dto/tracking-source.dto';
-import { TrackingConfigResponseDto } from './dto/tracking-config.dto';
+import {
+  UpdateTrackingConfigDto,
+  TrackingConfigResponseDto,
+} from './dto/tracking-config.dto';
 
 @ApiTags('Tracking Sources')
 @Controller('tracking-sources')
@@ -90,5 +94,15 @@ export class TrackingController {
   @ApiOkResponse({ type: TrackingConfigResponseDto })
   getConfig(): Promise<TrackingConfigResponseDto> {
     return this.trackingService.getConfig();
+  }
+
+  @Patch('config')
+  @ApiOperation({ summary: 'Update tracking config' })
+  @ApiBody({ type: UpdateTrackingConfigDto })
+  @ApiOkResponse({ type: TrackingConfigResponseDto })
+  async updateConfig(
+    @Body() dto: UpdateTrackingConfigDto,
+  ): Promise<TrackingConfigResponseDto> {
+    return this.trackingService.updateConfig(dto);
   }
 }

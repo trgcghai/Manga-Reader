@@ -6,7 +6,10 @@ import {
   UpdateTrackingSourceDto,
   TrackingSourceResponseDto,
 } from './dto/tracking-source.dto';
-import { TrackingConfigResponseDto } from './dto/tracking-config.dto';
+import {
+  UpdateTrackingConfigDto,
+  TrackingConfigResponseDto,
+} from './dto/tracking-config.dto';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 
 describe('TrackingController', () => {
@@ -36,6 +39,7 @@ describe('TrackingController', () => {
             updateSource: jest.fn(),
             deleteSource: jest.fn(),
             getConfig: jest.fn(),
+            updateConfig: jest.fn(),
           },
         },
       ],
@@ -176,6 +180,37 @@ describe('TrackingController', () => {
 
       expect(result).toEqual(mockConfig);
       expect(service.getConfig).toHaveBeenCalled();
+    });
+  });
+
+  describe('updateConfig', () => {
+    const updateDto: UpdateTrackingConfigDto = {
+      frequency: 'weekly',
+    };
+
+    const mockConfig: TrackingConfigResponseDto = {
+      id: 1,
+      frequency: 'weekly',
+      interval: 1,
+      runAt: '00:00',
+      updatedAt: new Date().toISOString(),
+    };
+
+    it('should call service.updateConfig with dto and return result', async () => {
+      service.updateConfig.mockResolvedValue(mockConfig);
+
+      const result = await controller.updateConfig(updateDto);
+
+      expect(result).toEqual(mockConfig);
+      expect(service.updateConfig).toHaveBeenCalledWith(updateDto);
+    });
+
+    it('should propagate service rejection', async () => {
+      service.updateConfig.mockRejectedValue(new Error('boom'));
+
+      await expect(controller.updateConfig(updateDto)).rejects.toThrow(
+        'boom',
+      );
     });
   });
 
