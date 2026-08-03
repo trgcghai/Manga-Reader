@@ -31,6 +31,7 @@ import {
 import { DeleteConfirmDialog } from '#/components/common/DeleteConfirmDialog'
 import { SourceForm } from './SourceForm'
 import type { SourceFormValues } from './SourceForm'
+import { truncate } from 'lodash'
 
 interface ManageSourcesDialogProps {
   mangaId: number
@@ -82,7 +83,7 @@ export function ManageSourcesDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-3xl!">
         <DialogHeader>
           <DialogTitle>Manage Sources — {mangaTitle}</DialogTitle>
         </DialogHeader>
@@ -167,8 +168,8 @@ export function ManageSourcesDialog({
               >
                 <div className="min-w-0">
                   <p className="font-medium">{source.name}</p>
-                  <p className="truncate font-mono text-sm text-muted-foreground">
-                    {source.url}
+                  <p className="font-mono text-sm text-muted-foreground">
+                    {truncate(source.url, { length: 70 })}
                   </p>
                   {source.extractorPath && (
                     <p className="text-sm text-muted-foreground">
@@ -181,8 +182,9 @@ export function ManageSourcesDialog({
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant="outline"
+                    className="rounded-full"
+                    size="icon-sm"
                     aria-label={`Edit ${source.name}`}
                     onClick={() => {
                       setShowAddForm(false)
@@ -192,10 +194,10 @@ export function ManageSourcesDialog({
                     <Pencil className="size-4" />
                   </Button>
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant="destructive"
+                    className="rounded-full"
+                    size="icon-sm"
                     aria-label={`Delete ${source.name}`}
-                    className="text-destructive hover:text-destructive"
                     onClick={() => setDeleteSource(source)}
                   >
                     <Trash2 className="size-4" />

@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Radar } from 'lucide-react'
+import { Eye, Radar } from 'lucide-react'
 import type {
   PaginatedTrackingSourceResponse,
   TrackingSourceResponse,
@@ -130,11 +130,12 @@ export function TrackingSourcesTable({
                   <TableCell>{formatDateTime(source.updatedAt)}</TableCell>
                   <TableCell>
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       onClick={() => onManage(source)}
                     >
-                      Manage
+                      <Eye className="h-4 w-4" />
+                      View sources
                     </Button>
                   </TableCell>
                 </TableRow>
