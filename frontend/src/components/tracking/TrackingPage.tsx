@@ -5,9 +5,12 @@ import {
   useUpdateTrackingConfig,
 } from '#/hooks/useTracking'
 import type { UpdateTrackingConfigPayload } from '#/services/api/trackingApi'
+import { Button } from '#/components/ui/button'
+import { Plus } from 'lucide-react'
 import { TrackingConfigPanel } from './TrackingConfigPanel'
 import { TrackingSourcesTable } from './TrackingSourcesTable'
 import { ManageSourcesDialog } from './ManageSourcesDialog'
+import { CreateTrackingSourceDialog } from './CreateTrackingSourceDialog'
 
 export function TrackingPage() {
   const [page, setPage] = useState(1)
@@ -16,6 +19,7 @@ export function TrackingPage() {
     mangaId: number
     mangaTitle: string
   } | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
 
   const { data: config, isLoading: configLoading } = useTrackingConfig()
   const {
@@ -36,11 +40,17 @@ export function TrackingPage() {
 
   return (
     <div>
-      <div>
-        <h1 className="text-2xl font-bold">Tracking</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Manage tracking sources and schedule automatic chapter checks.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Tracking</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage tracking sources and schedule automatic chapter checks.
+          </p>
+        </div>
+        <Button onClick={() => setCreateOpen(true)}>
+          <Plus className="h-4 w-4" />
+          Add Source
+        </Button>
       </div>
 
       <TrackingConfigPanel
@@ -75,6 +85,15 @@ export function TrackingPage() {
           open
           onOpenChange={(open) => {
             if (!open) setManageSource(null)
+          }}
+        />
+      )}
+
+      {createOpen && (
+        <CreateTrackingSourceDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setCreateOpen(false)
           }}
         />
       )}
