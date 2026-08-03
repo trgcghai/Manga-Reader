@@ -38,7 +38,7 @@ export function SourceForm({
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-md border p-4">
+    <div className="flex w-full max-w-full min-w-0 flex-col gap-4 rounded-md border p-4">
       <Field>
         <FieldLabel htmlFor="source-name">Name</FieldLabel>
         <FieldContent>
