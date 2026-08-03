@@ -41,7 +41,7 @@ export function CreateTrackingSourceDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <Field>
+        <Field className="min-w-0 w-full">
           <FieldLabel htmlFor="create-source-manga" required>
             Manga
           </FieldLabel>
