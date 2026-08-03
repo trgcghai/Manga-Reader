@@ -15,6 +15,7 @@ interface SourceFormProps {
   isPending: boolean
   onSubmit: (values: SourceFormValues) => void
   onCancel: () => void
+  canSubmit?: boolean
 }
 
 export function SourceForm({
@@ -23,14 +24,16 @@ export function SourceForm({
   isPending,
   onSubmit,
   onCancel,
+  canSubmit = true,
 }: SourceFormProps) {
   const [name, setName] = useState(initialValues.name)
   const [url, setUrl] = useState(initialValues.url)
 
-  const canSubmit = name.trim() !== '' && url.trim() !== '' && !isPending
+  const effectiveCanSubmit =
+    canSubmit && name.trim() !== '' && url.trim() !== '' && !isPending
 
   const handleSubmit = () => {
-    if (!canSubmit) return
+    if (!effectiveCanSubmit) return
     onSubmit({ name, url })
   }
 
@@ -69,7 +72,7 @@ export function SourceForm({
         <Button variant="outline" onClick={onCancel} disabled={isPending}>
           Cancel
         </Button>
-        <Button onClick={handleSubmit} disabled={!canSubmit}>
+        <Button onClick={handleSubmit} disabled={!effectiveCanSubmit}>
           {isPending ? (
             <>
               <Loader2 className="size-4 animate-spin" />
