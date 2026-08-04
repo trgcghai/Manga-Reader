@@ -27,7 +27,7 @@ export function TrackingPage() {
     isLoading,
     isError,
     refetch,
-  } = useTrackingSources(undefined, page, pageSize)
+  } = useTrackingSources({ page, limit: pageSize })
   const updateConfigMutation = useUpdateTrackingConfig()
 
   useEffect(() => {
