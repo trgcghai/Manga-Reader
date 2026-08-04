@@ -21,11 +21,12 @@ vi.mock('#/services/api/trackingApi', () => ({
 }))
 
 vi.mock('sonner', () => {
-  const toastFn = vi.fn()
-  toastFn.loading = vi.fn()
-  toastFn.success = vi.fn()
-  toastFn.warning = vi.fn()
-  toastFn.error = vi.fn()
+  const toastFn = Object.assign(vi.fn(), {
+    loading: vi.fn(),
+    success: vi.fn(),
+    warning: vi.fn(),
+    error: vi.fn(),
+  })
   return { default: toastFn, toast: toastFn }
 })
 
@@ -85,23 +86,32 @@ describe('useTracking', () => {
 
   describe('useTrackingSources', () => {
     it('fetches sources with the provided params', async () => {
-      const { result } = renderHook(() => useTrackingSources(1, 2, 20), {
+      const { result } = renderHook(
+        () => useTrackingSources({ mangaId: 1, page: 2, limit: 20 }),
+        { wrapper: createWrapper() },
+      )
+
+      await waitFor(() => expect(result.current.data).toEqual(paginatedMock))
+      expect(getTrackingSources).toHaveBeenCalledWith({
+        mangaId: 1,
+        page: 2,
+        limit: 20,
+      })
+    })
+
+    it('passes an empty object when called without args', async () => {
+      renderHook(() => useTrackingSources(), { wrapper: createWrapper() })
+
+      await waitFor(() => expect(getTrackingSources).toHaveBeenCalledWith({}))
+    })
+
+    it('forwards the search term', async () => {
+      renderHook(() => useTrackingSources({ search: 'naruto' }), {
         wrapper: createWrapper(),
       })
 
-      await waitFor(() => expect(result.current.data).toEqual(paginatedMock))
-      expect(getTrackingSources).toHaveBeenCalledWith(1, 2, 20)
-    })
-
-    it('passes undefined params through when called without args', async () => {
-      renderHook(() => useTrackingSources(), { wrapper: createWrapper() })
-
       await waitFor(() =>
-        expect(getTrackingSources).toHaveBeenCalledWith(
-          undefined,
-          undefined,
-          undefined,
-        ),
+        expect(getTrackingSources).toHaveBeenCalledWith({ search: 'naruto' }),
       )
     })
   })

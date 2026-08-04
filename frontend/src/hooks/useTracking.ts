@@ -8,6 +8,7 @@ import {
 } from '#/services/api/trackingApi'
 import type {
   PaginatedTrackingSourceResponse,
+  TrackingSourceListParams,
   CreateTrackingSourcePayload,
   UpdateTrackingSourcePayload,
   TrackingConfigResponse,
@@ -18,19 +19,22 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 const trackingKeys = {
   all: ['tracking'] as const,
-  sourceList: (mangaId?: number, page?: number, limit?: number) =>
-    [...trackingKeys.all, 'sources', mangaId, page, limit] as const,
+  sourceList: (params: TrackingSourceListParams = {}) =>
+    [
+      ...trackingKeys.all,
+      'sources',
+      params.mangaId,
+      params.page,
+      params.limit,
+      params.search,
+    ] as const,
   config: () => [...trackingKeys.all, 'config'] as const,
 }
 
-export function useTrackingSources(
-  mangaId?: number,
-  page?: number,
-  limit?: number,
-) {
+export function useTrackingSources(params: TrackingSourceListParams = {}) {
   return useQuery<PaginatedTrackingSourceResponse>({
-    queryKey: trackingKeys.sourceList(mangaId, page, limit),
-    queryFn: () => getTrackingSources(mangaId, page, limit),
+    queryKey: trackingKeys.sourceList(params),
+    queryFn: () => getTrackingSources(params),
   })
 }
 

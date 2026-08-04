@@ -52,17 +52,27 @@ export interface UpdateTrackingConfigPayload {
   runAt?: string
 }
 
+export interface TrackingSourceListParams {
+  mangaId?: number
+  page?: number
+  limit?: number
+  search?: string
+}
+
 export async function getTrackingSources(
-  mangaId?: number,
-  page: number = 1,
-  limit: number = 20,
+  params: TrackingSourceListParams = {},
 ): Promise<PaginatedTrackingSourceResponse> {
-  const params: Record<string, string | number> = { page, limit }
-  if (mangaId !== undefined) params.mangaId = mangaId
+  const queryParams: Record<string, string | number> = {}
+  const page = params.page ?? 1
+  const limit = params.limit ?? 20
+  queryParams.page = page
+  queryParams.limit = limit
+  if (params.mangaId !== undefined) queryParams.mangaId = params.mangaId
+  if (params.search) queryParams.search = params.search
 
   const { data } = await axiosInstance.get<PaginatedTrackingSourceResponse>(
     '/tracking-sources',
-    { params },
+    { params: queryParams },
   )
   return data
 }
