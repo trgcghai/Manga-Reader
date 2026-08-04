@@ -14,6 +14,7 @@ import {
   UpdateTrackingConfigDto,
   TrackingConfigResponseDto,
 } from './dto/tracking-config.dto';
+import { TrackingSource } from './entities/tracking-source.entity';
 import { DEFAULT_TRACKING_CONFIG } from 'src/common/constants/tracking.constant';
 
 @Injectable()
@@ -22,6 +23,21 @@ export class TrackingService {
     private readonly trackingRepository: TrackingRepository,
     private readonly mangaRepository: MangaRepository,
   ) {}
+
+  private toTrackingSourceResponseDto = (
+    source: TrackingSource,
+  ): TrackingSourceResponseDto => {
+    return {
+      id: source.id,
+      mangaId: source.manga.id,
+      url: source.url,
+      name: source.name,
+      latestChapterNumber: source.latestChapterNumber,
+      createdAt: source.createdAt.toISOString(),
+      updatedAt: source.updatedAt.toISOString(),
+      manga: { id: source.manga.id, title: source.manga.title },
+    };
+  };
 
   createSource = async (
     dto: CreateTrackingSourceDto,
@@ -57,15 +73,7 @@ export class TrackingService {
       name: dto.name,
     });
 
-    return {
-      id: source.id,
-      mangaId: source.manga.id,
-      url: source.url,
-      name: source.name,
-      latestChapterNumber: source.latestChapterNumber,
-      createdAt: source.createdAt.toISOString(),
-      updatedAt: source.updatedAt.toISOString(),
-    };
+    return this.toTrackingSourceResponseDto(source);
   };
 
   findAllSources = async (
@@ -73,11 +81,18 @@ export class TrackingService {
     page: number = 1,
     limit: number = 20,
   ) => {
-    return await this.trackingRepository.findAllSourcesPaginated(
+    const result = await this.trackingRepository.findAllSourcesPaginated(
       mangaId,
       page,
       limit,
     );
+
+    return {
+      ...result,
+      data: result.data.map((source) =>
+        this.toTrackingSourceResponseDto(source),
+      ),
+    };
   };
 
   updateSource = async (
@@ -126,15 +141,7 @@ export class TrackingService {
       throw new NotFoundException(`Tracking source with ID ${id} not found`);
     }
 
-    return {
-      id: updated.id,
-      mangaId: updated.manga.id,
-      url: updated.url,
-      name: updated.name,
-      latestChapterNumber: updated.latestChapterNumber,
-      createdAt: updated.createdAt.toISOString(),
-      updatedAt: updated.updatedAt.toISOString(),
-    };
+    return this.toTrackingSourceResponseDto(updated);
   };
 
   deleteSource = async (id: number): Promise<void> => {

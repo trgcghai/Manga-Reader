@@ -146,6 +146,29 @@ describe('TrackingService', () => {
       );
     });
 
+    it('should map each source to a response DTO including mangaId', async () => {
+      trackingRepo.findAllSourcesPaginated.mockResolvedValue({
+        data: [mockSource] as any,
+        total: 1,
+        page: 1,
+        limit: 20,
+        totalPages: 1,
+      });
+
+      const result = await service.findAllSources();
+
+      expect(result.data[0]).toEqual({
+        id: 1,
+        mangaId: 1,
+        url: 'https://example.com/manga/one-piece',
+        name: 'MangaDex',
+        latestChapterNumber: null,
+        createdAt: mockSource.createdAt.toISOString(),
+        updatedAt: mockSource.updatedAt.toISOString(),
+        manga: { id: 1, title: 'One Piece' },
+      });
+    });
+
     it('should filter by mangaId', async () => {
       trackingRepo.findAllSourcesPaginated.mockResolvedValue({
         data: [mockSource] as any,

@@ -48,4 +48,9 @@ export class TrackingSourceResponseDto {
 
   @ApiProperty()
   updatedAt: string;
+
+  @ApiProperty({
+    example: { id: 1, title: 'One Piece' },
+  })
+  manga: { id: number; title: string };
 }

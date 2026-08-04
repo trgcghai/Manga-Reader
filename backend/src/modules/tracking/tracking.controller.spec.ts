@@ -25,6 +25,7 @@ describe('TrackingController', () => {
     latestChapterNumber: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    manga: { id: 1, title: 'One Piece' },
   };
 
   beforeEach(async () => {
