@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { Eye, Radar } from 'lucide-react'
+import { Eye, Radar, Search, SearchX, X } from 'lucide-react'
 import type {
   PaginatedTrackingSourceResponse,
   TrackingSourceResponse,
@@ -13,6 +14,7 @@ import {
   TableRow,
 } from '#/components/ui/table'
 import { Button } from '#/components/ui/button'
+import { Input } from '#/components/ui/input'
 import { Skeleton } from '#/components/ui/skeleton'
 import {
   Empty,
@@ -40,6 +42,8 @@ interface TrackingSourcesTableProps {
   onPageSizeChange: (size: number) => void
   onRetry: () => void
   onManage: (source: TrackingSourceResponse) => void
+  search: string
+  onSearchChange: (value: string) => void
 }
 
 export function TrackingSourcesTable({
@@ -52,11 +56,45 @@ export function TrackingSourcesTable({
   onPageSizeChange,
   onRetry,
   onManage,
+  search,
+  onSearchChange,
 }: TrackingSourcesTableProps) {
   const totalPages = data?.totalPages ?? 1
+  const trimmedSearch = search.trim()
+  const [searchValue, setSearchValue] = useState(search)
+
+  useEffect(() => {
+    setSearchValue(search)
+  }, [search])
+
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value)
+    onSearchChange(value)
+  }
 
   return (
     <div className="mt-6">
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          aria-label="Search tracking sources"
+          placeholder="Search tracking sources"
+          value={searchValue}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="pl-9 pr-9"
+        />
+        {search && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Clear search"
+            className="absolute right-1 top-1/2 -translate-y-1/2"
+            onClick={() => handleSearchChange('')}
+          >
+            <X className="size-4" />
+          </Button>
+        )}
+      </div>
       {isLoading && (
         <div className="flex flex-col gap-3">
           {Array.from({ length: 5 }).map((_, index) => (
@@ -81,11 +119,17 @@ export function TrackingSourcesTable({
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <Radar />
+              {trimmedSearch ? <SearchX /> : <Radar />}
             </EmptyMedia>
-            <EmptyTitle>No Tracking Sources</EmptyTitle>
+            <EmptyTitle>
+              {trimmedSearch
+                ? 'No Sources Match Your Search'
+                : 'No Tracking Sources'}
+            </EmptyTitle>
             <EmptyDescription>
-              No tracking sources yet. Add tracking sources to get started.
+              {trimmedSearch
+                ? `No sources match "${trimmedSearch}". Try a different search term or clear the search.`
+                : 'No tracking sources yet. Add tracking sources to get started.'}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
