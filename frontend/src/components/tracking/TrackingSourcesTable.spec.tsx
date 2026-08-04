@@ -150,4 +150,47 @@ describe('TrackingSourcesTable', () => {
 
     expect(screen.getByText('No Tracking Sources')).toBeInTheDocument()
   })
+
+  it('syncs the input when the search prop changes', async () => {
+    const user = userEvent.setup()
+    const { rerender } = render(
+      <TrackingSourcesTable
+        data={mockPage}
+        isLoading={false}
+        isError={false}
+        page={1}
+        pageSize={20}
+        onPageChange={vi.fn()}
+        onPageSizeChange={vi.fn()}
+        onRetry={vi.fn()}
+        onManage={vi.fn()}
+        search="naruto"
+        onSearchChange={vi.fn()}
+      />,
+    )
+
+    const input = screen.getByRole('textbox', {
+      name: 'Search tracking sources',
+    })
+    await user.clear(input)
+    expect(input).toHaveValue('')
+
+    rerender(
+      <TrackingSourcesTable
+        data={mockPage}
+        isLoading={false}
+        isError={false}
+        page={1}
+        pageSize={20}
+        onPageChange={vi.fn()}
+        onPageSizeChange={vi.fn()}
+        onRetry={vi.fn()}
+        onManage={vi.fn()}
+        search="bleach"
+        onSearchChange={vi.fn()}
+      />,
+    )
+
+    expect(input).toHaveValue('bleach')
+  })
 })
