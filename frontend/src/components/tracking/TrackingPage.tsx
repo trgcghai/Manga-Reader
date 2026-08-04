@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   useTrackingConfig,
   useTrackingSources,
   useUpdateTrackingConfig,
 } from '#/hooks/useTracking'
+import { useDebounce } from '#/hooks/useDebounce'
 import type { UpdateTrackingConfigPayload } from '#/services/api/trackingApi'
 import { Button } from '#/components/ui/button'
 import { Plus } from 'lucide-react'
@@ -20,6 +21,8 @@ export function TrackingPage() {
     mangaTitle: string
   } | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
+  const [searchInput, setSearchInput] = useState('')
+  const search = useDebounce(searchInput, 300)
 
   const { data: config, isLoading: configLoading } = useTrackingConfig()
   const {
@@ -27,12 +30,26 @@ export function TrackingPage() {
     isLoading,
     isError,
     refetch,
-  } = useTrackingSources({ page, limit: pageSize })
+  } = useTrackingSources({
+    page,
+    limit: pageSize,
+    search: search.trim() || undefined,
+  })
   const updateConfigMutation = useUpdateTrackingConfig()
 
   useEffect(() => {
     setPage(1)
   }, [pageSize])
+
+  const isFirstRender = useRef(true)
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    setPage(1)
+  }, [search])
 
   const handleSaveConfig = (payload: UpdateTrackingConfigPayload) => {
     updateConfigMutation.mutate(payload)
@@ -67,6 +84,8 @@ export function TrackingPage() {
         isError={isError}
         page={page}
         pageSize={pageSize}
+        search={searchInput}
+        onSearchChange={setSearchInput}
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
         onRetry={() => refetch()}
