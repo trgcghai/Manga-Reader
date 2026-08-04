@@ -80,11 +80,14 @@ export class TrackingService {
     mangaId?: number,
     page: number = 1,
     limit: number = 20,
+    search?: string,
   ) => {
+    const term = search?.trim() || undefined;
     const result = await this.trackingRepository.findAllSourcesPaginated(
       mangaId,
       page,
       limit,
+      term,
     );
 
     return {

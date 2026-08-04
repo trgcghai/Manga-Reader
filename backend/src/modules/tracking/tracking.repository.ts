@@ -23,6 +23,7 @@ export class TrackingRepository {
     mangaId?: number,
     page: number = 1,
     limit: number = 20,
+    search?: string,
   ): Promise<{
     data: TrackingSource[];
     total: number;
@@ -38,6 +39,14 @@ export class TrackingRepository {
 
     if (mangaId) {
       qb.where('source.mangaId = :mangaId', { mangaId });
+    }
+
+    if (search) {
+      qb.andWhere(
+        `(LOWER(source.name) LIKE LOWER(:search)
+          OR LOWER(manga.title) LIKE LOWER(:search))`,
+        { search: `%${search}%` },
+      );
     }
 
     const [data, total] = await qb.getManyAndCount();

@@ -143,6 +143,7 @@ describe('TrackingService', () => {
         undefined,
         1,
         20,
+        undefined,
       );
     });
 
@@ -184,6 +185,7 @@ describe('TrackingService', () => {
         1,
         1,
         20,
+        undefined,
       );
     });
 
@@ -204,6 +206,7 @@ describe('TrackingService', () => {
         undefined,
         2,
         5,
+        undefined,
       );
     });
 
@@ -220,6 +223,63 @@ describe('TrackingService', () => {
 
       expect(result.data).toEqual([]);
       expect(result.total).toBe(0);
+    });
+
+    it('should forward search term to repository', async () => {
+      trackingRepo.findAllSourcesPaginated.mockResolvedValue({
+        data: [],
+        total: 0,
+        page: 1,
+        limit: 20,
+        totalPages: 0,
+      });
+
+      await service.findAllSources(undefined, 1, 20, 'naruto');
+
+      expect(trackingRepo.findAllSourcesPaginated).toHaveBeenCalledWith(
+        undefined,
+        1,
+        20,
+        'naruto',
+      );
+    });
+
+    it('should trim the search term before forwarding', async () => {
+      trackingRepo.findAllSourcesPaginated.mockResolvedValue({
+        data: [],
+        total: 0,
+        page: 1,
+        limit: 20,
+        totalPages: 0,
+      });
+
+      await service.findAllSources(undefined, 1, 20, '  naruto  ');
+
+      expect(trackingRepo.findAllSourcesPaginated).toHaveBeenCalledWith(
+        undefined,
+        1,
+        20,
+        'naruto',
+      );
+    });
+
+    it('should forward undefined when search is blank', async () => {
+      trackingRepo.findAllSourcesPaginated.mockResolvedValue({
+        data: [],
+        total: 0,
+        page: 1,
+        limit: 20,
+        totalPages: 0,
+      });
+
+      await service.findAllSources(undefined, 1, 20, '   ');
+
+      expect(trackingRepo.findAllSourcesPaginated).toHaveBeenCalledWith(
+        undefined,
+        1,
+        20,
+        undefined,
+      );
     });
   });
 

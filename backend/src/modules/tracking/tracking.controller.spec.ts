@@ -101,7 +101,12 @@ describe('TrackingController', () => {
       const result = await controller.findAll();
 
       expect(result).toEqual(paginatedResult);
-      expect(service.findAllSources).toHaveBeenCalledWith(undefined, 1, 20);
+      expect(service.findAllSources).toHaveBeenCalledWith(
+        undefined,
+        1,
+        20,
+        undefined,
+      );
     });
 
     it('should pass mangaId filter', async () => {
@@ -109,7 +114,7 @@ describe('TrackingController', () => {
 
       await controller.findAll('1');
 
-      expect(service.findAllSources).toHaveBeenCalledWith(1, 1, 20);
+      expect(service.findAllSources).toHaveBeenCalledWith(1, 1, 20, undefined);
     });
 
     it('should pass page and limit params', async () => {
@@ -117,7 +122,25 @@ describe('TrackingController', () => {
 
       await controller.findAll(undefined, '2', '5');
 
-      expect(service.findAllSources).toHaveBeenCalledWith(undefined, 2, 5);
+      expect(service.findAllSources).toHaveBeenCalledWith(
+        undefined,
+        2,
+        5,
+        undefined,
+      );
+    });
+
+    it('should pass search param', async () => {
+      service.findAllSources.mockResolvedValue(paginatedResult);
+
+      await controller.findAll(undefined, '1', '20', 'naruto');
+
+      expect(service.findAllSources).toHaveBeenCalledWith(
+        undefined,
+        1,
+        20,
+        'naruto',
+      );
     });
   });
 

@@ -48,17 +48,20 @@ export class TrackingController {
   @Get()
   @ApiOperation({ summary: 'List tracking sources' })
   @ApiQuery({ name: 'mangaId', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'page', required: false, example: '1' })
   @ApiQuery({ name: 'limit', required: false, example: '20' })
   findAll(
     @Query('mangaId') mangaId?: string,
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
+    @Query('search') search?: string,
   ) {
     return this.trackingService.findAllSources(
       mangaId ? parseInt(mangaId, 10) : undefined,
       parseInt(page, 10),
       parseInt(limit, 10),
+      search,
     );
   }
 
