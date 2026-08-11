@@ -5,6 +5,7 @@ import {
   BadGatewayException,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import axios from 'axios';
 import { HttpService } from '@nestjs/axios';
 import { TrackingRepository } from './tracking.repository';
 import { MangaRepository } from '../manga/repositories/manga.repository';
@@ -203,6 +204,11 @@ export class TrackingService {
       if (error instanceof SyntaxError) {
         throw new UnprocessableEntityException('Response parsing failed');
       }
+      if (axios.isAxiosError(error) && error.response) {
+        throw new UnprocessableEntityException(
+          `Source responded with status ${error.response.status}`,
+        );
+      }
       throw new BadGatewayException(`Source URL is unreachable: ${source.url}`);
     }
 
@@ -241,6 +247,61 @@ export class TrackingService {
       return 'different';
     }
     return current === previous ? 'same' : 'different';
+  };
+
+  checkMangaSources = async (
+    mangaId: number,
+  ): Promise<AggregateCheckResult[]> => {
+    const manga = await this.mangaRepository.findOneById(mangaId);
+    if (!manga) {
+      throw new NotFoundException(`Manga with ID ${mangaId} not found`);
+    }
+
+    const sources =
+      await this.trackingRepository.findByMangaIdForCheck(mangaId);
+    return this.performAggregateCheck(sources);
+  };
+
+  checkAllSources = async (): Promise<AggregateCheckResult[]> => {
+    const sources = await this.trackingRepository.findAllSourcesForCheck();
+    return this.performAggregateCheck(sources);
+  };
+
+  private performAggregateCheck = async (
+    sources: TrackingSource[],
+  ): Promise<AggregateCheckResult[]> => {
+    const settled = await Promise.allSettled(
+      sources.map(async (source) => {
+        const result = await this.performSourceCheck(source);
+        return {
+          sourceId: source.id,
+          sourceName: source.name,
+          url: source.url,
+          updated: result.updated,
+          ...(result.updated
+            ? { previous: result.previous, current: result.current }
+            : { current: result.current }),
+        };
+      }),
+    );
+
+    return settled.map((entry, index) => {
+      const source = sources[index];
+      if (entry.status === 'fulfilled') {
+        return entry.value;
+      }
+      const reason =
+        entry.reason instanceof Error
+          ? entry.reason.message
+          : String(entry.reason);
+      return {
+        sourceId: source.id,
+        sourceName: source.name,
+        url: source.url,
+        updated: false,
+        error: reason,
+      };
+    });
   };
 
   getConfig = async (): Promise<TrackingConfigResponseDto> => {

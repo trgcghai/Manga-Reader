@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unnecessary-type-assertion */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 import { Test, TestingModule } from '@nestjs/testing';
 import { TrackingService } from './tracking.service';
 import { TrackingRepository } from './tracking.repository';
@@ -536,7 +536,7 @@ describe('TrackingService', () => {
 
     it('should return updated true and persist when a newer chapter is found', async () => {
       trackingRepo.findSourceById.mockResolvedValue(source as any);
-      (httpService.axiosRef.get as jest.Mock).mockResolvedValue({
+      httpService.axiosRef.get.mockResolvedValue({
         data: { chapterNumber: '101' },
       });
       trackingRepo.updateSource.mockResolvedValue({
@@ -562,7 +562,7 @@ describe('TrackingService', () => {
         ...source,
         latestChapterNumber: '1120',
       } as any);
-      (httpService.axiosRef.get as jest.Mock).mockResolvedValue({
+      httpService.axiosRef.get.mockResolvedValue({
         data: { chapterNumber: 1120.5 },
       });
 
@@ -584,7 +584,7 @@ describe('TrackingService', () => {
         ...source,
         extractorPath: 'data.chapters[0].number',
       } as any);
-      (httpService.axiosRef.get as jest.Mock).mockResolvedValue({
+      httpService.axiosRef.get.mockResolvedValue({
         data: { data: { chapters: [{ number: '1140' }] } },
       });
       trackingRepo.updateSource.mockResolvedValue({} as any);
@@ -601,7 +601,7 @@ describe('TrackingService', () => {
 
     it('should not update when the chapter is the same', async () => {
       trackingRepo.findSourceById.mockResolvedValue(source as any);
-      (httpService.axiosRef.get as jest.Mock).mockResolvedValue({
+      httpService.axiosRef.get.mockResolvedValue({
         data: { chapterNumber: '100' },
       });
 
@@ -616,7 +616,7 @@ describe('TrackingService', () => {
         ...source,
         latestChapterNumber: '200',
       } as any);
-      (httpService.axiosRef.get as jest.Mock).mockResolvedValue({
+      httpService.axiosRef.get.mockResolvedValue({
         data: { chapterNumber: '150' },
       });
 
@@ -631,7 +631,7 @@ describe('TrackingService', () => {
         ...source,
         latestChapterNumber: null,
       } as any);
-      (httpService.axiosRef.get as jest.Mock).mockResolvedValue({
+      httpService.axiosRef.get.mockResolvedValue({
         data: { chapterNumber: '50' },
       });
 
@@ -650,16 +650,30 @@ describe('TrackingService', () => {
 
     it('should throw BadGatewayException when the URL is unreachable', async () => {
       trackingRepo.findSourceById.mockResolvedValue(source as any);
-      (httpService.axiosRef.get as jest.Mock).mockRejectedValue(
-        new Error('ECONNREFUSED'),
-      );
+      httpService.axiosRef.get.mockRejectedValue(new Error('ECONNREFUSED'));
 
       await expect(service.checkSource(1)).rejects.toThrow(BadGatewayException);
     });
 
+    it('should throw UnprocessableEntityException when the source responds with a 4xx status', async () => {
+      trackingRepo.findSourceById.mockResolvedValue(source as any);
+      const error = Object.assign(
+        new Error('Request failed with status code 404'),
+        {
+          isAxiosError: true,
+          response: { status: 404 },
+        },
+      );
+      httpService.axiosRef.get.mockRejectedValue(error);
+
+      await expect(service.checkSource(1)).rejects.toThrow(
+        UnprocessableEntityException,
+      );
+    });
+
     it('should throw UnprocessableEntityException when the body is not valid JSON', async () => {
       trackingRepo.findSourceById.mockResolvedValue(source as any);
-      (httpService.axiosRef.get as jest.Mock).mockResolvedValue({
+      httpService.axiosRef.get.mockResolvedValue({
         data: '<html>not json</html>',
       });
 
@@ -670,13 +684,174 @@ describe('TrackingService', () => {
 
     it('should throw UnprocessableEntityException when the chapter number is not extractable', async () => {
       trackingRepo.findSourceById.mockResolvedValue(source as any);
-      (httpService.axiosRef.get as jest.Mock).mockResolvedValue({
+      httpService.axiosRef.get.mockResolvedValue({
         data: { foo: 'bar' },
       });
 
       await expect(service.checkSource(1)).rejects.toThrow(
         UnprocessableEntityException,
       );
+    });
+  });
+
+  describe('checkMangaSources', () => {
+    const sources = [
+      {
+        id: 1,
+        manga: { id: 1, title: 'One Piece' },
+        url: 'https://a.com/manga/one-piece',
+        name: 'SourceA',
+        latestChapterNumber: '10',
+      },
+      {
+        id: 2,
+        manga: { id: 1, title: 'One Piece' },
+        url: 'https://b.com/manga/one-piece',
+        name: 'SourceB',
+        latestChapterNumber: '20',
+      },
+    ];
+
+    it('should throw NotFoundException when the manga does not exist', async () => {
+      mangaRepo.findOneById.mockResolvedValue(null);
+
+      await expect(service.checkMangaSources(999)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(trackingRepo.findByMangaIdForCheck).not.toHaveBeenCalled();
+    });
+
+    it('should return an empty array when the manga has no sources', async () => {
+      mangaRepo.findOneById.mockResolvedValue(mockManga);
+      trackingRepo.findByMangaIdForCheck.mockResolvedValue([]);
+
+      const result = await service.checkMangaSources(1);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should aggregate per-source results', async () => {
+      mangaRepo.findOneById.mockResolvedValue(mockManga);
+      trackingRepo.findByMangaIdForCheck.mockResolvedValue(sources as any);
+      httpService.axiosRef.get
+        .mockResolvedValueOnce({ data: { chapterNumber: '11' } })
+        .mockResolvedValueOnce({ data: { chapterNumber: '20' } });
+      trackingRepo.updateSource.mockResolvedValue({} as any);
+
+      const result = await service.checkMangaSources(1);
+
+      expect(result).toEqual([
+        {
+          sourceId: 1,
+          sourceName: 'SourceA',
+          url: 'https://a.com/manga/one-piece',
+          updated: true,
+          previous: '10',
+          current: '11',
+        },
+        {
+          sourceId: 2,
+          sourceName: 'SourceB',
+          url: 'https://b.com/manga/one-piece',
+          updated: false,
+          current: '20',
+        },
+      ]);
+      expect(trackingRepo.updateSource).toHaveBeenCalledTimes(1);
+    });
+
+    it('should include per-source errors without failing the aggregate', async () => {
+      mangaRepo.findOneById.mockResolvedValue(mockManga);
+      trackingRepo.findByMangaIdForCheck.mockResolvedValue(sources as any);
+      httpService.axiosRef.get
+        .mockRejectedValueOnce(new Error('ECONNREFUSED'))
+        .mockResolvedValueOnce({ data: { chapterNumber: '20' } });
+      trackingRepo.updateSource.mockResolvedValue({} as any);
+
+      const result = await service.checkMangaSources(1);
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({
+        sourceId: 1,
+        sourceName: 'SourceA',
+        url: 'https://a.com/manga/one-piece',
+        updated: false,
+        error: 'Source URL is unreachable: https://a.com/manga/one-piece',
+      });
+      expect(result[1]).toEqual({
+        sourceId: 2,
+        sourceName: 'SourceB',
+        url: 'https://b.com/manga/one-piece',
+        updated: false,
+        current: '20',
+      });
+    });
+  });
+
+  describe('checkAllSources', () => {
+    const sources = [
+      {
+        id: 1,
+        manga: { id: 1, title: 'One Piece' },
+        url: 'https://a.com/manga/one-piece',
+        name: 'SourceA',
+        latestChapterNumber: '10',
+      },
+      {
+        id: 2,
+        manga: { id: 2, title: 'Naruto' },
+        url: 'https://b.com/manga/naruto',
+        name: 'SourceB',
+        latestChapterNumber: '20',
+      },
+    ];
+
+    it('should check every source and aggregate results', async () => {
+      trackingRepo.findAllSourcesForCheck.mockResolvedValue(sources as any);
+      httpService.axiosRef.get
+        .mockResolvedValueOnce({ data: { chapterNumber: '12' } })
+        .mockResolvedValueOnce({ data: { chapterNumber: '20' } });
+      trackingRepo.updateSource.mockResolvedValue({} as any);
+
+      const result = await service.checkAllSources();
+
+      expect(result).toEqual([
+        {
+          sourceId: 1,
+          sourceName: 'SourceA',
+          url: 'https://a.com/manga/one-piece',
+          updated: true,
+          previous: '10',
+          current: '12',
+        },
+        {
+          sourceId: 2,
+          sourceName: 'SourceB',
+          url: 'https://b.com/manga/naruto',
+          updated: false,
+          current: '20',
+        },
+      ]);
+    });
+
+    it('should include per-source errors without failing the aggregate', async () => {
+      trackingRepo.findAllSourcesForCheck.mockResolvedValue(sources as any);
+      httpService.axiosRef.get
+        .mockRejectedValueOnce(new Error('boom'))
+        .mockResolvedValueOnce({ data: { chapterNumber: '21' } });
+      trackingRepo.updateSource.mockResolvedValue({} as any);
+
+      const result = await service.checkAllSources();
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({
+        sourceId: 1,
+        sourceName: 'SourceA',
+        url: 'https://a.com/manga/one-piece',
+        updated: false,
+        error: 'Source URL is unreachable: https://a.com/manga/one-piece',
+      });
+      expect(result[1].updated).toBe(true);
     });
   });
 
