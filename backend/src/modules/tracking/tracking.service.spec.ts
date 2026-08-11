@@ -1069,5 +1069,32 @@ describe('TrackingService', () => {
         updatedAt: '2026-01-01T00:00:00.000Z',
       });
     });
+
+    it('should propagate rejection when reschedule fails', async () => {
+      trackingRepo.findConfig.mockResolvedValue(existingConfig);
+      trackingRepo.upsertConfig.mockResolvedValue({
+        ...existingConfig,
+        frequency: TrackingFrequency.WEEKLY,
+      });
+      trackingSchedulerService.reschedule.mockRejectedValueOnce(
+        new Error('boom'),
+      );
+
+      await expect(
+        service.updateConfig({ frequency: TrackingFrequency.WEEKLY }),
+      ).rejects.toThrow('boom');
+      expect(trackingRepo.upsertConfig).toHaveBeenCalledWith({
+        frequency: TrackingFrequency.WEEKLY,
+        interval: 1,
+        runAt: '00:00',
+      });
+      expect(trackingSchedulerService.reschedule).toHaveBeenCalledWith({
+        id: 1,
+        frequency: TrackingFrequency.WEEKLY,
+        interval: 1,
+        runAt: '00:00',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
+    });
   });
 });
