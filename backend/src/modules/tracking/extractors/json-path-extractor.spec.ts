@@ -13,9 +13,7 @@ describe('JsonPathExtractor', () => {
     });
 
     it('should return null when the value is not a string or number', () => {
-      expect(
-        new JsonPathExtractor().extract({ chapterNumber: {} }),
-      ).toBeNull();
+      expect(new JsonPathExtractor().extract({ chapterNumber: {} })).toBeNull();
     });
 
     it('should return "0" for a zero chapter number', () => {
