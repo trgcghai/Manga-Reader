@@ -28,6 +28,9 @@ export class TrackingSource {
   @Column({ nullable: true, default: null })
   latestChapterNumber: string;
 
+  @Column({ nullable: true, default: null })
+  extractorPath: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -33,6 +33,7 @@ export class TrackingService {
       url: source.url,
       name: source.name,
       latestChapterNumber: source.latestChapterNumber,
+      extractorPath: source.extractorPath ?? null,
       createdAt: source.createdAt.toISOString(),
       updatedAt: source.updatedAt.toISOString(),
       manga: { id: source.manga.id, title: source.manga.title },
@@ -71,6 +72,9 @@ export class TrackingService {
       manga,
       url: dto.url,
       name: dto.name,
+      ...(dto.extractorPath !== undefined
+        ? { extractorPath: dto.extractorPath }
+        : {}),
     });
 
     return this.toTrackingSourceResponseDto(source);
@@ -138,6 +142,9 @@ export class TrackingService {
     const updated = await this.trackingRepository.updateSource(id, {
       ...(dto.name ? { name: dto.name } : {}),
       ...(dto.url ? { url: dto.url } : {}),
+      ...(dto.extractorPath !== undefined
+        ? { extractorPath: dto.extractorPath }
+        : {}),
     });
 
     if (!updated) {

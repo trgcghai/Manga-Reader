@@ -23,6 +23,7 @@ describe('TrackingController', () => {
     url: 'https://example.com/manga/one-piece',
     name: 'MangaDex',
     latestChapterNumber: null,
+    extractorPath: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     manga: { id: 1, title: 'One Piece' },

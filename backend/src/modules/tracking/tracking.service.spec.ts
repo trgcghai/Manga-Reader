@@ -111,6 +111,36 @@ describe('TrackingService', () => {
       );
       expect(trackingRepo.createSource).not.toHaveBeenCalled();
     });
+
+    it('should persist extractorPath when provided', async () => {
+      mangaRepo.findOneById.mockResolvedValue(mockManga);
+      trackingRepo.findAllSources.mockResolvedValue([]);
+      trackingRepo.createSource.mockResolvedValue({
+        id: 1,
+        manga: mockManga,
+        url: dto.url,
+        name: dto.name,
+        extractorPath: 'data.chapters[0].number',
+        latestChapterNumber: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any);
+
+      const result = await service.createSource({
+        ...dto,
+        extractorPath: 'data.chapters[0].number',
+      });
+
+      expect(trackingRepo.createSource).toHaveBeenCalledWith(
+        expect.objectContaining({
+          manga: mockManga,
+          url: dto.url,
+          name: dto.name,
+          extractorPath: 'data.chapters[0].number',
+        }),
+      );
+      expect(result.extractorPath).toBe('data.chapters[0].number');
+    });
   });
 
   describe('findAllSources', () => {
@@ -164,6 +194,7 @@ describe('TrackingService', () => {
         url: 'https://example.com/manga/one-piece',
         name: 'MangaDex',
         latestChapterNumber: null,
+        extractorPath: null,
         createdAt: mockSource.createdAt.toISOString(),
         updatedAt: mockSource.updatedAt.toISOString(),
         manga: { id: 1, title: 'One Piece' },
@@ -403,6 +434,23 @@ describe('TrackingService', () => {
         trackingRepo.findByMangaIdAndUrlExcludingId,
       ).not.toHaveBeenCalled();
       expect(trackingRepo.updateSource).toHaveBeenCalledWith(1, {});
+    });
+
+    it('should update extractorPath and include it in the response DTO', async () => {
+      trackingRepo.findSourceById.mockResolvedValue(existingSource as any);
+      trackingRepo.updateSource.mockResolvedValue({
+        ...existingSource,
+        extractorPath: 'latest.number',
+      } as any);
+
+      const result = await service.updateSource(1, {
+        extractorPath: 'latest.number',
+      });
+
+      expect(trackingRepo.updateSource).toHaveBeenCalledWith(1, {
+        extractorPath: 'latest.number',
+      });
+      expect(result.extractorPath).toBe('latest.number');
     });
   });
 

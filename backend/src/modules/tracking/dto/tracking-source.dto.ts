@@ -13,6 +13,14 @@ export class CreateTrackingSourceDto {
   @ApiProperty({ example: 'MangaDex' })
   @IsString()
   name: string;
+
+  @ApiPropertyOptional({
+    example: 'data.chapters[0].number',
+    description: 'Dot-notation JSON path to the latest chapter number',
+  })
+  @IsOptional()
+  @IsString()
+  extractorPath?: string;
 }
 
 export class UpdateTrackingSourceDto {
@@ -25,6 +33,14 @@ export class UpdateTrackingSourceDto {
   @IsOptional()
   @IsString()
   name?: string;
+
+  @ApiPropertyOptional({
+    example: 'data.chapters[0].number',
+    description: 'Dot-notation JSON path to the latest chapter number',
+  })
+  @IsOptional()
+  @IsString()
+  extractorPath?: string;
 }
 
 export class TrackingSourceResponseDto {
@@ -42,6 +58,9 @@ export class TrackingSourceResponseDto {
 
   @ApiPropertyOptional()
   latestChapterNumber: string | null;
+
+  @ApiPropertyOptional()
+  extractorPath: string | null;
 
   @ApiProperty()
   createdAt: string;
