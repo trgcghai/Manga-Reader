@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 import { Test, TestingModule } from '@nestjs/testing';
 import { TrackingService } from './tracking.service';
+import { TrackingSchedulerService } from './tracking-scheduler.service';
 import { TrackingRepository } from './tracking.repository';
 import { MangaRepository } from '../manga/repositories/manga.repository';
 import {
@@ -17,6 +18,7 @@ describe('TrackingService', () => {
   let trackingRepo: jest.Mocked<TrackingRepository>;
   let mangaRepo: jest.Mocked<MangaRepository>;
   let httpService: { axiosRef: { get: jest.Mock } };
+  let trackingSchedulerService: { reschedule: jest.Mock };
 
   const mockManga = { id: 1, title: 'One Piece' } as any;
 
@@ -53,12 +55,17 @@ describe('TrackingService', () => {
           provide: HttpService,
           useValue: httpService,
         },
+        {
+          provide: TrackingSchedulerService,
+          useValue: { reschedule: jest.fn() },
+        },
       ],
     }).compile();
 
     service = module.get<TrackingService>(TrackingService);
     trackingRepo = module.get(TrackingRepository);
     mangaRepo = module.get(MangaRepository);
+    trackingSchedulerService = module.get(TrackingSchedulerService);
   });
 
   describe('createSource', () => {
@@ -943,6 +950,13 @@ describe('TrackingService', () => {
         runAt: '00:00',
         updatedAt: '2026-01-01T00:00:00.000Z',
       });
+      expect(trackingSchedulerService.reschedule).toHaveBeenCalledWith({
+        id: 1,
+        frequency: TrackingFrequency.WEEKLY,
+        interval: 1,
+        runAt: '00:00',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
     });
 
     it('should auto-create merging over defaults when none exists', async () => {
@@ -960,6 +974,13 @@ describe('TrackingService', () => {
         runAt: '23:59',
       });
       expect(result.runAt).toBe('23:59');
+      expect(trackingSchedulerService.reschedule).toHaveBeenCalledWith({
+        id: 1,
+        frequency: TrackingFrequency.DAILY,
+        interval: 1,
+        runAt: '23:59',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
     });
 
     it('should map result to DTO with ISO updatedAt', async () => {
@@ -972,6 +993,13 @@ describe('TrackingService', () => {
       const result = await service.updateConfig({ interval: 2 });
 
       expect(result).toEqual({
+        id: 1,
+        frequency: TrackingFrequency.DAILY,
+        interval: 2,
+        runAt: '00:00',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
+      expect(trackingSchedulerService.reschedule).toHaveBeenCalledWith({
         id: 1,
         frequency: TrackingFrequency.DAILY,
         interval: 2,
@@ -999,6 +1027,13 @@ describe('TrackingService', () => {
         runAt: '00:00',
         updatedAt: '2026-01-01T00:00:00.000Z',
       });
+      expect(trackingSchedulerService.reschedule).toHaveBeenCalledWith({
+        id: 1,
+        frequency: TrackingFrequency.DAILY,
+        interval: 1,
+        runAt: '00:00',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
     });
 
     it('should treat undefined dto keys as absent', async () => {
@@ -1020,6 +1055,13 @@ describe('TrackingService', () => {
         runAt: '00:00',
       });
       expect(result).toEqual({
+        id: 1,
+        frequency: TrackingFrequency.WEEKLY,
+        interval: 1,
+        runAt: '00:00',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
+      expect(trackingSchedulerService.reschedule).toHaveBeenCalledWith({
         id: 1,
         frequency: TrackingFrequency.WEEKLY,
         interval: 1,

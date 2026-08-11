@@ -1,13 +1,16 @@
 import {
+  BadGatewayException,
+  ConflictException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
-  ConflictException,
-  BadGatewayException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import axios from 'axios';
 import { HttpService } from '@nestjs/axios';
 import { TrackingRepository } from './tracking.repository';
+import { TrackingSchedulerService } from './tracking-scheduler.service';
 import { MangaRepository } from '../manga/repositories/manga.repository';
 import {
   CreateTrackingSourceDto,
@@ -42,6 +45,8 @@ export class TrackingService {
     private readonly trackingRepository: TrackingRepository,
     private readonly mangaRepository: MangaRepository,
     private readonly httpService: HttpService,
+    @Inject(forwardRef(() => TrackingSchedulerService))
+    private readonly trackingSchedulerService: TrackingSchedulerService,
   ) {}
 
   private toTrackingSourceResponseDto = (
@@ -344,12 +349,15 @@ export class TrackingService {
 
     const config = await this.trackingRepository.upsertConfig(merged);
 
-    return {
+    const response = {
       id: config.id,
       frequency: config.frequency,
       interval: config.interval,
       runAt: config.runAt,
       updatedAt: config.updatedAt.toISOString(),
     };
+
+    await this.trackingSchedulerService.reschedule(response);
+    return response;
   };
 }

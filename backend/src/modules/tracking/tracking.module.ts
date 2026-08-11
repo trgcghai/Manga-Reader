@@ -5,6 +5,7 @@ import { TrackingSource } from './entities/tracking-source.entity';
 import { TrackingConfig } from './entities/tracking-config.entity';
 import { TrackingController } from './tracking.controller';
 import { TrackingService } from './tracking.service';
+import { TrackingSchedulerService } from './tracking-scheduler.service';
 import { TrackingRepository } from './tracking.repository';
 import { MangaModule } from '../manga/manga.module';
 
@@ -15,7 +16,7 @@ import { MangaModule } from '../manga/manga.module';
     HttpModule.register({ timeout: 10000 }),
   ],
   controllers: [TrackingController],
-  providers: [TrackingService, TrackingRepository],
+  providers: [TrackingService, TrackingSchedulerService, TrackingRepository],
   exports: [TrackingRepository],
 })
 export class TrackingModule {}
