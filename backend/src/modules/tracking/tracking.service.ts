@@ -2,7 +2,10 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadGatewayException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 import { TrackingRepository } from './tracking.repository';
 import { MangaRepository } from '../manga/repositories/manga.repository';
 import {
@@ -15,13 +18,29 @@ import {
   TrackingConfigResponseDto,
 } from './dto/tracking-config.dto';
 import { TrackingSource } from './entities/tracking-source.entity';
+import { JsonPathExtractor } from './extractors/json-path-extractor';
 import { DEFAULT_TRACKING_CONFIG } from 'src/common/constants/tracking.constant';
+
+export type CheckResult =
+  | { updated: true; previous: string; current: string; mangaId: number }
+  | { updated: false; current: string };
+
+export type AggregateCheckResult = {
+  sourceId: number;
+  sourceName: string;
+  url: string;
+  updated: boolean;
+  previous?: string;
+  current?: string;
+  error?: string;
+};
 
 @Injectable()
 export class TrackingService {
   constructor(
     private readonly trackingRepository: TrackingRepository,
     private readonly mangaRepository: MangaRepository,
+    private readonly httpService: HttpService,
   ) {}
 
   private toTrackingSourceResponseDto = (
@@ -160,6 +179,68 @@ export class TrackingService {
       throw new NotFoundException(`Tracking source with ID ${id} not found`);
     }
     await this.trackingRepository.deleteSource(id);
+  };
+
+  checkSource = async (id: number): Promise<CheckResult> => {
+    const source = await this.trackingRepository.findSourceById(id);
+    if (!source) {
+      throw new NotFoundException(`Tracking source with ID ${id} not found`);
+    }
+    return this.performSourceCheck(source);
+  };
+
+  private performSourceCheck = async (
+    source: TrackingSource,
+  ): Promise<CheckResult> => {
+    let body: unknown;
+    try {
+      const response = await this.httpService.axiosRef.get(source.url);
+      body =
+        typeof response.data === 'string'
+          ? JSON.parse(response.data)
+          : response.data;
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        throw new UnprocessableEntityException('Response parsing failed');
+      }
+      throw new BadGatewayException(`Source URL is unreachable: ${source.url}`);
+    }
+
+    const extractor = new JsonPathExtractor(source.extractorPath);
+    const current = extractor.extract(body);
+    if (current === null) {
+      throw new UnprocessableEntityException('Response parsing failed');
+    }
+
+    const previous = source.latestChapterNumber;
+    const comparison = this.compareChapterNumbers(previous, current);
+    if (comparison !== 'newer') {
+      return { updated: false, current };
+    }
+
+    await this.trackingRepository.updateSource(source.id, {
+      latestChapterNumber: current,
+    });
+    return {
+      updated: true,
+      previous,
+      current,
+      mangaId: source.manga.id,
+    };
+  };
+
+  private compareChapterNumbers = (
+    previous: string | null,
+    current: string,
+  ): 'newer' | 'same' | 'different' => {
+    const prevNum = previous === null ? NaN : parseFloat(previous);
+    const currentNum = parseFloat(current);
+    if (Number.isFinite(prevNum) && Number.isFinite(currentNum)) {
+      if (currentNum > prevNum) return 'newer';
+      if (currentNum === prevNum) return 'same';
+      return 'different';
+    }
+    return current === previous ? 'same' : 'different';
   };
 
   getConfig = async (): Promise<TrackingConfigResponseDto> => {
