@@ -17,6 +17,11 @@ describe('JsonPathExtractor', () => {
         new JsonPathExtractor().extract({ chapterNumber: {} }),
       ).toBeNull();
     });
+
+    it('should return "0" for a zero chapter number', () => {
+      const extractor = new JsonPathExtractor();
+      expect(extractor.extract({ chapterNumber: 0 })).toBe('0');
+    });
   });
 
   describe('with a dot-notation path', () => {

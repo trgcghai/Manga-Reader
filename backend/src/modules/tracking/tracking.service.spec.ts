@@ -75,6 +75,28 @@ describe('TrackingService', () => {
       expect(trackingRepo.createSource).toHaveBeenCalled();
     });
 
+    it('should not forward extractorPath when omitted', async () => {
+      mangaRepo.findOneById.mockResolvedValue(mockManga);
+      trackingRepo.findAllSources.mockResolvedValue([]);
+      trackingRepo.createSource.mockResolvedValue({
+        id: 1,
+        manga: mockManga,
+        url: dto.url,
+        name: dto.name,
+        latestChapterNumber: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any);
+
+      await service.createSource(dto);
+
+      expect(trackingRepo.createSource).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          extractorPath: expect.anything(),
+        }),
+      );
+    });
+
     it('should throw NotFoundException when manga does not exist', async () => {
       mangaRepo.findOneById.mockResolvedValue(null);
 
