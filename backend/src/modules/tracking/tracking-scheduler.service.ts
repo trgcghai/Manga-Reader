@@ -39,25 +39,23 @@ export class TrackingSchedulerService implements OnModuleInit, OnModuleDestroy {
   }
 
   onModuleDestroy(): void {
-    try {
-      const job = this.schedulerRegistry.getCronJob(CRON_JOB_NAME);
-      void job.stop();
-      this.schedulerRegistry.deleteCronJob(CRON_JOB_NAME);
-    } catch {
-      // nothing registered — nothing to clean up
+    const job = this.schedulerRegistry.getCronJobs().get(CRON_JOB_NAME);
+    if (!job) {
+      return;
     }
+    void job.stop();
+    this.schedulerRegistry.deleteCronJob(CRON_JOB_NAME);
   }
 
   async reschedule(config: TrackingConfigResponseDto): Promise<void> {
-    try {
-      const existing = this.schedulerRegistry.getCronJob(CRON_JOB_NAME);
+    const expression = buildCronExpression(config);
+
+    const existing = this.schedulerRegistry.getCronJobs().get(CRON_JOB_NAME);
+    if (existing) {
       await existing.stop();
       this.schedulerRegistry.deleteCronJob(CRON_JOB_NAME);
-    } catch {
-      // first scheduling
     }
 
-    const expression = buildCronExpression(config);
     const job = new CronJob(expression, () => void this.runCheck());
     this.schedulerRegistry.addCronJob(CRON_JOB_NAME, job);
     job.start();

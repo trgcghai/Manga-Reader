@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
@@ -67,7 +68,7 @@ describe('TrackingSchedulerService', () => {
   let schedulerRegistry: {
     addCronJob: jest.Mock;
     deleteCronJob: jest.Mock;
-    getCronJob: jest.Mock;
+    getCronJobs: jest.Mock;
   };
   let trackingService: {
     getConfig: jest.Mock;
@@ -90,7 +91,7 @@ describe('TrackingSchedulerService', () => {
         registeredJobs.push(job);
       }),
       deleteCronJob: jest.fn(),
-      getCronJob: jest.fn(),
+      getCronJobs: jest.fn(() => new Map()),
     };
     trackingService = {
       getConfig: jest.fn(),
@@ -131,8 +132,9 @@ describe('TrackingSchedulerService', () => {
     });
 
     it('should log an error and still boot when loading the config fails', async () => {
+      const logger = (service as unknown as { logger: Logger }).logger;
       const errorSpy = jest
-        .spyOn(service['logger'], 'error' as never)
+        .spyOn(logger, 'error')
         .mockImplementation(() => undefined);
       trackingService.getConfig.mockRejectedValue(new Error('db down'));
 
@@ -146,12 +148,15 @@ describe('TrackingSchedulerService', () => {
 
   describe('reschedule', () => {
     it('should stop and remove the existing job and schedule a fresh one', async () => {
-      const existingJob = { stop: jest.fn() };
-      schedulerRegistry.getCronJob.mockReturnValue(existingJob);
+      const existingJob = new CronJob('0 0 * * *', () => undefined);
+      const stopSpy = jest.spyOn(existingJob, 'stop');
+      schedulerRegistry.getCronJobs.mockReturnValue(
+        new Map([[CRON_JOB_NAME, existingJob]]),
+      );
 
       await service.reschedule(config);
 
-      expect(existingJob.stop).toHaveBeenCalled();
+      expect(stopSpy).toHaveBeenCalled();
       expect(schedulerRegistry.deleteCronJob).toHaveBeenCalledWith(
         CRON_JOB_NAME,
       );
@@ -159,34 +164,53 @@ describe('TrackingSchedulerService', () => {
         CRON_JOB_NAME,
         expect.any(CronJob),
       );
+      stopSpy.mockRestore();
     });
 
     it('should schedule when no job exists yet', async () => {
       await service.reschedule(config);
 
-      expect(schedulerRegistry.getCronJob).toHaveBeenCalledWith(CRON_JOB_NAME);
       expect(schedulerRegistry.deleteCronJob).not.toHaveBeenCalled();
       expect(schedulerRegistry.addCronJob).toHaveBeenCalledTimes(1);
+    });
+
+    it('should reject an invalid config before touching the existing schedule', async () => {
+      const existingJob = new CronJob('0 0 * * *', () => undefined);
+      const stopSpy = jest.spyOn(existingJob, 'stop');
+      schedulerRegistry.getCronJobs.mockReturnValue(
+        new Map([[CRON_JOB_NAME, existingJob]]),
+      );
+
+      await expect(
+        service.reschedule({ ...config, runAt: '25:99' }),
+      ).rejects.toThrow(/Invalid runAt/);
+
+      expect(stopSpy).not.toHaveBeenCalled();
+      expect(schedulerRegistry.deleteCronJob).not.toHaveBeenCalled();
+      expect(schedulerRegistry.addCronJob).not.toHaveBeenCalled();
+      stopSpy.mockRestore();
     });
   });
 
   describe('onModuleDestroy', () => {
     it('should stop and remove the scheduled job', () => {
-      const job = { stop: jest.fn() };
-      schedulerRegistry.getCronJob.mockReturnValue(job);
+      const job = new CronJob('0 0 * * *', () => undefined);
+      const stopSpy = jest.spyOn(job, 'stop');
+      schedulerRegistry.getCronJobs.mockReturnValue(
+        new Map([[CRON_JOB_NAME, job]]),
+      );
 
       service.onModuleDestroy();
 
-      expect(job.stop).toHaveBeenCalled();
+      expect(stopSpy).toHaveBeenCalled();
       expect(schedulerRegistry.deleteCronJob).toHaveBeenCalledWith(
         CRON_JOB_NAME,
       );
+      stopSpy.mockRestore();
     });
 
     it('should not throw when no job is registered', () => {
-      schedulerRegistry.getCronJob.mockImplementation(() => {
-        throw new Error('not registered');
-      });
+      schedulerRegistry.getCronJobs.mockReturnValue(new Map());
 
       expect(() => service.onModuleDestroy()).not.toThrow();
       expect(schedulerRegistry.deleteCronJob).not.toHaveBeenCalled();
@@ -205,8 +229,11 @@ describe('TrackingSchedulerService', () => {
       expect(trackingService.checkAllSources).toHaveBeenCalledTimes(1);
     });
 
-    it('should warn after 3 consecutive failures and reset the counter on success', async () => {
-      const warnSpy = jest.spyOn(service['logger'], 'warn' as never);
+    it('should warn only after 3 consecutive failures and reset the counter on success', async () => {
+      const logger = (service as unknown as { logger: Logger }).logger;
+      const warnSpy = jest
+        .spyOn(logger, 'warn')
+        .mockImplementation(() => undefined);
       const failing: AggregateCheckResult[] = [
         { sourceId: 1, sourceName: 'A', url: 'u', updated: false, error: 'x' },
         { sourceId: 2, sourceName: 'B', url: 'u', updated: true },
@@ -214,10 +241,16 @@ describe('TrackingSchedulerService', () => {
       trackingService.checkAllSources.mockResolvedValue(failing);
 
       await service.runCheck();
-      await service.runCheck();
-      await service.runCheck();
+      expect(warnSpy).not.toHaveBeenCalled();
 
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('1'));
+      await service.runCheck();
+      expect(warnSpy).not.toHaveBeenCalled();
+
+      await service.runCheck();
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('failed 3 consecutive checks'),
+      );
 
       warnSpy.mockClear();
       trackingService.checkAllSources.mockResolvedValue([
@@ -232,8 +265,9 @@ describe('TrackingSchedulerService', () => {
     });
 
     it('should swallow a rejected check and allow the next run to proceed', async () => {
+      const logger = (service as unknown as { logger: Logger }).logger;
       const errorSpy = jest
-        .spyOn(service['logger'], 'error' as never)
+        .spyOn(logger, 'error')
         .mockImplementation(() => undefined);
       trackingService.checkAllSources
         .mockRejectedValueOnce(new Error('network down'))
