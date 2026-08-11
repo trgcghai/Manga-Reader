@@ -204,7 +204,12 @@ export class TrackingService {
       if (error instanceof SyntaxError) {
         throw new UnprocessableEntityException('Response parsing failed');
       }
-      if (axios.isAxiosError(error) && error.response) {
+      if (
+        axios.isAxiosError(error) &&
+        error.response &&
+        error.response.status >= 400 &&
+        error.response.status < 500
+      ) {
         throw new UnprocessableEntityException(
           `Source responded with status ${error.response.status}`,
         );

@@ -671,6 +671,20 @@ describe('TrackingService', () => {
       );
     });
 
+    it('should throw BadGatewayException when the source responds with a 5xx status', async () => {
+      trackingRepo.findSourceById.mockResolvedValue(source as any);
+      const error = Object.assign(
+        new Error('Request failed with status code 500'),
+        {
+          isAxiosError: true,
+          response: { status: 500 },
+        },
+      );
+      httpService.axiosRef.get.mockRejectedValue(error);
+
+      await expect(service.checkSource(1)).rejects.toThrow(BadGatewayException);
+    });
+
     it('should throw UnprocessableEntityException when the body is not valid JSON', async () => {
       trackingRepo.findSourceById.mockResolvedValue(source as any);
       httpService.axiosRef.get.mockResolvedValue({
