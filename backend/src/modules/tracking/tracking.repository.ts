@@ -66,6 +66,20 @@ export class TrackingRepository {
     });
   };
 
+  findAllSourcesForCheck = async (): Promise<TrackingSource[]> => {
+    return await this.sourceRepo.find({ relations: ['manga'] });
+  };
+
+  findByMangaIdForCheck = async (
+    mangaId: number,
+  ): Promise<TrackingSource[]> => {
+    return await this.sourceRepo
+      .createQueryBuilder('source')
+      .leftJoinAndSelect('source.manga', 'manga')
+      .where('source.mangaId = :mangaId', { mangaId })
+      .getMany();
+  };
+
   findByMangaIdAndNameExcludingId = async (
     mangaId: number,
     name: string,

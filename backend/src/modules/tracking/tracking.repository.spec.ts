@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/unbound-method */
 import { Repository } from 'typeorm';
 import { TrackingRepository } from './tracking.repository';
 import { TrackingSource } from './entities/tracking-source.entity';
@@ -104,6 +104,46 @@ describe('TrackingRepository', () => {
       await repo.findAllSourcesPaginated(undefined, 1, 20, '');
 
       expect(qb.andWhere).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('findAllSourcesForCheck', () => {
+    it('should return all sources with the manga relation', async () => {
+      const mockData = [{ id: 1 }] as TrackingSource[];
+      mockSourceRepo.find.mockResolvedValue(mockData);
+
+      const result = await repo.findAllSourcesForCheck();
+
+      expect(mockSourceRepo.find).toHaveBeenCalledWith({
+        relations: ['manga'],
+      });
+      expect(result).toEqual(mockData);
+    });
+  });
+
+  describe('findByMangaIdForCheck', () => {
+    it('should filter by mangaId and load the manga relation', async () => {
+      const mockData = [{ id: 1 }] as TrackingSource[];
+      const createQueryBuilder = jest.fn();
+      const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(mockData),
+      };
+      createQueryBuilder.mockReturnValue(qb as any);
+      mockSourceRepo.createQueryBuilder = createQueryBuilder;
+
+      const result = await repo.findByMangaIdForCheck(7);
+
+      expect(createQueryBuilder).toHaveBeenCalledWith('source');
+      expect(qb.leftJoinAndSelect).toHaveBeenCalledWith(
+        'source.manga',
+        'manga',
+      );
+      expect(qb.where).toHaveBeenCalledWith('source.mangaId = :mangaId', {
+        mangaId: 7,
+      });
+      expect(result).toEqual(mockData);
     });
   });
 });
