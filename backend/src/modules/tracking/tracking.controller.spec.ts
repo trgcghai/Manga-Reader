@@ -43,6 +43,9 @@ describe('TrackingController', () => {
             deleteSource: jest.fn(),
             getConfig: jest.fn(),
             updateConfig: jest.fn(),
+            checkSource: jest.fn(),
+            checkMangaSources: jest.fn(),
+            checkAllSources: jest.fn(),
           },
         },
       ],
@@ -236,6 +239,45 @@ describe('TrackingController', () => {
       service.deleteSource.mockRejectedValue(new NotFoundException());
 
       await expect(controller.delete('999')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('checkSource', () => {
+    it('should call service.checkSource with the parsed id', async () => {
+      const result = {
+        updated: true,
+        previous: '100',
+        current: '101',
+        mangaId: 1,
+      };
+      service.checkSource.mockResolvedValue(result);
+
+      const response = await controller.checkSource('1');
+
+      expect(response).toEqual(result);
+      expect(service.checkSource).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe('checkManga', () => {
+    it('should call service.checkMangaSources with the parsed mangaId', async () => {
+      service.checkMangaSources.mockResolvedValue([]);
+
+      const result = await controller.checkManga('5');
+
+      expect(result).toEqual([]);
+      expect(service.checkMangaSources).toHaveBeenCalledWith(5);
+    });
+  });
+
+  describe('checkAll', () => {
+    it('should call service.checkAllSources', async () => {
+      service.checkAllSources.mockResolvedValue([]);
+
+      const result = await controller.checkAll();
+
+      expect(result).toEqual([]);
+      expect(service.checkAllSources).toHaveBeenCalled();
     });
   });
 });

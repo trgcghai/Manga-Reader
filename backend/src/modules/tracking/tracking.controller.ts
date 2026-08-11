@@ -19,8 +19,15 @@ import {
   ApiQuery,
   ApiParam,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
+  ApiBadGatewayResponse,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { TrackingService } from './tracking.service';
+import {
+  TrackingService,
+  CheckResult,
+  AggregateCheckResult,
+} from './tracking.service';
 import {
   CreateTrackingSourceDto,
   UpdateTrackingSourceDto,
@@ -93,6 +100,65 @@ export class TrackingController {
   @ApiNoContentResponse({ description: 'Tracking source deleted' })
   async delete(@Param('id') id: string): Promise<void> {
     await this.trackingService.deleteSource(parseInt(id, 10));
+  }
+
+  @Post('check-all')
+  @ApiOperation({ summary: 'Check all tracking sources' })
+  @ApiOkResponse({
+    schema: {
+      example: [
+        {
+          sourceId: 1,
+          sourceName: 'MangaDex',
+          url: 'https://example.com/manga/one-piece',
+          updated: true,
+          previous: '100',
+          current: '101',
+        },
+      ],
+    },
+  })
+  async checkAll(): Promise<AggregateCheckResult[]> {
+    return this.trackingService.checkAllSources();
+  }
+
+  @Post('check-manga/:mangaId')
+  @ApiOperation({ summary: 'Check all sources of a manga' })
+  @ApiParam({ name: 'mangaId', type: Number })
+  @ApiOkResponse({
+    schema: {
+      example: [
+        {
+          sourceId: 1,
+          sourceName: 'MangaDex',
+          url: 'https://example.com/manga/one-piece',
+          updated: false,
+          error:
+            'Source URL is unreachable: https://example.com/manga/one-piece',
+        },
+      ],
+    },
+  })
+  @ApiNotFoundResponse({ description: 'Manga not found' })
+  async checkManga(
+    @Param('mangaId') mangaId: string,
+  ): Promise<AggregateCheckResult[]> {
+    return this.trackingService.checkMangaSources(parseInt(mangaId, 10));
+  }
+
+  @Post(':id/check')
+  @ApiOperation({ summary: 'Check a single tracking source' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiOkResponse({
+    schema: {
+      example: { updated: true, previous: '100', current: '101', mangaId: 1 },
+    },
+  })
+  @ApiNotFoundResponse({ description: 'Tracking source not found' })
+  @ApiBadGatewayResponse({ description: 'Source URL is unreachable' })
+  @ApiUnprocessableEntityResponse({ description: 'Response parsing failed' })
+  async checkSource(@Param('id') id: string): Promise<CheckResult> {
+    return this.trackingService.checkSource(parseInt(id, 10));
   }
 
   @Get('config')
