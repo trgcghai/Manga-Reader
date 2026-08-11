@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TrackingSource } from './entities/tracking-source.entity';
 import { TrackingConfig } from './entities/tracking-config.entity';
@@ -11,6 +12,7 @@ import { MangaModule } from '../manga/manga.module';
   imports: [
     TypeOrmModule.forFeature([TrackingSource, TrackingConfig]),
     MangaModule,
+    HttpModule.register({ timeout: 10000 }),
   ],
   controllers: [TrackingController],
   providers: [TrackingService, TrackingRepository],
