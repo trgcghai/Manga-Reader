@@ -118,3 +118,45 @@ export async function updateTrackingConfig(
   )
   return data
 }
+
+export interface CheckSourceResponse {
+  updated: boolean
+  previous?: string
+  current?: string
+  mangaId?: number
+}
+
+export interface CheckResult {
+  sourceId: number
+  sourceName: string
+  url: string
+  updated: boolean
+  previous?: string
+  current?: string
+  error?: string
+}
+
+export async function checkTrackingSource(
+  id: number,
+): Promise<CheckSourceResponse> {
+  const { data } = await axiosInstance.post<CheckSourceResponse>(
+    `/tracking-sources/${id}/check`,
+  )
+  return data
+}
+
+export async function checkMangaSources(
+  mangaId: number,
+): Promise<CheckResult[]> {
+  const { data } = await axiosInstance.post<CheckResult[]>(
+    `/tracking-sources/check-manga/${mangaId}`,
+  )
+  return data
+}
+
+export async function checkAllSources(): Promise<CheckResult[]> {
+  const { data } = await axiosInstance.post<CheckResult[]>(
+    '/tracking-sources/check-all',
+  )
+  return data
+}
