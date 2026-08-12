@@ -8,6 +8,10 @@ vi.mock('@tanstack/react-router', () => ({
   Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
 }))
 
+vi.mock('#/hooks/useTracking', () => ({
+  useCheckMangaSources: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+
 const mockPage: PaginatedTrackingSourceResponse = {
   data: [
     {
@@ -192,5 +196,16 @@ describe('TrackingSourcesTable', () => {
     )
 
     expect(input).toHaveValue('bleach')
+  })
+
+  it('renders a Check now button next to View sources for each row', () => {
+    renderTable({ data: mockPage })
+
+    expect(
+      screen.getByRole('button', { name: 'Check now' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'View sources' }),
+    ).toBeInTheDocument()
   })
 })

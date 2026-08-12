@@ -24,6 +24,7 @@ vi.mock('#/hooks/useTracking', () => ({
   useCreateTrackingSource: vi.fn(),
   useDeleteTrackingSource: vi.fn(),
   useUpdateTrackingSource: vi.fn(),
+  useCheckMangaSources: () => ({ mutate: vi.fn(), isPending: false }),
 }))
 
 const mockPage: PaginatedTrackingSourceResponse = {

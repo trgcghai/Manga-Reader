@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Eye, Radar, Search, SearchX, X } from 'lucide-react'
+import { CheckNowButton } from './CheckNowButton'
 import type {
   PaginatedTrackingSourceResponse,
   TrackingSourceResponse,
@@ -173,14 +174,17 @@ export function TrackingSourcesTable({
                   <TableCell>{source.latestChapterNumber ?? '-'}</TableCell>
                   <TableCell>{formatDateTime(source.updatedAt)}</TableCell>
                   <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onManage(source)}
-                    >
-                      <Eye className="h-4 w-4" />
-                      View sources
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <CheckNowButton mangaId={source.mangaId} />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onManage(source)}
+                      >
+                        <Eye className="h-4 w-4" />
+                        View sources
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
