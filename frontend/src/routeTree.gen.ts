@@ -9,66 +9,51 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AppRouteImport } from './routes/_app'
-import { Route as ReaderRouteImport } from './routes/_reader'
 import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as AppFlaggedRouteImport } from './routes/_app/flagged'
+import { Route as ReaderRouteImport } from './routes/_reader'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
-import { Route as AdminAuthorsRouteImport } from './routes/admin/authors'
-import { Route as AdminGenresRouteImport } from './routes/admin/genres'
-import { Route as AdminLanguagesRouteImport } from './routes/admin/languages'
-import { Route as AdminTrackingRouteImport } from './routes/admin/tracking'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AdminTranslatorsRouteImport } from './routes/admin/translators'
-import { Route as AppMangaIdRouteImport } from './routes/_app/manga/$id'
-import { Route as ReaderReaderTranslationIdRouteImport } from './routes/_reader/reader.$translationId'
+import { Route as AdminTrackingRouteImport } from './routes/admin/tracking'
+import { Route as AdminLanguagesRouteImport } from './routes/admin/languages'
+import { Route as AdminGenresRouteImport } from './routes/admin/genres'
+import { Route as AdminAuthorsRouteImport } from './routes/admin/authors'
+import { Route as AppFlaggedRouteImport } from './routes/_app/flagged'
 import { Route as AdminMangasIndexRouteImport } from './routes/admin/mangas/index'
-import { Route as AdminMangasIdRouteImport } from './routes/admin/mangas/$id'
 import { Route as AdminMangasNewRouteImport } from './routes/admin/mangas/new'
+import { Route as AdminMangasIdRouteImport } from './routes/admin/mangas/$id'
+import { Route as ReaderReaderTranslationIdRouteImport } from './routes/_reader/reader.$translationId'
+import { Route as AppMangaIdRouteImport } from './routes/_app/manga/$id'
 import { Route as AdminMangasIdIndexRouteImport } from './routes/admin/mangas/$id.index'
 import { Route as AdminMangasIdEditRouteImport } from './routes/admin/mangas/$id.edit'
 
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReaderRoute = ReaderRouteImport.update({
   id: '/_reader',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AppIndexRoute = AppIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppFlaggedRoute = AppFlaggedRouteImport.update({
-  id: '/flagged',
-  path: '/flagged',
-  getParentRoute: () => AppRoute,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminAuthorsRoute = AdminAuthorsRouteImport.update({
-  id: '/authors',
-  path: '/authors',
-  getParentRoute: () => AdminRoute,
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
 } as any)
-const AdminGenresRoute = AdminGenresRouteImport.update({
-  id: '/genres',
-  path: '/genres',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminLanguagesRoute = AdminLanguagesRouteImport.update({
-  id: '/languages',
-  path: '/languages',
+const AdminTranslatorsRoute = AdminTranslatorsRouteImport.update({
+  id: '/translators',
+  path: '/translators',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminTrackingRoute = AdminTrackingRouteImport.update({
@@ -76,25 +61,34 @@ const AdminTrackingRoute = AdminTrackingRouteImport.update({
   path: '/tracking',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminTranslatorsRoute = AdminTranslatorsRouteImport.update({
-  id: '/translators',
-  path: '/translators',
+const AdminLanguagesRoute = AdminLanguagesRouteImport.update({
+  id: '/languages',
+  path: '/languages',
   getParentRoute: () => AdminRoute,
 } as any)
-const AppMangaIdRoute = AppMangaIdRouteImport.update({
-  id: '/manga/$id',
-  path: '/manga/$id',
+const AdminGenresRoute = AdminGenresRouteImport.update({
+  id: '/genres',
+  path: '/genres',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAuthorsRoute = AdminAuthorsRouteImport.update({
+  id: '/authors',
+  path: '/authors',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AppFlaggedRoute = AppFlaggedRouteImport.update({
+  id: '/flagged',
+  path: '/flagged',
   getParentRoute: () => AppRoute,
 } as any)
-const ReaderReaderTranslationIdRoute =
-  ReaderReaderTranslationIdRouteImport.update({
-    id: '/reader/$translationId',
-    path: '/reader/$translationId',
-    getParentRoute: () => ReaderRoute,
-  } as any)
 const AdminMangasIndexRoute = AdminMangasIndexRouteImport.update({
   id: '/mangas/',
   path: '/mangas/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMangasNewRoute = AdminMangasNewRouteImport.update({
+  id: '/mangas/new',
+  path: '/mangas/new',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminMangasIdRoute = AdminMangasIdRouteImport.update({
@@ -102,10 +96,16 @@ const AdminMangasIdRoute = AdminMangasIdRouteImport.update({
   path: '/mangas/$id',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminMangasNewRoute = AdminMangasNewRouteImport.update({
-  id: '/mangas/new',
-  path: '/mangas/new',
-  getParentRoute: () => AdminRoute,
+const ReaderReaderTranslationIdRoute =
+  ReaderReaderTranslationIdRouteImport.update({
+    id: '/reader/$translationId',
+    path: '/reader/$translationId',
+    getParentRoute: () => ReaderRoute,
+  } as any)
+const AppMangaIdRoute = AppMangaIdRouteImport.update({
+  id: '/manga/$id',
+  path: '/manga/$id',
+  getParentRoute: () => AppRoute,
 } as any)
 const AdminMangasIdIndexRoute = AdminMangasIdIndexRouteImport.update({
   id: '/',
@@ -238,11 +238,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_app': {
-      id: '/_app'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AppRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_reader': {
@@ -252,26 +252,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReaderRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_app/': {
-      id: '/_app/'
-      path: '/'
+    '/_app': {
+      id: '/_app'
+      path: ''
       fullPath: '/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/flagged': {
-      id: '/_app/flagged'
-      path: '/flagged'
-      fullPath: '/flagged'
-      preLoaderRoute: typeof AppFlaggedRouteImport
-      parentRoute: typeof AppRoute
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/': {
       id: '/admin/'
@@ -280,25 +266,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/authors': {
-      id: '/admin/authors'
-      path: '/authors'
-      fullPath: '/admin/authors'
-      preLoaderRoute: typeof AdminAuthorsRouteImport
-      parentRoute: typeof AdminRoute
+    '/_app/': {
+      id: '/_app/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/admin/genres': {
-      id: '/admin/genres'
-      path: '/genres'
-      fullPath: '/admin/genres'
-      preLoaderRoute: typeof AdminGenresRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/languages': {
-      id: '/admin/languages'
-      path: '/languages'
-      fullPath: '/admin/languages'
-      preLoaderRoute: typeof AdminLanguagesRouteImport
+    '/admin/translators': {
+      id: '/admin/translators'
+      path: '/translators'
+      fullPath: '/admin/translators'
+      preLoaderRoute: typeof AdminTranslatorsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/tracking': {
@@ -308,32 +287,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTrackingRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/translators': {
-      id: '/admin/translators'
-      path: '/translators'
-      fullPath: '/admin/translators'
-      preLoaderRoute: typeof AdminTranslatorsRouteImport
+    '/admin/languages': {
+      id: '/admin/languages'
+      path: '/languages'
+      fullPath: '/admin/languages'
+      preLoaderRoute: typeof AdminLanguagesRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_app/manga/$id': {
-      id: '/_app/manga/$id'
-      path: '/manga/$id'
-      fullPath: '/manga/$id'
-      preLoaderRoute: typeof AppMangaIdRouteImport
-      parentRoute: typeof AppRoute
+    '/admin/genres': {
+      id: '/admin/genres'
+      path: '/genres'
+      fullPath: '/admin/genres'
+      preLoaderRoute: typeof AdminGenresRouteImport
+      parentRoute: typeof AdminRoute
     }
-    '/_reader/reader/$translationId': {
-      id: '/_reader/reader/$translationId'
-      path: '/reader/$translationId'
-      fullPath: '/reader/$translationId'
-      preLoaderRoute: typeof ReaderReaderTranslationIdRouteImport
-      parentRoute: typeof ReaderRoute
+    '/admin/authors': {
+      id: '/admin/authors'
+      path: '/authors'
+      fullPath: '/admin/authors'
+      preLoaderRoute: typeof AdminAuthorsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_app/flagged': {
+      id: '/_app/flagged'
+      path: '/flagged'
+      fullPath: '/flagged'
+      preLoaderRoute: typeof AppFlaggedRouteImport
+      parentRoute: typeof AppRoute
     }
     '/admin/mangas/': {
       id: '/admin/mangas/'
       path: '/mangas'
       fullPath: '/admin/mangas/'
       preLoaderRoute: typeof AdminMangasIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/mangas/new': {
+      id: '/admin/mangas/new'
+      path: '/mangas/new'
+      fullPath: '/admin/mangas/new'
+      preLoaderRoute: typeof AdminMangasNewRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/mangas/$id': {
@@ -343,12 +336,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMangasIdRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/mangas/new': {
-      id: '/admin/mangas/new'
-      path: '/mangas/new'
-      fullPath: '/admin/mangas/new'
-      preLoaderRoute: typeof AdminMangasNewRouteImport
-      parentRoute: typeof AdminRoute
+    '/_reader/reader/$translationId': {
+      id: '/_reader/reader/$translationId'
+      path: '/reader/$translationId'
+      fullPath: '/reader/$translationId'
+      preLoaderRoute: typeof ReaderReaderTranslationIdRouteImport
+      parentRoute: typeof ReaderRoute
+    }
+    '/_app/manga/$id': {
+      id: '/_app/manga/$id'
+      path: '/manga/$id'
+      fullPath: '/manga/$id'
+      preLoaderRoute: typeof AppMangaIdRouteImport
+      parentRoute: typeof AppRoute
     }
     '/admin/mangas/$id/': {
       id: '/admin/mangas/$id/'
