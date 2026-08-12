@@ -7,6 +7,7 @@ import {
   Module,
   ValidationPipe,
 } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import type { App } from 'supertest/types';
@@ -61,6 +62,7 @@ describe('TrackingSource CRUD (e2e)', () => {
           ],
           synchronize: true,
         }),
+        ScheduleModule.forRoot(),
         TrackingModule,
         FileServiceMockModule,
       ],
