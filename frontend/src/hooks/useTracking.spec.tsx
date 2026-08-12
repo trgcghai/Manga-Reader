@@ -8,6 +8,9 @@ import {
   useUpdateTrackingSource,
   useDeleteTrackingSource,
   useUpdateTrackingConfig,
+  useCheckTrackingSource,
+  useCheckMangaSources,
+  useCheckAllSources,
 } from './useTracking'
 import { toast } from 'sonner'
 
@@ -18,6 +21,9 @@ vi.mock('#/services/api/trackingApi', () => ({
   deleteTrackingSource: vi.fn(),
   getTrackingConfig: vi.fn(),
   updateTrackingConfig: vi.fn(),
+  checkTrackingSource: vi.fn(),
+  checkMangaSources: vi.fn(),
+  checkAllSources: vi.fn(),
 }))
 
 vi.mock('sonner', () => {
@@ -38,6 +44,9 @@ import {
   deleteTrackingSource,
   getTrackingConfig,
   updateTrackingConfig,
+  checkTrackingSource,
+  checkMangaSources,
+  checkAllSources,
 } from '#/services/api/trackingApi'
 // eslint-disable-next-line import/first
 import type { Mock } from 'vitest'
@@ -279,6 +288,169 @@ describe('useTracking', () => {
 
       await act(async () => {
         await result.current.mutateAsync({ runAt: '02:00' }).catch(() => {})
+      })
+
+      expect(toast.error).toHaveBeenCalledWith('boom')
+    })
+  })
+
+  describe('useCheckTrackingSource', () => {
+    it('passes the id and invalidates source lists when updated', async () => {
+      ;(checkTrackingSource as Mock).mockResolvedValue({
+        updated: true,
+        previous: '100',
+        current: '101',
+        mangaId: 1,
+      })
+
+      const { result } = renderHook(() => useCheckTrackingSource(), {
+        wrapper: createWrapper(),
+      })
+
+      await act(async () => {
+        await result.current.mutateAsync(7)
+      })
+
+      expect(checkTrackingSource).toHaveBeenCalledWith(7)
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ['tracking', 'sources'],
+      })
+      expect(toast.success).not.toHaveBeenCalled()
+    })
+
+    it('does not invalidate when nothing updated', async () => {
+      ;(checkTrackingSource as Mock).mockResolvedValue({
+        updated: false,
+        current: '101',
+      })
+
+      const { result } = renderHook(() => useCheckTrackingSource(), {
+        wrapper: createWrapper(),
+      })
+
+      await act(async () => {
+        await result.current.mutateAsync(7)
+      })
+
+      expect(invalidateSpy).not.toHaveBeenCalled()
+      expect(toast.success).not.toHaveBeenCalled()
+    })
+
+    it('shows error toast on failure', async () => {
+      ;(checkTrackingSource as Mock).mockRejectedValue(new Error('boom'))
+
+      const { result } = renderHook(() => useCheckTrackingSource(), {
+        wrapper: createWrapper(),
+      })
+
+      await act(async () => {
+        await result.current.mutateAsync(7).catch(() => {})
+      })
+
+      expect(toast.error).toHaveBeenCalledWith('boom')
+      expect(invalidateSpy).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('useCheckMangaSources', () => {
+    it('passes the mangaId and invalidates source lists when some sources updated', async () => {
+      ;(checkMangaSources as Mock).mockResolvedValue([
+        { sourceId: 1, sourceName: 'A', url: 'u', updated: true },
+        { sourceId: 2, sourceName: 'B', url: 'u', updated: false },
+      ])
+
+      const { result } = renderHook(() => useCheckMangaSources(), {
+        wrapper: createWrapper(),
+      })
+
+      await act(async () => {
+        await result.current.mutateAsync(3)
+      })
+
+      expect(checkMangaSources).toHaveBeenCalledWith(3)
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ['tracking', 'sources'],
+      })
+      expect(toast.success).not.toHaveBeenCalled()
+    })
+
+    it('does not invalidate when zero sources updated', async () => {
+      ;(checkMangaSources as Mock).mockResolvedValue([
+        { sourceId: 1, sourceName: 'A', url: 'u', updated: false },
+      ])
+
+      const { result } = renderHook(() => useCheckMangaSources(), {
+        wrapper: createWrapper(),
+      })
+
+      await act(async () => {
+        await result.current.mutateAsync(3)
+      })
+
+      expect(invalidateSpy).not.toHaveBeenCalled()
+    })
+
+    it('shows error toast on failure', async () => {
+      ;(checkMangaSources as Mock).mockRejectedValue(new Error('boom'))
+
+      const { result } = renderHook(() => useCheckMangaSources(), {
+        wrapper: createWrapper(),
+      })
+
+      await act(async () => {
+        await result.current.mutateAsync(3).catch(() => {})
+      })
+
+      expect(toast.error).toHaveBeenCalledWith('boom')
+    })
+  })
+
+  describe('useCheckAllSources', () => {
+    it('invalidates source lists when some sources updated', async () => {
+      ;(checkAllSources as Mock).mockResolvedValue([
+        { sourceId: 1, sourceName: 'A', url: 'u', updated: true },
+      ])
+
+      const { result } = renderHook(() => useCheckAllSources(), {
+        wrapper: createWrapper(),
+      })
+
+      await act(async () => {
+        await result.current.mutateAsync()
+      })
+
+      expect(checkAllSources).toHaveBeenCalledWith()
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ['tracking', 'sources'],
+      })
+      expect(toast.success).not.toHaveBeenCalled()
+    })
+
+    it('does not invalidate when zero sources updated', async () => {
+      ;(checkAllSources as Mock).mockResolvedValue([
+        { sourceId: 1, sourceName: 'A', url: 'u', updated: false },
+      ])
+
+      const { result } = renderHook(() => useCheckAllSources(), {
+        wrapper: createWrapper(),
+      })
+
+      await act(async () => {
+        await result.current.mutateAsync()
+      })
+
+      expect(invalidateSpy).not.toHaveBeenCalled()
+    })
+
+    it('shows error toast on failure', async () => {
+      ;(checkAllSources as Mock).mockRejectedValue(new Error('boom'))
+
+      const { result } = renderHook(() => useCheckAllSources(), {
+        wrapper: createWrapper(),
+      })
+
+      await act(async () => {
+        await result.current.mutateAsync().catch(() => {})
       })
 
       expect(toast.error).toHaveBeenCalledWith('boom')

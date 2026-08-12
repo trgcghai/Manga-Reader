@@ -5,6 +5,9 @@ import {
   deleteTrackingSource,
   getTrackingConfig,
   updateTrackingConfig,
+  checkTrackingSource,
+  checkMangaSources,
+  checkAllSources,
 } from '#/services/api/trackingApi'
 import type {
   PaginatedTrackingSourceResponse,
@@ -13,6 +16,8 @@ import type {
   UpdateTrackingSourcePayload,
   TrackingConfigResponse,
   UpdateTrackingConfigPayload,
+  CheckSourceResponse,
+  CheckResult,
 } from '#/services/api/trackingApi'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -29,6 +34,14 @@ const trackingKeys = {
       params.search,
     ] as const,
   config: () => [...trackingKeys.all, 'config'] as const,
+  sourceLists: () => [...trackingKeys.all, 'sources'] as const,
+}
+
+function hasUpdates(results: CheckResult[] | CheckSourceResponse): boolean {
+  if (Array.isArray(results)) {
+    return results.some((result) => result.updated)
+  }
+  return results.updated
 }
 
 export function useTrackingSources(params: TrackingSourceListParams = {}) {
@@ -116,6 +129,60 @@ export function useUpdateTrackingConfig() {
     onError: (err) => {
       toast.error(
         err instanceof Error ? err.message : 'Failed to update tracking config',
+      )
+    },
+  })
+}
+
+export function useCheckTrackingSource() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => checkTrackingSource(id),
+    onSuccess: (result) => {
+      if (hasUpdates(result)) {
+        queryClient.invalidateQueries({ queryKey: trackingKeys.sourceLists() })
+      }
+    },
+    onError: (err) => {
+      toast.error(
+        err instanceof Error ? err.message : 'Failed to check source',
+      )
+    },
+  })
+}
+
+export function useCheckMangaSources() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (mangaId: number) => checkMangaSources(mangaId),
+    onSuccess: (results) => {
+      if (hasUpdates(results)) {
+        queryClient.invalidateQueries({ queryKey: trackingKeys.sourceLists() })
+      }
+    },
+    onError: (err) => {
+      toast.error(
+        err instanceof Error ? err.message : 'Failed to check manga sources',
+      )
+    },
+  })
+}
+
+export function useCheckAllSources() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => checkAllSources(),
+    onSuccess: (results) => {
+      if (hasUpdates(results)) {
+        queryClient.invalidateQueries({ queryKey: trackingKeys.sourceLists() })
+      }
+    },
+    onError: (err) => {
+      toast.error(
+        err instanceof Error ? err.message : 'Failed to check all sources',
       )
     },
   })
