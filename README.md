@@ -1,6 +1,6 @@
 # Manga Reader
 
-A full-stack offline manga reader application. Built with a NestJS backend and a TanStack Start + React frontend.
+A self-hosted web application for reading and managing manga library with your own sources.
 
 ## Architecture
 
@@ -13,23 +13,14 @@ A full-stack offline manga reader application. Built with a NestJS backend and a
 
 ## Prerequisites
 
-### Docker
-
-- Docker
-- Docker Compose
-
-### Manual
-
-- Node.js >= 22
-- MinIO installed
-- PostgreSQL installed
+This application requires docker and docker compose to run with. If you tend to run it manually, you should have installed [NodeJS](https://nodejs.org/en/download) >= 22, [MinIO](https://docs.min.io/aistor/), [PostgreSQL](https://www.postgresql.org/download/) and Redis (Cloud or Local is depended on your preference)
 
 ## How to Run
 
 ### Docker Compose (recommended)
 
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 
 This starts all services with hot-reload enabled. Changes to `backend/` or `frontend/` are picked up automatically via bind mounts.
@@ -80,13 +71,3 @@ The frontend expects the backend at `http://localhost:3001` (configurable via `V
 | `npm run lint`           | Lint source files         |
 | `npm run check`          | Format check (Prettier)   |
 
-## Project Structure
-
-```
-backend/          — NestJS API server
-frontend/         — TanStack Start + React app
-  src/routes/     — Route definitions
-docker-compose.yml — Full-stack local dev environment
-opencode.json     — OpenCode configuration
-AGENTS.md         — Workflow notes for AI coding assistants
-```
