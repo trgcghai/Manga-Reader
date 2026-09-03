@@ -9,11 +9,13 @@ import KeyvRedis from '@keyv/redis';
 import { FileModule } from 'src/modules/file/file.module';
 import { MangaModule } from 'src/modules/manga/manga.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { TranslatorModule } from './modules/translator/translator.module';
 import { LanguageModule } from './modules/language/language.module';
+import { TrackingModule } from './modules/tracking/tracking.module';
 
 @Module({
   imports: [
@@ -25,6 +27,7 @@ import { LanguageModule } from './modules/language/language.module';
         },
       ],
     }),
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -62,6 +65,7 @@ import { LanguageModule } from './modules/language/language.module';
     MangaModule,
     TranslatorModule,
     LanguageModule,
+    TrackingModule,
   ],
   controllers: [HealthController],
   providers: [

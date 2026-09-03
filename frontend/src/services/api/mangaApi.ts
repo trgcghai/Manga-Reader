@@ -1,5 +1,18 @@
 import axiosInstance from '#/services/api/api'
 
+export const READING_FLAGS = [
+  'reading',
+  're-reading',
+  'planned',
+  'completed',
+  'paused',
+  'dropped',
+] as const
+
+export type ReadingFlag = (typeof READING_FLAGS)[number]
+
+export type ReadingFlagFilter = ReadingFlag | 'any'
+
 export interface MangaResponse {
   id: number
   title: string
@@ -7,6 +20,7 @@ export interface MangaResponse {
   description: string
   coverPath: string
   status: string
+  readingFlag: ReadingFlag | null
   authors: { id: number; name: string; createdAt: string; updatedAt: string }[]
   genres: { id: number; name: string; createdAt: string; updatedAt: string }[]
   createdAt: string
@@ -94,6 +108,7 @@ export async function getAllMangas(params: {
   status?: string
   authors?: string
   genres?: string
+  readingFlag?: ReadingFlagFilter
 }): Promise<PaginatedResponse<MangaResponse>> {
   const queryParams: Record<string, string | number> = {
     page: params.page,
@@ -103,6 +118,7 @@ export async function getAllMangas(params: {
   if (params.status) queryParams.status = params.status
   if (params.authors) queryParams.authors = params.authors
   if (params.genres) queryParams.genres = params.genres
+  if (params.readingFlag) queryParams.readingFlag = params.readingFlag
 
   const res = await axiosInstance.get<PaginatedResponse<MangaResponse>>(
     '/mangas',
@@ -126,6 +142,17 @@ export async function getManga(
   const params = include ? `?include=${include}` : ''
   const res = await axiosInstance.get<MangaResponse | MangaDetailResponse>(
     `/mangas/${id}${params}`,
+  )
+  return res.data
+}
+
+export async function updateMangaFlag(
+  mangaId: number,
+  flag: ReadingFlag | null,
+): Promise<MangaResponse> {
+  const res = await axiosInstance.patch<MangaResponse>(
+    `/mangas/${mangaId}/flag`,
+    { flag },
   )
   return res.data
 }

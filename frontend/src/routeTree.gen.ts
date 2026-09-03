@@ -15,9 +15,11 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AdminTranslatorsRouteImport } from './routes/admin/translators'
+import { Route as AdminTrackingRouteImport } from './routes/admin/tracking'
 import { Route as AdminLanguagesRouteImport } from './routes/admin/languages'
 import { Route as AdminGenresRouteImport } from './routes/admin/genres'
 import { Route as AdminAuthorsRouteImport } from './routes/admin/authors'
+import { Route as AppFlaggedRouteImport } from './routes/_app/flagged'
 import { Route as AdminMangasIndexRouteImport } from './routes/admin/mangas/index'
 import { Route as AdminMangasNewRouteImport } from './routes/admin/mangas/new'
 import { Route as AdminMangasIdRouteImport } from './routes/admin/mangas/$id'
@@ -54,6 +56,11 @@ const AdminTranslatorsRoute = AdminTranslatorsRouteImport.update({
   path: '/translators',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminTrackingRoute = AdminTrackingRouteImport.update({
+  id: '/tracking',
+  path: '/tracking',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLanguagesRoute = AdminLanguagesRouteImport.update({
   id: '/languages',
   path: '/languages',
@@ -68,6 +75,11 @@ const AdminAuthorsRoute = AdminAuthorsRouteImport.update({
   id: '/authors',
   path: '/authors',
   getParentRoute: () => AdminRoute,
+} as any)
+const AppFlaggedRoute = AppFlaggedRouteImport.update({
+  id: '/flagged',
+  path: '/flagged',
+  getParentRoute: () => AppRoute,
 } as any)
 const AdminMangasIndexRoute = AdminMangasIndexRouteImport.update({
   id: '/mangas/',
@@ -109,9 +121,11 @@ const AdminMangasIdEditRoute = AdminMangasIdEditRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/flagged': typeof AppFlaggedRoute
   '/admin/authors': typeof AdminAuthorsRoute
   '/admin/genres': typeof AdminGenresRoute
   '/admin/languages': typeof AdminLanguagesRoute
+  '/admin/tracking': typeof AdminTrackingRoute
   '/admin/translators': typeof AdminTranslatorsRoute
   '/admin/': typeof AdminIndexRoute
   '/manga/$id': typeof AppMangaIdRoute
@@ -124,9 +138,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
+  '/flagged': typeof AppFlaggedRoute
   '/admin/authors': typeof AdminAuthorsRoute
   '/admin/genres': typeof AdminGenresRoute
   '/admin/languages': typeof AdminLanguagesRoute
+  '/admin/tracking': typeof AdminTrackingRoute
   '/admin/translators': typeof AdminTranslatorsRoute
   '/admin': typeof AdminIndexRoute
   '/manga/$id': typeof AppMangaIdRoute
@@ -141,9 +157,11 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_reader': typeof ReaderRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
+  '/_app/flagged': typeof AppFlaggedRoute
   '/admin/authors': typeof AdminAuthorsRoute
   '/admin/genres': typeof AdminGenresRoute
   '/admin/languages': typeof AdminLanguagesRoute
+  '/admin/tracking': typeof AdminTrackingRoute
   '/admin/translators': typeof AdminTranslatorsRoute
   '/_app/': typeof AppIndexRoute
   '/admin/': typeof AdminIndexRoute
@@ -160,9 +178,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/flagged'
     | '/admin/authors'
     | '/admin/genres'
     | '/admin/languages'
+    | '/admin/tracking'
     | '/admin/translators'
     | '/admin/'
     | '/manga/$id'
@@ -175,9 +195,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/flagged'
     | '/admin/authors'
     | '/admin/genres'
     | '/admin/languages'
+    | '/admin/tracking'
     | '/admin/translators'
     | '/admin'
     | '/manga/$id'
@@ -191,9 +213,11 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_reader'
     | '/admin'
+    | '/_app/flagged'
     | '/admin/authors'
     | '/admin/genres'
     | '/admin/languages'
+    | '/admin/tracking'
     | '/admin/translators'
     | '/_app/'
     | '/admin/'
@@ -256,6 +280,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTranslatorsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/tracking': {
+      id: '/admin/tracking'
+      path: '/tracking'
+      fullPath: '/admin/tracking'
+      preLoaderRoute: typeof AdminTrackingRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/languages': {
       id: '/admin/languages'
       path: '/languages'
@@ -276,6 +307,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/authors'
       preLoaderRoute: typeof AdminAuthorsRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/_app/flagged': {
+      id: '/_app/flagged'
+      path: '/flagged'
+      fullPath: '/flagged'
+      preLoaderRoute: typeof AppFlaggedRouteImport
+      parentRoute: typeof AppRoute
     }
     '/admin/mangas/': {
       id: '/admin/mangas/'
@@ -330,11 +368,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppFlaggedRoute: typeof AppFlaggedRoute
   AppIndexRoute: typeof AppIndexRoute
   AppMangaIdRoute: typeof AppMangaIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppFlaggedRoute: AppFlaggedRoute,
   AppIndexRoute: AppIndexRoute,
   AppMangaIdRoute: AppMangaIdRoute,
 }
@@ -370,6 +410,7 @@ interface AdminRouteChildren {
   AdminAuthorsRoute: typeof AdminAuthorsRoute
   AdminGenresRoute: typeof AdminGenresRoute
   AdminLanguagesRoute: typeof AdminLanguagesRoute
+  AdminTrackingRoute: typeof AdminTrackingRoute
   AdminTranslatorsRoute: typeof AdminTranslatorsRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminMangasIdRoute: typeof AdminMangasIdRouteWithChildren
@@ -381,6 +422,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAuthorsRoute: AdminAuthorsRoute,
   AdminGenresRoute: AdminGenresRoute,
   AdminLanguagesRoute: AdminLanguagesRoute,
+  AdminTrackingRoute: AdminTrackingRoute,
   AdminTranslatorsRoute: AdminTranslatorsRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminMangasIdRoute: AdminMangasIdRouteWithChildren,

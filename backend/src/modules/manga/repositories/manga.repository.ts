@@ -1,5 +1,6 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
+import { ReadingFlag } from 'src/common/constants/manga.constant';
 import { Repository } from 'typeorm';
 
 export class MangaRepository {
@@ -15,6 +16,7 @@ export class MangaRepository {
     status?: string,
     authors?: string[],
     genres?: string[],
+    readingFlag?: string,
   ): Promise<{
     data: Manga[];
     total: number;
@@ -62,6 +64,12 @@ export class MangaRepository {
         {} as Record<string, string>,
       );
       query.andWhere(`(${conditions.join(' OR ')})`, params);
+    }
+
+    if (readingFlag === 'any') {
+      query.andWhere('manga.readingFlag IS NOT NULL');
+    } else if (readingFlag) {
+      query.andWhere('manga.readingFlag = :readingFlag', { readingFlag });
     }
 
     query
@@ -112,6 +120,20 @@ export class MangaRepository {
     if (data.authors !== undefined) manga.authors = data.authors;
     if (data.genres !== undefined) manga.genres = data.genres;
 
+    return await this.repo.save(manga);
+  };
+
+  updateFlag = async (
+    id: number,
+    flag: ReadingFlag | null,
+  ): Promise<Manga | null> => {
+    const manga = await this.repo.findOne({
+      where: { id },
+      relations: ['authors', 'genres'],
+    });
+    if (!manga) return null;
+
+    manga.readingFlag = flag;
     return await this.repo.save(manga);
   };
 

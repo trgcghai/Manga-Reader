@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "business-analyst": {
+      "source": "olehsvyrydov/ai-development-team",
+      "sourceType": "github",
+      "skillPath": "claude/skills/management/business-analyst/SKILL.md",
+      "computedHash": "ecd98ad086ad4f611ce5ab2474efd688254e7a548a1d6c8e00b8d7eb03669fd6"
+    },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",

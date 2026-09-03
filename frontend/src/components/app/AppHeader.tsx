@@ -6,13 +6,20 @@ export function AppHeader() {
     <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="Manga Reader Logo" className="h-10 w-auto rounded-sm" />
+          <img
+            src="/logo.png"
+            alt="Manga Reader Logo"
+            className="h-10 w-auto rounded-sm"
+          />
           <span className="font-heading text-lg font-semibold tracking-tight">
             Manga Reader
           </span>
         </Link>
 
         <nav className="flex items-center gap-6">
+          <Button variant="secondary" size="sm" title="Reading List">
+            <Link to="/flagged">Reading List</Link>
+          </Button>
           <Button variant="secondary" size="sm" title="Admin Dashboard">
             <Link to="/admin">Admin Dashboard</Link>
           </Button>

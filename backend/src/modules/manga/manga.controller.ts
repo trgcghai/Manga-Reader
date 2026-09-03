@@ -17,6 +17,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as XLSX from 'xlsx';
+import { ReadingFlag } from 'src/common/constants/manga.constant';
 import { MangaService } from './services/manga.service';
 import {
   ImportMangaService,
@@ -25,6 +26,7 @@ import {
 import {
   CreateMangaDto,
   UpdateMangaDto,
+  UpdateMangaFlagDto,
 } from 'src/modules/manga/dto/manga.dto';
 import { ChapterService } from './services/chapter.service';
 import { TranslationService } from './services/translation.service';
@@ -74,17 +76,25 @@ export class MangaController {
     required: false,
     description: 'Comma-separated genre names',
   })
+  @ApiQuery({
+    name: 'readingFlag',
+    required: false,
+    description: 'Filter by reading flag. Use "any" for all flagged manga.',
+    enum: [...Object.values(ReadingFlag), 'any'],
+  })
   findAll(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
     @Query('search') search?: string,
     @Query('status') status?: string,
+    @Query('readingFlag') readingFlag?: string,
   ) {
     return this.mangaService.findAll(
       parseInt(page),
       parseInt(limit),
       search,
       status,
+      readingFlag,
     );
   }
 
@@ -155,6 +165,16 @@ export class MangaController {
   @ApiParam({ name: 'id', type: Number })
   delete(@Param('id') id: string) {
     return this.mangaService.delete(+id);
+  }
+
+  @Patch(':mangaId/flag')
+  @ApiOperation({ summary: 'Update manga reading flag' })
+  @ApiParam({ name: 'mangaId', type: Number })
+  updateFlag(
+    @Param('mangaId', ParseIntPipe) mangaId: number,
+    @Body() dto: UpdateMangaFlagDto,
+  ) {
+    return this.mangaService.updateFlag(mangaId, dto.flag ?? null);
   }
 
   @Post(':mangaId/chapter')

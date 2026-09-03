@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Manga } from 'src/modules/manga/entities/manga.entity';
+import { ReadingFlag } from 'src/common/constants/manga.constant';
 import { MangaRepository } from 'src/modules/manga/repositories/manga.repository';
 import {
   CreateMangaDto,
@@ -37,6 +38,7 @@ export class MangaService {
     limit: number = 20,
     search?: string,
     status?: string,
+    readingFlag?: string,
   ): Promise<{
     data: Manga[];
     total: number;
@@ -44,7 +46,21 @@ export class MangaService {
     limit: number;
     totalPages: number;
   }> => {
-    return await this.mangaRepository.findAll(page, limit, search, status);
+    const VALID_FLAG_FILTERS = [...Object.values(ReadingFlag), 'any'];
+    if (readingFlag && !VALID_FLAG_FILTERS.includes(readingFlag)) {
+      throw new BadRequestException(
+        `Invalid readingFlag value. Allowed: ${VALID_FLAG_FILTERS.join(', ')}`,
+      );
+    }
+    return await this.mangaRepository.findAll(
+      page,
+      limit,
+      search,
+      status,
+      undefined,
+      undefined,
+      readingFlag,
+    );
   };
 
   findOne = async (
@@ -73,6 +89,7 @@ export class MangaService {
       description: manga.description ?? undefined,
       coverPath: manga.coverPath ?? undefined,
       status: manga.status,
+      readingFlag: manga.readingFlag ?? undefined,
       authors: manga.authors.map((a) => ({ id: a.id, name: a.name })),
       genres: manga.genres.map((g) => ({ id: g.id, name: g.name })),
       createdAt: manga.createdAt.toISOString(),
@@ -243,5 +260,18 @@ export class MangaService {
       }
       throw new BadRequestException(`Failed to delete manga: ${error}`);
     }
+  };
+
+  updateFlag = async (id: number, flag: ReadingFlag | null): Promise<Manga> => {
+    const existing = await this.mangaRepository.findOneByIdWithRelations(id);
+    if (!existing) {
+      throw new NotFoundException(`Manga with ID ${id} not found`);
+    }
+
+    const updated = await this.mangaRepository.updateFlag(id, flag);
+    if (!updated) {
+      throw new NotFoundException(`Manga with ID ${id} not found`);
+    }
+    return updated;
   };
 }
