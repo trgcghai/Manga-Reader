@@ -1,0 +1,111 @@
+---
+title: "Manga Reader"
+description: "An introduction to the local-first Manga Reader project, including its stack, features, setup, contribution workflow, and license notes."
+createdAt: "2026-08-28"
+updatedAt: "2026-08-28"
+---
+
+# Manga Reader
+
+## Overview
+
+Manga Reader is a full-stack application for organizing and reading a personal manga library locally. The project focuses on an offline-first experience where manga files remain under the user's control and are not synced to a cloud service by default.
+
+The application is intended to support library discovery, manga browsing, chapter reading, metadata handling, and reading progress. It is built as a local development project with a separate frontend, backend, and supporting services.
+
+## Stack
+
+The project uses a TypeScript-based full-stack architecture.
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | TanStack Start, Vite, React |
+| Backend | NestJS, TypeScript |
+| Database | PostgreSQL |
+| Cache | Redis |
+| Document storage | MongoDB, planned for future use |
+| Object storage | MinIO for manga page images |
+| Local orchestration | Docker Compose |
+
+The frontend lives in `frontend/`, and the backend lives in `backend/`. The root `docker-compose.yml` file starts the local full-stack environment.
+
+## Features
+
+Current and planned project capabilities include:
+
+- Local manga library organization.
+- Manga and chapter browsing.
+- Reader-focused frontend experience.
+- Metadata workflows for series, chapters, languages, and translators.
+- Reading progress persistence.
+- Local development with hot reload through Docker Compose.
+- Fixture-based tests for discovery, metadata parsing, and reader behavior.
+
+The product scope is local-first. Authentication, telemetry, cloud sync, and internet-backed catalogs are intentionally out of scope unless the project direction changes.
+
+## How to Run
+
+The recommended way to run the project is with Docker Compose from the repository root:
+
+```bash
+docker compose up --build
+```
+
+This starts the frontend, backend, and supporting services for local development.
+
+Common local URLs:
+
+| Service | URL |
+| --- | --- |
+| Frontend | `http://localhost:3000` |
+| Backend | `http://localhost:3001` |
+| MinIO Console | `http://localhost:9001` |
+
+You can also run each app manually.
+
+Backend:
+
+```bash
+cd backend
+npm install
+npm run start:dev
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend expects the backend to be available at `http://localhost:3001`, configurable with `VITE_API_URL`.
+
+## How to Contribute
+
+Contributions should keep the project focused on reliable local manga reading.
+
+Before changing code:
+
+- Read `README.md` and `AGENTS.md` for project structure and workflow notes.
+- Keep user manga files outside the repository.
+- Do not hand-edit generated files such as `frontend/src/routeTree.gen.ts`.
+- Prefer small, focused changes with clear tests where behavior changes.
+
+Useful commands:
+
+```bash
+cd backend && npm run test
+cd frontend && npm run test
+cd frontend && npm run check
+```
+
+When adding frontend routes, regenerate the route tree with:
+
+```bash
+cd frontend && npm run generate-routes
+```
+
+## License
+
+This project is licensed under the MIT License.
