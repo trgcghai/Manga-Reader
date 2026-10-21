@@ -142,7 +142,7 @@ export class TranslationService {
     ) {
       const key = extractKeyFromUrl(
         translation.url,
-        this.fileService.endpoint,
+        this.fileService.publicUrl,
         this.fileService.bucket,
       );
       if (key) {
@@ -176,7 +176,7 @@ export class TranslationService {
     if (translation.url) {
       const key = extractKeyFromUrl(
         translation.url,
-        this.fileService.endpoint,
+        this.fileService.publicUrl,
         this.fileService.bucket,
       );
       if (key) {

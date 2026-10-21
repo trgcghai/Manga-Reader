@@ -7,10 +7,22 @@ export function getContentType(key: string): string {
 
 export function extractKeyFromUrl(
   url: string,
-  endpoint: string,
+  publicUrl: string,
   bucket: string,
 ): string | null {
-  const prefix = `${endpoint}/${bucket}/`;
-  if (!url.startsWith(prefix)) return null;
-  return url.slice(prefix.length);
+  try {
+    const objectUrl = new URL(url);
+    const publicStorageUrl = new URL(publicUrl);
+    if (objectUrl.origin !== publicStorageUrl.origin) return null;
+
+    const basePath = publicStorageUrl.pathname.replace(/\/+$/, '');
+    const bucketPrefix = `${basePath}/${encodeURIComponent(bucket)}/`;
+    if (!objectUrl.pathname.startsWith(bucketPrefix)) return null;
+
+    const encodedKey = objectUrl.pathname.slice(bucketPrefix.length);
+    if (!encodedKey) return null;
+    return decodeURIComponent(encodedKey);
+  } catch {
+    return null;
+  }
 }

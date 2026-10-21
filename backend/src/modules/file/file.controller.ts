@@ -103,8 +103,8 @@ export class FileController {
   }
 
   @Get('download')
-  @ApiOperation({ summary: 'Download a file by MinIO URL' })
-  @ApiQuery({ name: 'url', required: true, description: 'MinIO object URL' })
+  @ApiOperation({ summary: 'Download a file by public storage URL' })
+  @ApiQuery({ name: 'url', required: true, description: 'Public object URL' })
   async download(@Query('url') url: string): Promise<StreamableFile> {
     if (!url) {
       throw new BadRequestException('url query parameter is required');
@@ -112,19 +112,19 @@ export class FileController {
 
     const key = extractKeyFromUrl(
       url,
-      this.fileService.endpoint,
+      this.fileService.publicUrl,
       this.fileService.bucket,
     );
 
     if (!key) {
-      throw new BadRequestException('Invalid Minio URL');
+      throw new BadRequestException('Invalid storage URL');
     }
     return await this.fileService.download(key);
   }
 
   @Delete('*key')
   @ApiOperation({ summary: 'Delete a file by key' })
-  @ApiParam({ name: 'key', description: 'MinIO object key' })
+  @ApiParam({ name: 'key', description: 'Object storage key' })
   async delete(@Param('key') key: string) {
     await this.fileService.delete(key);
   }

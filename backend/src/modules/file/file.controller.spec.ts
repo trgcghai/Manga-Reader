@@ -14,7 +14,7 @@ describe('FileController', () => {
     download: jest.fn(),
     list: jest.fn(),
     generatePresignedUploadUrl: jest.fn(),
-    endpoint: 'http://localhost:9000/manga-pages',
+    publicUrl: 'https://cdn.example.com/assets',
     bucket: 'manga-pages',
   } as jest.Mocked<
     Pick<
@@ -24,7 +24,7 @@ describe('FileController', () => {
       | 'delete'
       | 'download'
       | 'list'
-      | 'endpoint'
+      | 'publicUrl'
       | 'bucket'
     >
   >;
@@ -50,7 +50,7 @@ describe('FileController', () => {
     it('should upload cover file and return key and url', async () => {
       const mockResult = {
         key: 'manga/cover/uuid.jpg',
-        url: 'http://localhost:9000/manga-pages/manga/cover/uuid.jpg',
+        url: 'https://cdn.example.com/assets/manga-pages/manga/cover/uuid.jpg',
       };
       mockFileService.upload.mockResolvedValue(mockResult);
 
@@ -74,7 +74,7 @@ describe('FileController', () => {
     it('should upload translation file with mangaId and chapterNumber', async () => {
       const mockResult = {
         key: 'manga/1/chapter/3/translations/uuid.cbz',
-        url: 'http://localhost:9000/manga-pages/manga/1/chapter/3/translations/uuid.cbz',
+        url: 'https://cdn.example.com/assets/manga-pages/manga/1/chapter/3/translations/uuid.cbz',
       };
       mockFileService.upload.mockResolvedValue(mockResult);
 
@@ -114,7 +114,7 @@ describe('FileController', () => {
       mockFileService.download.mockResolvedValue(mockStreamableFile);
 
       const result = await controller.download(
-        'http://localhost:9000/manga-pages/manga-pages/manga/1/chapter/1/translations/file.cbz',
+        'https://cdn.example.com/assets/manga-pages/manga/1/chapter/1/translations/file.cbz',
       );
 
       expect(result).toBeInstanceOf(StreamableFile);
@@ -129,9 +129,11 @@ describe('FileController', () => {
       );
     });
 
-    it('should throw BadRequestException when url is not a Minio url', async () => {
+    it('rejects a URL outside the configured public storage location', async () => {
       await expect(
-        controller.download('https://example.com/file.cbz'),
+        controller.download(
+          'https://elsewhere.example.com/assets/manga-pages/file.cbz',
+        ),
       ).rejects.toThrow(BadRequestException);
     });
   });
