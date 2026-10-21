@@ -1,6 +1,7 @@
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadBucketCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
@@ -192,6 +193,25 @@ describe('FileService', () => {
       await expect(service.list('covers')).rejects.toThrow(
         InternalServerErrorException,
       );
+    });
+  });
+
+  describe('checkStorageAccess', () => {
+    it('checks access to the configured bucket', async () => {
+      sendMock.mockResolvedValue({} as never);
+
+      await service.checkStorageAccess();
+
+      const command = sendMock.mock.calls[0][0];
+      expect(command).toBeInstanceOf(HeadBucketCommand);
+      expect(command.input).toMatchObject({ Bucket: 'test-bucket' });
+    });
+
+    it('propagates bucket access failures to the health controller', async () => {
+      const failure = new Error('AccessDenied');
+      sendMock.mockRejectedValue(failure);
+
+      await expect(service.checkStorageAccess()).rejects.toBe(failure);
     });
   });
 });

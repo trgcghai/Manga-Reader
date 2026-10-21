@@ -1,6 +1,7 @@
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadBucketCommand,
   paginateListObjectsV2,
   PutObjectCommand,
   S3Client,
@@ -158,6 +159,12 @@ export class FileService {
       );
       throw new InternalServerErrorException('File list failed');
     }
+  }
+
+  async checkStorageAccess(): Promise<void> {
+    await this.storageClient.send(
+      new HeadBucketCommand({ Bucket: this.bucket }),
+    );
   }
 
   private getPublicObjectUrl(key: string): string {
