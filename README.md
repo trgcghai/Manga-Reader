@@ -31,6 +31,22 @@ This starts all services with hot-reload enabled. Changes to `backend/` or `fron
 | Backend  | http://localhost:3001 |
 | MinIO    | http://localhost:9001 |
 
+### Production Docker Compose
+
+Production Compose runs only the backend and frontend containers. PostgreSQL, MongoDB, Redis, and the S3 compatible object storage service must be reachable separately.
+
+```bash
+cp .env.production.example .env.production
+```
+
+Set the external service connection values and credentials in `.env.production`. Set `FRONTEND_URL` to the frontend's browser origin for backend CORS, and `VITE_API_URL` to the backend URL browsers can reach before building the frontend image. Create the configured storage bucket in advance and apply the access policy needed for your deployment. `STORAGE_ENDPOINT` can be left empty for AWS S3; `STORAGE_PUBLIC_URL` is the browser reachable base used for returned object URLs.
+
+```bash
+docker compose --env-file .env.production -f docker-compose.production.yml up --build -d
+```
+
+The default published ports are frontend `3000` and backend `3001`, configurable with `FRONTEND_PORT` and `BACKEND_PORT`.
+
 ### Manual Setup
 
 #### Backend
