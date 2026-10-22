@@ -1,13 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
+import { S3Client } from '@aws-sdk/client-s3';
+import { STORAGE_CLIENT } from 'src/common/constants/file.constant';
 import { FileModule } from './file.module';
-import { MINIO_CLIENT } from 'src/common/constants/file.constant';
 import { FileService } from './file.service';
-import * as Minio from 'minio';
 
 describe('FileModule', () => {
-  it('should provide MINIO_CLIENT as a Minio.Client instance', async () => {
-    const module: TestingModule = await Test.createTestingModule({
+  let moduleRef: TestingModule;
+
+  async function compileModule(storageEndpoint?: string) {
+    moduleRef = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({
           isGlobal: true,
@@ -15,10 +17,11 @@ describe('FileModule', () => {
           ignoreEnvVars: true,
           load: [
             () => ({
-              MINIO_ENDPOINT: 'http://localhost:9000',
-              MINIO_ACCESS_KEY: 'test',
-              MINIO_SECRET_KEY: 'test',
-              MINIO_BUCKET: 'test-bucket',
+              STORAGE_ENDPOINT: storageEndpoint,
+              STORAGE_REGION: 'us-east-1',
+              STORAGE_ACCESS_KEY: 'test-access-key',
+              STORAGE_SECRET_KEY: 'test-secret-key',
+              STORAGE_BUCKET: 'test-bucket',
             }),
           ],
         }),
@@ -26,16 +29,37 @@ describe('FileModule', () => {
       ],
     })
       .overrideProvider(FileService)
-      .useValue({
-        upload: jest.fn(),
-        download: jest.fn(),
-        delete: jest.fn(),
-        list: jest.fn(),
-      })
+      .useValue({})
       .compile();
 
-    const minioClient = module.get<Minio.Client>(MINIO_CLIENT);
-    expect(minioClient).toBeDefined();
-    expect(minioClient).toBeInstanceOf(Minio.Client);
+    return moduleRef.get<S3Client>(STORAGE_CLIENT);
+  }
+
+  afterEach(async () => {
+    await moduleRef?.close();
+  });
+
+  it('configures a path-style S3 client for a custom storage endpoint', async () => {
+    const client = await compileModule('http://storage.example:9000');
+
+    expect(client).toBeInstanceOf(S3Client);
+    expect(await client.config.region()).toBe('us-east-1');
+    expect(client.config.forcePathStyle).toBe(true);
+    expect(await client.config.endpoint()).toMatchObject({
+      protocol: 'http:',
+      hostname: 'storage.example',
+      port: 9000,
+    });
+    expect(await client.config.credentials()).toMatchObject({
+      accessKeyId: 'test-access-key',
+      secretAccessKey: 'test-secret-key',
+    });
+  });
+
+  it('uses AWS default endpoint resolution when no custom endpoint is set', async () => {
+    const client = await compileModule();
+
+    expect(client.config.endpoint).toBeUndefined();
+    expect(client.config.forcePathStyle).toBe(false);
   });
 });

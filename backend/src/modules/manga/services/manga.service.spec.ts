@@ -36,7 +36,7 @@ describe('MangaService', () => {
   };
 
   const mockFileService = {
-    endpoint: 'http://localhost:9000',
+    publicUrl: 'https://cdn.example.com/assets',
     bucket: 'manga-pages',
     delete: jest.fn().mockResolvedValue(undefined),
   };
@@ -757,6 +757,30 @@ describe('MangaService', () => {
       );
     });
 
+    it('deletes the old cover object when its public URL is replaced', async () => {
+      const oldCoverUrl =
+        'https://cdn.example.com/assets/manga-pages/manga/cover/old.jpg';
+      const newCoverUrl =
+        'https://cdn.example.com/assets/manga-pages/manga/cover/new.jpg';
+      const existingManga = {
+        id: 1,
+        coverPath: oldCoverUrl,
+      } as unknown as Manga;
+      mockMangaRepository.findOneByIdWithRelations.mockResolvedValue(
+        existingManga,
+      );
+      mockMangaRepository.update.mockResolvedValue({
+        ...existingManga,
+        coverPath: newCoverUrl,
+      });
+
+      await service.update(1, { coverPath: newCoverUrl });
+
+      expect(mockFileService.delete).toHaveBeenCalledWith(
+        'manga/cover/old.jpg',
+      );
+    });
+
     it('should handle empty genres array (clear relations)', async () => {
       const existingManga = {
         id: 1,
@@ -891,6 +915,21 @@ describe('MangaService', () => {
 
       expect(mockMangaRepository.findOneById).toHaveBeenCalledWith(1);
       expect(mockMangaRepository.delete).toHaveBeenCalledWith(1);
+    });
+
+    it('deletes the cover object when its public URL belongs to storage', async () => {
+      mockMangaRepository.findOneById.mockResolvedValue({
+        id: 1,
+        coverPath:
+          'https://cdn.example.com/assets/manga-pages/manga/cover/old.jpg',
+      });
+      mockMangaRepository.delete.mockResolvedValue(true);
+
+      await service.delete(1);
+
+      expect(mockFileService.delete).toHaveBeenCalledWith(
+        'manga/cover/old.jpg',
+      );
     });
 
     it('should throw NotFoundException when manga does not exist', async () => {

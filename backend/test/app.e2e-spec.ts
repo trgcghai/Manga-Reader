@@ -5,10 +5,14 @@ import { getConnectionToken } from '@nestjs/mongoose';
 import request from 'supertest';
 import type { App } from 'supertest/types';
 import { DataSource } from 'typeorm';
+import { FileService } from '../src/modules/file/file.service';
 import { HealthController } from '../src/health.controller';
 
 describe('Health endpoint (e2e)', () => {
   let app: INestApplication<App>;
+  const fileServiceMock = {
+    checkStorageAccess: jest.fn().mockResolvedValue(undefined),
+  };
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -33,6 +37,7 @@ describe('Health endpoint (e2e)', () => {
             get: jest.fn().mockResolvedValue('ok'),
           },
         },
+        { provide: FileService, useValue: fileServiceMock },
       ],
     }).compile();
 
@@ -50,6 +55,21 @@ describe('Health endpoint (e2e)', () => {
       postgres: 'connected',
       mongodb: 'connected',
       redis: 'connected',
+      storage: 'connected',
     });
+  });
+
+  it('GET /health returns 503 without exposing storage provider errors', () => {
+    fileServiceMock.checkStorageAccess.mockRejectedValueOnce(
+      new Error('AccessDenied: sensitive provider details'),
+    );
+
+    return request(app.getHttpServer())
+      .get('/health')
+      .expect(503)
+      .expect(({ body }) => {
+        expect(body.message).toBe('Object storage not connected');
+        expect(JSON.stringify(body)).not.toContain('AccessDenied');
+      });
   });
 });

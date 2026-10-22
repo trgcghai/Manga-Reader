@@ -21,16 +21,12 @@ async function bootstrap() {
     }),
   );
 
-  const port = configService.get<number>('PORT');
-
-  if (!port) {
-    throw new Error('PORT environment variable is not defined');
-  }
+  const port = configService.getOrThrow<number>('PORT');
 
   app.use(helmet());
 
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: configService.getOrThrow<string>('FRONTEND_URL'),
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

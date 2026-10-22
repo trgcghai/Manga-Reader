@@ -187,7 +187,7 @@ export class MangaService {
         if (existing.coverPath && existing.coverPath !== dto.coverPath) {
           const key = extractKeyFromUrl(
             existing.coverPath,
-            this.fileService.endpoint,
+            this.fileService.publicUrl,
             this.fileService.bucket,
           );
           if (key) {
@@ -245,7 +245,7 @@ export class MangaService {
       if (existing.coverPath) {
         const key = extractKeyFromUrl(
           existing.coverPath,
-          this.fileService.endpoint,
+          this.fileService.publicUrl,
           this.fileService.bucket,
         );
         if (key) {

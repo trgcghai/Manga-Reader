@@ -11,6 +11,7 @@ import { type Cache } from 'cache-manager';
 import { Connection, ConnectionStates } from 'mongoose';
 import { DataSource } from 'typeorm';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { FileService } from './modules/file/file.service';
 
 @ApiTags('Health')
 @Controller('health')
@@ -19,12 +20,13 @@ export class HealthController {
     private readonly dataSource: DataSource,
     @InjectConnection() private readonly mongoConnection: Connection,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly fileService: FileService,
   ) {}
 
   @SkipThrottle()
   @Get()
   @ApiOperation({ summary: 'Check service health' })
-  @ApiResponse({ status: 200, description: 'All services connected' })
+  @ApiResponse({ status: 200, description: 'All dependencies connected' })
   @ApiResponse({ status: 503, description: 'One or more services unavailable' })
   async getHealth() {
     if (!this.dataSource.isInitialized) {
@@ -43,11 +45,18 @@ export class HealthController {
       throw new ServiceUnavailableException('Redis not connected');
     }
 
+    try {
+      await this.fileService.checkStorageAccess();
+    } catch {
+      throw new ServiceUnavailableException('Object storage not connected');
+    }
+
     return {
       status: 'ok',
       postgres: 'connected',
       mongodb: 'connected',
       redis: 'connected',
+      storage: 'connected',
     };
   }
 }

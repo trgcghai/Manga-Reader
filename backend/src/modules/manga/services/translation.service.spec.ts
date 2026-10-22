@@ -31,7 +31,7 @@ describe('TranslationService', () => {
   };
 
   const mockFileService = {
-    endpoint: 'http://localhost:9000',
+    publicUrl: 'https://cdn.example.com/assets',
     bucket: 'manga-pages',
     delete: jest.fn().mockResolvedValue(undefined),
   };
@@ -166,10 +166,10 @@ describe('TranslationService', () => {
       expect(result).toEqual(updated);
     });
 
-    it('should delete old file when url is changed to a Minio url', async () => {
+    it('should delete old file when url is changed to a storage URL', async () => {
       const withOldUrl = {
         ...translation,
-        url: 'http://localhost:9000/manga-pages/old/file.cbz',
+        url: 'https://cdn.example.com/assets/manga-pages/old/file.cbz',
       };
       mockTranslationRepo.findById.mockResolvedValue(withOldUrl);
       mockLanguageService.findOne.mockResolvedValue(language);
@@ -178,15 +178,15 @@ describe('TranslationService', () => {
       );
       mockTranslationRepo.update.mockResolvedValue({
         ...withOldUrl,
-        url: 'http://localhost:9000/manga-pages/new/file.cbz',
+        url: 'https://cdn.example.com/assets/manga-pages/new/file.cbz',
       });
       await service.update(10, 5, 1, {
-        url: 'http://localhost:9000/manga-pages/new/file.cbz',
+        url: 'https://cdn.example.com/assets/manga-pages/new/file.cbz',
       });
       expect(mockFileService.delete).toHaveBeenCalledWith('old/file.cbz');
     });
 
-    it('should not delete file when updating url but old url is not a Minio url', async () => {
+    it('should not delete file when the old URL is outside the storage location', async () => {
       mockTranslationRepo.findById.mockResolvedValue(translation);
       mockTranslationRepo.findByChapterAndLanguageAndTranslator.mockResolvedValue(
         null,
@@ -202,7 +202,7 @@ describe('TranslationService', () => {
     it('should not delete file when URL is not provided', async () => {
       const withUrl = {
         ...translation,
-        url: 'http://localhost:9000/manga-pages/old/file.cbz',
+        url: 'https://cdn.example.com/assets/manga-pages/old/file.cbz',
       };
       mockTranslationRepo.findById.mockResolvedValue(withUrl);
       mockTranslationRepo.update.mockResolvedValue(withUrl);
@@ -220,7 +220,8 @@ describe('TranslationService', () => {
     });
 
     it('should not delete file when new URL is the same as the existing URL', async () => {
-      const sameUrl = 'http://localhost:9000/manga-pages/same/file.cbz';
+      const sameUrl =
+        'https://cdn.example.com/assets/manga-pages/same/file.cbz';
       const withSameUrl = {
         ...translation,
         url: sameUrl,
@@ -236,7 +237,7 @@ describe('TranslationService', () => {
     it('should propagate file delete error during update', async () => {
       const withUrl = {
         ...translation,
-        url: 'http://localhost:9000/manga-pages/old/file.cbz',
+        url: 'https://cdn.example.com/assets/manga-pages/old/file.cbz',
       };
       mockTranslationRepo.findById.mockResolvedValue(withUrl);
       mockLanguageService.findOne.mockResolvedValue({
@@ -247,10 +248,10 @@ describe('TranslationService', () => {
       mockTranslationRepo.findByChapterAndLanguageAndTranslator.mockResolvedValue(
         null,
       );
-      mockFileService.delete.mockRejectedValue(new Error('Minio error'));
+      mockFileService.delete.mockRejectedValue(new Error('Storage error'));
       await expect(
         service.update(10, 5, 1, { url: '/new/path' }),
-      ).rejects.toThrow('Minio error');
+      ).rejects.toThrow('Storage error');
     });
   });
 
@@ -524,10 +525,10 @@ describe('TranslationService', () => {
       expect(mockTranslationRepo.delete).toHaveBeenCalledWith(1);
     });
 
-    it('should delete file when translation has a Minio url', async () => {
+    it('should delete file when translation has a storage URL', async () => {
       const withUrl = {
         ...translation,
-        url: 'http://localhost:9000/manga-pages/some/file.cbz',
+        url: 'https://cdn.example.com/assets/manga-pages/some/file.cbz',
       };
       mockTranslationRepo.findById.mockResolvedValue(withUrl);
       mockTranslationRepo.delete.mockResolvedValue(undefined);
@@ -535,7 +536,7 @@ describe('TranslationService', () => {
       expect(mockFileService.delete).toHaveBeenCalledWith('some/file.cbz');
     });
 
-    it('should not delete file when translation url is not a Minio url', async () => {
+    it('should not delete file when translation URL is outside storage', async () => {
       mockTranslationRepo.findById.mockResolvedValue(translation);
       mockTranslationRepo.delete.mockResolvedValue(undefined);
       await service.delete(10, 5, 1);
@@ -545,11 +546,11 @@ describe('TranslationService', () => {
     it('should propagate file delete error during delete', async () => {
       const withUrl = {
         ...translation,
-        url: 'http://localhost:9000/manga-pages/old/file.cbz',
+        url: 'https://cdn.example.com/assets/manga-pages/old/file.cbz',
       };
       mockTranslationRepo.findById.mockResolvedValue(withUrl);
-      mockFileService.delete.mockRejectedValue(new Error('Minio error'));
-      await expect(service.delete(10, 5, 1)).rejects.toThrow('Minio error');
+      mockFileService.delete.mockRejectedValue(new Error('Storage error'));
+      await expect(service.delete(10, 5, 1)).rejects.toThrow('Storage error');
     });
 
     it('should not attempt file delete when translation has no url', async () => {
