@@ -3,7 +3,7 @@ services:
     image: redis:7-alpine
     command: ["redis-server", "--appendonly", "yes"]
     ports:
-      - "6379:6379"
+      - "4002:6379"
     volumes:
       - redis-data:/data
     restart: unless-stopped
@@ -16,7 +16,7 @@ services:
   mongodb:
     image: mongo:7
     ports:
-      - "27017:27017"
+      - "4003:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: manga
       MONGO_INITDB_ROOT_PASSWORD: manga
@@ -34,7 +34,7 @@ services:
   postgres:
     image: postgres:16-alpine
     ports:
-      - "5433:5432"
+      - "4004:5432"
     environment:
       POSTGRES_USER: manga
       POSTGRES_PASSWORD: manga
@@ -52,8 +52,8 @@ services:
     image: minio/minio:latest
     command: server /data --console-address ":9001"
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "4005:9000"
+      - "4006:9001"
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
@@ -71,7 +71,7 @@ services:
       context: ./backend
       target: development
     ports:
-      - "3001:3001"
+      - "4001:3001"
     environment:
       NODE_ENV: development
       PORT: 3001
@@ -87,13 +87,12 @@ services:
       DB_USERNAME: manga
       DB_PASSWORD: manga
       DB_NAME: manga_reader
-      MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
-      MINIO_BUCKET: manga-pages
-    volumes:
-      - ./backend:/app
-      - backend-node-modules:/app/node_modules
+      STORAGE_ENDPOINT: http://minio:9000
+      STORAGE_PUBLIC_URL: http://localhost:4005
+      STORAGE_REGION: us-east-1
+      STORAGE_ACCESS_KEY: minioadmin
+      STORAGE_SECRET_KEY: minioadmin
+      STORAGE_BUCKET: manga-pages
     depends_on:
       postgres:
         condition: service_healthy
@@ -109,17 +108,14 @@ services:
       context: ./frontend
       target: development
     ports:
-      - "3000:3000"
+      - "4000:3000"
     environment:
       NODE_ENV: development
       CHOKIDAR_USEPOLLING: "true"
       CHOKIDAR_INTERVAL: 500
       WATCHPACK_POLLING: "true"
       WATCHPACK_POLLING_INTERVAL: 1000
-      VITE_API_URL: http://localhost:3001
-    volumes:
-      - ./frontend:/app
-      - frontend-node-modules:/app/node_modules
+      VITE_API_URL: http://localhost:4001
     depends_on:
       - backend
     command: npm run dev -- --host 0.0.0.0
@@ -131,5 +127,3 @@ volumes:
   mongodb-config:
   postgres-data:
   minio-data:
-  backend-node-modules:
-  frontend-node-modules:

@@ -31,4 +31,4 @@ export const MIME_MAP: Record<string, string> = {
 export const MAX_COVER_FILE_SIZE = 10 * 1024 * 1024;
 export const MAX_TRANSLATION_FILE_SIZE = 100 * 1024 * 1024;
 
-export const STORAGE_CLIENT = 'STORAGE_CLIENT';
+export const STORAGE_CLIENT = Symbol('STORAGE_CLIENT');

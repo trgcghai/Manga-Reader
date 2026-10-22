@@ -29,9 +29,3 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
-
-# project artifacts
-/tasks/
-/projects/
-/docs/superpowers/
-/docs/ba/

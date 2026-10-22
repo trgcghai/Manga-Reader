@@ -1,8 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   DeleteObjectCommand,
+  CreateBucketCommand,
   GetObjectCommand,
   HeadBucketCommand,
   ListObjectsV2Command,
+  PutBucketPolicyCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -66,7 +70,7 @@ describe('FileService', () => {
 
   describe('upload', () => {
     it('should map application/zip to .zip extension', async () => {
-      sendMock.mockResolvedValue({} as never);
+      sendMock.mockResolvedValue({});
 
       const result = await service.upload(
         'prefix',
@@ -78,7 +82,7 @@ describe('FileService', () => {
     });
 
     it('uploads an object and returns its public storage URL', async () => {
-      sendMock.mockResolvedValue({ ETag: 'abc123' } as never);
+      sendMock.mockResolvedValue({ ETag: 'abc123' });
       const buffer = Buffer.from('test-image-data');
 
       const result = await service.upload('covers', buffer, 'image/jpeg');
@@ -109,7 +113,7 @@ describe('FileService', () => {
   describe('download', () => {
     it('returns a StreamableFile for the requested object', async () => {
       const body = Readable.from(['test-data']);
-      sendMock.mockResolvedValue({ Body: body } as never);
+      sendMock.mockResolvedValue({ Body: body });
 
       const result = await service.download('covers/test.jpg');
 
@@ -137,7 +141,7 @@ describe('FileService', () => {
 
   describe('delete', () => {
     it('deletes the requested object', async () => {
-      sendMock.mockResolvedValue({} as never);
+      sendMock.mockResolvedValue({});
 
       await service.delete('covers/test.jpg');
 
@@ -165,19 +169,17 @@ describe('FileService', () => {
           Contents: [{ Key: 'covers/a.jpg' }],
           IsTruncated: true,
           NextContinuationToken: 'next-page',
-        } as never)
+        })
         .mockResolvedValueOnce({
           Contents: [{ Key: 'covers/b.jpg' }],
           IsTruncated: false,
-        } as never);
+        });
 
       const result = await service.list('covers');
 
       expect(result).toEqual(['covers/a.jpg', 'covers/b.jpg']);
       expect(sendMock).toHaveBeenCalledTimes(2);
-      expect(sendMock.mock.calls[0][0]).toBeInstanceOf(
-        ListObjectsV2Command,
-      );
+      expect(sendMock.mock.calls[0][0]).toBeInstanceOf(ListObjectsV2Command);
       expect(sendMock.mock.calls[1][0].input).toMatchObject({
         ContinuationToken: 'next-page',
       });
@@ -198,7 +200,7 @@ describe('FileService', () => {
 
   describe('checkStorageAccess', () => {
     it('checks access to the configured bucket', async () => {
-      sendMock.mockResolvedValue({} as never);
+      sendMock.mockResolvedValue({});
 
       await service.checkStorageAccess();
 
@@ -212,6 +214,63 @@ describe('FileService', () => {
       sendMock.mockRejectedValue(failure);
 
       await expect(service.checkStorageAccess()).rejects.toBe(failure);
+    });
+  });
+
+  describe('onModuleInit', () => {
+    it('creates the configured bucket when it does not exist and grants public object reads', async () => {
+      const missingBucket = Object.assign(new Error('Not found'), {
+        name: 'NotFound',
+        $metadata: { httpStatusCode: 404 },
+      });
+      sendMock
+        .mockRejectedValueOnce(missingBucket)
+        .mockResolvedValueOnce({})
+        .mockResolvedValueOnce({});
+
+      await service.onModuleInit();
+
+      expect(sendMock.mock.calls[0][0]).toBeInstanceOf(HeadBucketCommand);
+      expect(sendMock.mock.calls[1][0]).toBeInstanceOf(CreateBucketCommand);
+      expect(sendMock.mock.calls[1][0].input).toMatchObject({
+        Bucket: 'test-bucket',
+      });
+      expect(sendMock.mock.calls[2][0]).toBeInstanceOf(PutBucketPolicyCommand);
+      expect(sendMock.mock.calls[2][0].input).toMatchObject({
+        Bucket: 'test-bucket',
+      });
+      expect(
+        JSON.parse(sendMock.mock.calls[2][0].input.Policy as string),
+      ).toMatchObject({
+        Statement: [
+          {
+            Effect: 'Allow',
+            Principal: '*',
+            Action: 's3:GetObject',
+            Resource: 'arn:aws:s3:::test-bucket/*',
+          },
+        ],
+      });
+    });
+
+    it('applies the public read policy when the bucket already exists', async () => {
+      sendMock.mockResolvedValue({});
+
+      await service.onModuleInit();
+
+      expect(sendMock).toHaveBeenCalledTimes(2);
+      expect(sendMock.mock.calls[0][0]).toBeInstanceOf(HeadBucketCommand);
+      expect(sendMock.mock.calls[1][0]).toBeInstanceOf(PutBucketPolicyCommand);
+    });
+
+    it('fails startup when storage initialization fails for a reason other than a missing bucket', async () => {
+      const failure = Object.assign(new Error('Access denied'), {
+        name: 'AccessDenied',
+        $metadata: { httpStatusCode: 403 },
+      });
+      sendMock.mockRejectedValue(failure);
+
+      await expect(service.onModuleInit()).rejects.toBe(failure);
     });
   });
 });

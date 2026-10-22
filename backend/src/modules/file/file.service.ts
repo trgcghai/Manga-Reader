@@ -1,8 +1,10 @@
 import {
+  CreateBucketCommand,
   DeleteObjectCommand,
   GetObjectCommand,
   HeadBucketCommand,
   paginateListObjectsV2,
+  PutBucketPolicyCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -13,6 +15,7 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  OnModuleInit,
   StreamableFile,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -26,7 +29,7 @@ import {
 import { getContentType } from 'src/common/utils/file-mime.util';
 
 @Injectable()
-export class FileService {
+export class FileService implements OnModuleInit {
   private readonly logger = new Logger(FileService.name);
   readonly bucket: string;
   readonly publicUrl: string;
@@ -35,14 +38,9 @@ export class FileService {
     @Inject(STORAGE_CLIENT) private readonly storageClient: S3Client,
     configService: ConfigService,
   ) {
-    const bucket = configService.get<string>('STORAGE_BUCKET');
-    const publicUrl = configService.get<string>('STORAGE_PUBLIC_URL');
-    if (!bucket) {
-      throw new Error('STORAGE_BUCKET environment variable is required');
-    }
-    if (!publicUrl) {
-      throw new Error('STORAGE_PUBLIC_URL environment variable is required');
-    }
+    const bucket = configService.getOrThrow<string>('STORAGE_BUCKET');
+    const publicUrl = configService.getOrThrow<string>('STORAGE_PUBLIC_URL');
+
     try {
       new URL(publicUrl);
     } catch {
@@ -51,6 +49,43 @@ export class FileService {
 
     this.bucket = bucket;
     this.publicUrl = publicUrl.replace(/\/+$/, '');
+  }
+
+  async onModuleInit(): Promise<void> {
+    try {
+      await this.storageClient.send(
+        new HeadBucketCommand({ Bucket: this.bucket }),
+      );
+    } catch (error: unknown) {
+      if (!this.isMissingBucket(error)) {
+        throw error;
+      }
+
+      await this.storageClient.send(
+        new CreateBucketCommand({ Bucket: this.bucket }),
+      );
+      this.logger.log(`Created storage bucket "${this.bucket}"`);
+    }
+
+    const bucketArn = `arn:aws:s3:::${this.bucket}`;
+    await this.storageClient.send(
+      new PutBucketPolicyCommand({
+        Bucket: this.bucket,
+        Policy: JSON.stringify({
+          Version: '2012-10-17',
+          Statement: [
+            {
+              Sid: 'PublicReadObjects',
+              Effect: 'Allow',
+              Principal: '*',
+              Action: 's3:GetObject',
+              Resource: `${bucketArn}/*`,
+            },
+          ],
+        }),
+      }),
+    );
+    this.logger.log(`Applied public object-read policy to "${this.bucket}"`);
   }
 
   async upload(
@@ -188,6 +223,25 @@ export class FileService {
       sdkError.name === 'NotFound' ||
       sdkError.code === 'NoSuchKey' ||
       sdkError.Code === 'NoSuchKey' ||
+      sdkError.$metadata?.httpStatusCode === 404
+    );
+  }
+
+  private isMissingBucket(error: unknown): boolean {
+    if (typeof error !== 'object' || error === null) {
+      return false;
+    }
+    const sdkError = error as {
+      name?: string;
+      code?: string;
+      Code?: string;
+      $metadata?: { httpStatusCode?: number };
+    };
+    return (
+      sdkError.name === 'NoSuchBucket' ||
+      sdkError.name === 'NotFound' ||
+      sdkError.code === 'NoSuchBucket' ||
+      sdkError.Code === 'NoSuchBucket' ||
       sdkError.$metadata?.httpStatusCode === 404
     );
   }

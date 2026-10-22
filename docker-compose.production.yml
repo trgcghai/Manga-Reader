@@ -7,9 +7,9 @@ services:
       - .env.production
     environment:
       NODE_ENV: production
-      PORT: 3001
+      PORT: ${BACKEND_PORT}
     ports:
-      - "${BACKEND_PORT:-3001}:3001"
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
     restart: unless-stopped
 
   frontend:
@@ -17,11 +17,11 @@ services:
       context: ./frontend
       target: runtime
       args:
-        VITE_API_URL: ${VITE_API_URL:?Set VITE_API_URL in .env.production}
+        VITE_API_URL: ${VITE_API_URL}
     environment:
       NODE_ENV: production
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     depends_on:
       - backend
     restart: unless-stopped
