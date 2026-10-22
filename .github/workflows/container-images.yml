@@ -55,7 +55,7 @@ jobs:
             VITE_API_URL=${{ vars.VITE_API_URL }}
 
       - name: Scan backend image with Trivy
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: local/manga-reader-backend:${{ github.sha }}
           format: table
@@ -65,7 +65,7 @@ jobs:
           ignore-unfixed: false
 
       - name: Scan frontend image with Trivy
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: local/manga-reader-frontend:${{ github.sha }}
           format: table

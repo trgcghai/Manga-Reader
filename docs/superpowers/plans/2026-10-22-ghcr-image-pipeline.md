@@ -49,7 +49,7 @@ In `build-and-scan`, check out source with `actions/checkout@v7.0.1` and configu
 
 - [ ] **Step 3: Scan each local image with Trivy**
 
-Run `aquasecurity/trivy-action@0.36.0` once per local image, with `image-ref`, `format: table`, `exit-code: '1'`, `severity: HIGH,CRITICAL`, and `vuln-type: os,library`. Leave `ignore-unfixed` false so unfixed findings at the threshold fail too. The following artifact step must run only after both scans pass.
+Run `aquasecurity/trivy-action@v0.36.0` once per local image, with `image-ref`, `format: table`, `exit-code: '1'`, `severity: HIGH,CRITICAL`, and `vuln-type: os,library`. Leave `ignore-unfixed` false so unfixed findings at the threshold fail too. The following artifact step must run only after both scans pass.
 
 - [ ] **Step 4: Save and upload the exact scanned images**
 
