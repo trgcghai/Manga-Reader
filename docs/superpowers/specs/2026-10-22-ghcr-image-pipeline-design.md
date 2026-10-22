@@ -26,8 +26,8 @@ Build and scan run with `contents: read` and no package-write permission. On a s
 
 Publish these images:
 
-- `ghcr.io/haitruongtpma/manga-reader-backend`
-- `ghcr.io/haitruongtpma/manga-reader-frontend`
+- `ghcr.io/trgcghai/manga-reader-backend`
+- `ghcr.io/trgcghai/manga-reader-frontend`
 
 Each successful `main` push publishes both `latest` and the full commit SHA tags. Pull requests build and scan but do not push images.
 
