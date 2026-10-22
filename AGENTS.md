@@ -27,6 +27,7 @@ Backend tests use Jest; frontend tests use Vitest and React Testing Library. Add
 
 Recent commits use short, lowercase prefixes such as `feat:`, `fix:`, `refactor:`, and `docs:`. Keep each commit focused. A pull request should explain the change and its user impact, list verification commands and results, link a related issue when available, and include screenshots for visible UI changes.
 Do not commit until be asked for.
+Do the work on the current branches, unless the branch is main. Do not use worktree.
 
 ## Configuration and Scope
 
